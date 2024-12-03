@@ -38,7 +38,9 @@ public class LL1 {
         // "."の判定
         checkToken("SDOT");
         
-        return new ProgramName(block, complexStatement);
+        return null;
+        // 本来なら下のように変更したい
+        // return new ProgramName(block, complexStatement);
     }
     
     /**
@@ -59,14 +61,16 @@ public class LL1 {
      * 
      * @throws SyntaxException
      */
-    public void block() throws SyntaxException {
+    public Block block() throws SyntaxException {
     	// 変数宣言を判定するプログラム
     	if (isSVAR() == true) {
     		declareVariables();
     	}
     	
     	// 副プログラム宣言群の解析
-    	subprogramDeclarations(); 
+    	subprogramDeclarations();
+    	
+		return null; 
     }
 
     /**

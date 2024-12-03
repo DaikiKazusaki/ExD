@@ -31,12 +31,9 @@ public abstract class Visitor {
 	public abstract void visit(AssignStatement assignStatement);
 	public abstract void visit(LeftSide leftSide);
 	public abstract void visit(Variable variable);
-	// 純変数
-	// public abstract void visit();
-	// 添え字付き変数
-	// public abstract void visit();
-	// 添え字
-	// public abstract void visit();
+	public abstract void visit(NaturalVariable naturalvariable);
+	public abstract void visit(VariableWithIndex variableWithIndex);
+	public abstract void visit(Index index);
 	public abstract void visit(ProcedureCallStatement procedureCallStatement);
 	public abstract void visit(EquationGroup equationGroup);
 	public abstract void visit(Equation equatioin);
@@ -51,7 +48,6 @@ public abstract class Visitor {
 	public abstract void visit(Constant constant);
 	public abstract void visit(UnsignedInteger unsignedInteger);
 	public abstract void visit(CharGroup charGroup);
-	// 文字列要素
-	// public abstract void visit();
+	public abstract void visit(StringElement stringElement);
 	
 }

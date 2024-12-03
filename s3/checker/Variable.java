@@ -1,5 +1,6 @@
 package enshud.s3.checker;
 
 public class Variable {
-	String variableName;
+	NaturalVariable naturalVariable;
+	VariableWithIndex variableWithIndex;
 }
