@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Program {
+public class Program implements Element {
     private ProgramName programName;
     private Block block;
     private ComplexStatement complexStatement;
@@ -10,22 +10,10 @@ public class Program {
         this.block = block;
         this.complexStatement = complexStatement;
     }
-
-    public ProgramName getProgramName() {
-        return programName;
-    }
-
-    public Block getBlock() {
-        return block;
-    }
-
-    public ComplexStatement getComplexStatement() {
-        return complexStatement;
-    }
     
-    // @Override
+    @Override
     public void accept(Visitor visitor) {
     	visitor.visit(this);
-    	// visitor.leave(this)
+    	accept(visitor);
     }
 }

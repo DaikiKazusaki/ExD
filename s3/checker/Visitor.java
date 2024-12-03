@@ -48,6 +48,5 @@ public abstract class Visitor {
 	public abstract void visit(Constant constant);
 	public abstract void visit(UnsignedInteger unsignedInteger);
 	public abstract void visit(CharGroup charGroup);
-	public abstract void visit(StringElement stringElement);
-	
+	public abstract void visit(StringElement stringElement);	
 }

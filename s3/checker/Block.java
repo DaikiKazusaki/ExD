@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Block {
+public class Block implements Element {
 	private VariableDeclaration variableDeclaration;
 	private SubprogramDeclarationGroup subprogramDeclarationGroup;
 	
@@ -9,11 +9,8 @@ public class Block {
 		this.subprogramDeclarationGroup = subprogramDeclarationGroup;
 	}
 	
-	public VariableDeclaration getVariableDeclaration() {
-		return variableDeclaration;
-	}
-	
-	public SubprogramDeclarationGroup subprogramDeclarationGroup() {
-		return subprogramDeclarationGroup;
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+		accept(visitor);
 	}
 }

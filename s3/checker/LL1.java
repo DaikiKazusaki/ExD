@@ -75,10 +75,11 @@ public class LL1 {
 
     /**
      * 複合文の判定を行うメソッド
+     * @return 
      * 
      * @throws SyntaxException
      */
-    public void complexStatement() throws SyntaxException {
+    public ComplexStatement complexStatement() throws SyntaxException {
     	// "begin"の判定
     	checkToken("SBEGIN");
     	
@@ -87,6 +88,9 @@ public class LL1 {
     	
     	// "end"の確認
     	checkToken("SEND");
+    
+    	//一時的な返り値 
+		return null;
     }
     
     /**
