@@ -1,19 +1,22 @@
 package enshud.s3.checker;
 
 public class Program implements Element {
-    private ProgramName programName;
-    private Block block;
-    private ComplexStatement complexStatement;
-
-    public Program(ProgramName programName, Block block, ComplexStatement complexStatement) {
-        this.programName = programName;
-        this.block = block;
-        this.complexStatement = complexStatement;
-    }
+    ProgramName programName;
+    Block block;
+    ComplexStatement complexStatement;
     
     @Override
     public void accept(Visitor visitor) {
     	visitor.visit(this);
-    	accept(visitor);
+    	
+    	if (programName != null) {
+            programName.accept(visitor);
+        }
+        if (block != null) {
+            block.accept(visitor);
+        }
+        if (complexStatement != null) {
+            complexStatement.accept(visitor);
+        }
     }
 }
