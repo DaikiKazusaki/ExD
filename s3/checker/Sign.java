@@ -8,7 +8,10 @@ public class Sign {
 	}
 	
 	public void accept(Visitor visitor) {
-		
-		
+		visitor.visit(this);
+	}
+	
+	public String getSign() {
+		return sign;
 	}
 }

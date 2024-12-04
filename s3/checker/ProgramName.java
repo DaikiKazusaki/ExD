@@ -7,7 +7,6 @@ public class ProgramName {
 		this.name = name;
 	}
 
-	// Programクラスからのvisitをaccept
 	public void accept(Visitor visitor) {
 		visitor.visit(this);		
 	}

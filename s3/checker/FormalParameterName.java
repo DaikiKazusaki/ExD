@@ -2,4 +2,8 @@ package enshud.s3.checker;
 
 public class FormalParameterName {
 	String formalParameterName;
+
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
 }

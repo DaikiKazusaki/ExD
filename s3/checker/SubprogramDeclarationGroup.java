@@ -4,5 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SubprogramDeclarationGroup {
-	List<SubprogramDeclaration> SubprogramDeclaration = new ArrayList<>();
+	List<SubprogramDeclaration> subprogramDeclaration = new ArrayList<>();
+	
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+		
+		for(SubprogramDeclaration item: subprogramDeclaration) {
+			item.accept(visitor);
+		}
+	}
 }
