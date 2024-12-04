@@ -5,4 +5,9 @@ import java.util.List;
 
 public class UnsignedInteger {
 	List<String> number = new ArrayList<>();
+
+	public void accept(Visitor visitor) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -5,11 +5,15 @@ public class VariableDeclaration implements Element {
 	
 	public VariableDeclaration(VariableDeclarationGroup variableDeclarationGroup) {
 		this.variableDeclarationGroup = variableDeclarationGroup;
+<<<<<<< HEAD
 	}
 	
 	public VariableDeclarationGroup getVariableDeclarationGroup(VariableDeclarationGroup variableDeclarationGroup) {
 		return variableDeclarationGroup;
 	}
+=======
+  }
+>>>>>>> bc25f4ce43552e281612146553c38f016aed7261
 	
 	@Override
 	public void accept(Visitor visitor) {

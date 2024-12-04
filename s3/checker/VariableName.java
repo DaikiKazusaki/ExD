@@ -1,9 +1,18 @@
 package enshud.s3.checker;
 
-public class VariableName {
-	String variableName;
+public class VariableName implements Element {
+    private String variableName; 
 
-	public void accept(Visitor visitor) {
-		
-	}
+    public VariableName(String variableName) {
+        this.variableName = variableName;
+    }
+
+    public String getVariableName() {
+        return variableName;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 }

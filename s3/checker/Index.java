@@ -9,5 +9,6 @@ public class Index {
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		equation.accept(visitor);
 	}
 }
