@@ -5,12 +5,10 @@ public class NaturalVariable {
 	
 	public NaturalVariable(VariableName variableName) {
 		this.variableName = variableName;
-	}
+	} 
 	
-	public VariableName accept(Visitor visitor) {
+	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		
-		// 
-		return null;
+		variableName.accept(visitor);
 	}
 }
