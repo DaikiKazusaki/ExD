@@ -1,9 +1,9 @@
 package enshud.s3.checker;
 
 public class Program implements Element {
-    ProgramName programName;
-    Block block;
-    ComplexStatement complexStatement;
+    private ProgramName programName;
+    private Block block;
+    private ComplexStatement complexStatement;
     
     @Override
     public void accept(Visitor visitor) {

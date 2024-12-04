@@ -19,7 +19,7 @@ public class LL1 {
      * 
      * @throws SyntaxException
      */
-    public Program program() throws SyntaxException {
+    public void program() throws SyntaxException {
     	// "program"の判定
         checkToken("SPROGRAM");
 
@@ -30,17 +30,13 @@ public class LL1 {
         checkToken("SSEMICOLON");
         
         // ブロックの判定
-        Block block = block();
+        block();
         
         // 複合文の判定
-        ComplexStatement complexStatement = complexStatement();
+        complexStatement();
         
         // "."の判定
         checkToken("SDOT");
-        
-        return null;
-        // 本来なら下のように変更したい
-        // return new ProgramName(block, complexStatement);
     }
     
     /**
@@ -61,7 +57,7 @@ public class LL1 {
      * 
      * @throws SyntaxException
      */
-    public Block block() throws SyntaxException {
+    public void block() throws SyntaxException {
     	// 変数宣言を判定するプログラム
     	if (isSVAR() == true) {
     		declareVariables();
@@ -69,8 +65,6 @@ public class LL1 {
     	
     	// 副プログラム宣言群の解析
     	subprogramDeclarations();
-    	
-		return null; 
     }
 
     /**
@@ -79,7 +73,7 @@ public class LL1 {
      * 
      * @throws SyntaxException
      */
-    public ComplexStatement complexStatement() throws SyntaxException {
+    public void complexStatement() throws SyntaxException {
     	// "begin"の判定
     	checkToken("SBEGIN");
     	
@@ -88,9 +82,6 @@ public class LL1 {
     	
     	// "end"の確認
     	checkToken("SEND");
-    
-    	//一時的な返り値 
-		return null;
     }
     
     /**
