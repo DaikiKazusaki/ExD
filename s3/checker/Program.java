@@ -8,15 +8,8 @@ public class Program implements Element {
     @Override
     public void accept(Visitor visitor) {
     	visitor.visit(this);
-    	
-    	if (programName != null) {
-            programName.accept(visitor);
-        }
-        if (block != null) {
-            block.accept(visitor);
-        }
-        if (complexStatement != null) {
-            complexStatement.accept(visitor);
-        }
+    	programName.accept(visitor);
+    	block.accept(visitor);
+    	complexStatement.accept(visitor);
     }
 }
