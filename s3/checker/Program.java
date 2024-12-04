@@ -14,6 +14,8 @@ public class Program implements Element {
     @Override
     public void accept(Visitor visitor) {
     	visitor.visit(this);
-    	accept(visitor);
+    	programName.accept(visitor);
+    	block.accept(visitor);
+    	complexStatement.accept(visitor);
     }
 }

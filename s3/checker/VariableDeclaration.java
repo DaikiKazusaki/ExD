@@ -7,7 +7,5 @@ public class VariableDeclaration {
 		this.variableDeclarationGroup = variableDeclarationGroup;
 	}
 	
-	public VariableDeclarationGroup getVariableDeclarationGroup(VariableDeclarationGroup variableDeclarationGroup) {
-		return variableDeclarationGroup;
-	}
+	
 }

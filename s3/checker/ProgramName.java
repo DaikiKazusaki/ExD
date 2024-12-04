@@ -10,4 +10,9 @@ public class ProgramName {
 	public String getProgramName() {
 		return name;
 	}
+
+	public void accept(Visitor visitor) {
+		// TODO Auto-generated method stub
+		
+	}
 }
