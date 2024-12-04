@@ -11,7 +11,7 @@ public class ArrayType {
 		this.generalType = generalType;
 	}
 	
-	// @Override
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		minimumIndex.accept(visitor);
