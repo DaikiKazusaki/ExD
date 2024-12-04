@@ -1,8 +1,8 @@
 package enshud.s3.checker;
 
 public class Block implements Element {
-	private VariableDeclaration variableDeclaration;
-	private SubprogramDeclarationGroup subprogramDeclarationGroup;
+	VariableDeclaration variableDeclaration;
+	SubprogramDeclarationGroup subprogramDeclarationGroup;
 	
 	public Block(VariableDeclaration variableDeclaration, SubprogramDeclarationGroup subprogramDeclarationGroup) {
 		this.variableDeclaration = variableDeclaration;

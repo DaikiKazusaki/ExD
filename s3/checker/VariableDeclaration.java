@@ -1,11 +1,15 @@
 package enshud.s3.checker;
 
-public class VariableDeclaration {
+public class VariableDeclaration implements Element {
 	private VariableDeclarationGroup variableDeclarationGroup;
 	
 	public VariableDeclaration(VariableDeclarationGroup variableDeclarationGroup) {
 		this.variableDeclarationGroup = variableDeclarationGroup;
+  }
+	
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+    	accept(visitor);
 	}
-	
-	
 }
