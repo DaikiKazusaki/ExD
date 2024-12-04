@@ -5,6 +5,7 @@ import java.util.List;
 
 public class LL1 {
     private int tokenIndex = 0;
+    private int LEXERICALCOLS = 0;
     private int TOKENCOLS = 1;
     private List<List<String>> tokens = new ArrayList<>();
     private SyntaxException e;
@@ -19,24 +20,26 @@ public class LL1 {
      * 
      * @throws SyntaxException
      */
-    public void program() throws SyntaxException {
+    public Program program() throws SyntaxException {
     	// "program"の判定
         checkToken("SPROGRAM");
 
         // プログラム名の判定
-        checkToken("SIDENTIFIER");
+        ProgramName programName = programName();
 
         // ";"の判定
         checkToken("SSEMICOLON");
         
         // ブロックの判定
-        block();
+        Block block = block();
         
         // 複合文の判定
-        complexStatement();
+        ComplexStatement complexStatement = complexStatement();
         
         // "."の判定
         checkToken("SDOT");
+        
+        return new Program(programName, block, complexStatement); 
     }
     
     /**
@@ -51,20 +54,37 @@ public class LL1 {
     		e.throwError(tokenIndex);
     	}
     }
+    
+    /**
+     * プログラム名を判定するメソッド
+     * 
+     * @throws SyntaxException
+     */
+    public ProgramName programName() throws SyntaxException {
+    	if (tokens.get(tokenIndex).get(TOKENCOLS).equals("SIDENTIFIER")) {
+    		tokenIndex++;
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
+    	
+		return new ProgramName(tokens.get(tokenIndex).get(LEXERICALCOLS));
+    }
 
     /**
      * ブロックの判定を行うメソッド
      * 
      * @throws SyntaxException
      */
-    public void block() throws SyntaxException {
+    public Block block() throws SyntaxException {
     	// 変数宣言を判定するプログラム
     	if (isSVAR() == true) {
-    		declareVariables();
+    		VariableDeclaration variableDeclaration = declareVariables();
     	}
     	
     	// 副プログラム宣言群の解析
-    	subprogramDeclarations();
+    	SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclarations();
+    	
+    	return new Block(variableDeclaration, subprogramDeclarationGroup);
     }
 
     /**
@@ -73,7 +93,7 @@ public class LL1 {
      * 
      * @throws SyntaxException
      */
-    public void complexStatement() throws SyntaxException {
+    public ComplexStatement complexStatement() throws SyntaxException {
     	// "begin"の判定
     	checkToken("SBEGIN");
     	
@@ -82,6 +102,9 @@ public class LL1 {
     	
     	// "end"の確認
     	checkToken("SEND");
+    	
+    	return null;
+    	// return new();
     }
     
     /**
@@ -102,10 +125,11 @@ public class LL1 {
     /**
      * 変数宣言の並びを判定するメソッド
      * 複数の型の変数が宣言される場合，再帰を用いて判定する
+     * @return 
      * 
      * @throws SyntaxException
      */
-    public void declareVariables() throws SyntaxException {  
+    public VariableDeclaration declareVariables() throws SyntaxException {  
     	// 変数名の並びの判定
     	isVariableOrFormalParameters();
     	
@@ -122,6 +146,8 @@ public class LL1 {
     	if (tokens.get(tokenIndex).get(TOKENCOLS).equals("SIDENTIFIER")) {
     		declareVariables();
     	}
+    	
+    	return 
     }
     
     /**
