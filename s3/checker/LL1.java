@@ -147,7 +147,7 @@ public class LL1 {
     		declareVariables();
     	}
     	
-    	return 
+    	return null;
     }
     
     /**
