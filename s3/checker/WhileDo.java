@@ -1,9 +1,15 @@
 package enshud.s3.checker;
 
 public class WhileDo {
-	Equation equation;
-	ComplexStatement complexStatement;
+	private Equation equation;
+	private ComplexStatement complexStatement;
 	
+	public WhileDo(Equation equation, ComplexStatement complexStatement) {
+		this.equation = equation;
+		this.complexStatement = complexStatement;
+	}
+	
+	@Oveeride
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		
