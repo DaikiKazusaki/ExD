@@ -7,9 +7,11 @@ public class FormalParameterGroup {
 	List<FormalParameterNameGroup> formalParameterNameGroup = new ArrayList<>();
 	GeneralType generalType;
 	
+	
+	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		formalParameterNameGroup.accept(visitor);
+		// formalParameterNameGroup.accept(visitor);
 		generalType.accept(visitor);
 	}
 }

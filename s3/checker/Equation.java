@@ -3,9 +3,15 @@ package enshud.s3.checker;
 public class Equation {
 	SimpleEquation nesessarySimpleEquation;
 	RelationalOperator relationalOperator;
-	SimpleEquation optionalSimpleEquation2;
+	SimpleEquation optionalSimpleEquation;
+	
 	public void accept(Visitor visitor) {
-		// TODO Auto-generated method stub
+		visitor.visit(this);
 		
+		nesessarySimpleEquation.accept(visitor);
+		if (relationalOperator != null) {
+			relationalOperator.accept(visitor);
+			optionalSimpleEquation.accept(visitor);
+		}
 	}
 }
