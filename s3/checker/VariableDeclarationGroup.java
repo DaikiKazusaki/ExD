@@ -5,14 +5,15 @@ import java.util.List;
 
 public class VariableDeclarationGroup implements Element {
 	List<VariableName> variableName = new ArrayList<>();
-	Type type;
+	List<Type> type = new ArrayList<>();
 	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		
-		for(VariableName item: variableName) {
-			item.accept(visitor);
+		for(int i = 0; i < variableName.size(); i++) {
+			variableName.get(i).accept(visitor);
+			type.get(i).accept(visitor);
 		}
 	}
 }
