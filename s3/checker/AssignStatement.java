@@ -1,9 +1,15 @@
 package enshud.s3.checker;
 
 public class AssignStatement {
-	LeftSide leftSide;
-	Equation equation;
+	private LeftSide leftSide;
+	private Equation equation;
 	
+	public AssignStatement(LeftSide leftSide, Equation equation) {
+		this.leftSide = leftSide;
+		this.equation = equation;
+	}
+	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		
