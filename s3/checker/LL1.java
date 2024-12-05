@@ -153,6 +153,9 @@ public class LL1 {
     	// 変数名の判定
     	VariableName variableName = variableName();
     	
+    	// "SCOLON"の判定
+    	checkToken("SCOLON");
+    	
     	return new VariableNameGroup(variableName);
     }
     
@@ -163,6 +166,7 @@ public class LL1 {
     public VariableName variableName() throws SyntaxException {
     	// 識別子の判定 
     	checkToken("SIDENTIFIER");
+    	
     	return new VariableName(getLexical(tokenIndex - 1));
     }
     
@@ -171,11 +175,19 @@ public class LL1 {
      * 
      */
     public Type type() throws SyntaxException {
-    	// 標準型の判定
-    	GeneralType generalType = generalType();
+    	String token = getToken(tokenIndex);
+    	GeneralType generalType = null;
+    	ArrayType arrayType = null;
     	
-    	// 配列型の判定
-    	ArrayType arrayType = arrayType();
+    	if (token.equals("SINTEGER") || token.equals("SCHAR") || token.equals("SBOOLEAN")) {
+    		// 標準型の判定
+    		generalType = generalType();
+    	} else if (token.equals("SARRAY")) {
+    		// 配列型の判定
+        	arrayType = arrayType();
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
     	
     	return new Type(generalType, arrayType);
     }
