@@ -1,18 +1,20 @@
 package enshud.s3.checker;
 
 public class Constant {
+	private String token;
 	private UnsignedInteger unsignedInteger;
-	private CharGroup charGroup;
 	
-	public Constant(UnsignedInteger unsignedInteger, CharGroup charGroup) {
+	public Constant(String token, UnsignedInteger unsignedInteger) {
+		this.token = token;
 		this.unsignedInteger = unsignedInteger;
-		this.charGroup = charGroup;
 	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		
 		unsignedInteger.accept(visitor);
-		charGroup.accept(visitor);
+	}
+	
+	public String getToken() {
+		return token;
 	}
 }

@@ -513,7 +513,7 @@ public class LL1 {
     	AssignStatement assignStatement = assignStatement();
     	
     	// 手続き呼び出し文
-    	ProcedureCallStatement procedureCallName = procedureCallName();
+    	ProcedureCallStatement procedureCallStatement = procedureCallStatement();
     	
     	// 入出力文
     	InputOutputStatement inputOutputStatement = inputOutputStatement();
@@ -521,7 +521,7 @@ public class LL1 {
     	// 複合文
     	ComplexStatement complexStatement = complexStatement();
     	
-    	return new BasicStatement(assignStatement, procedureCallName, inputOutputStatement, complexStatement);
+    	return new BasicStatement(assignStatement, procedureCallStatement, inputOutputStatement, complexStatement);
     }
     
     /**
@@ -536,7 +536,7 @@ public class LL1 {
     	checkToken("SASSIGN");
     	
     	// 式
-    	Equation equation = equaition();
+    	Equation equation = equation();
     	
     	return new AssignStatement(leftSide, equation);
     }
@@ -632,7 +632,7 @@ public class LL1 {
      * 式の並び
      * 
      */
-    public EquationGroup equationGroup() throws Exception {
+    public EquationGroup equationGroup() throws SyntaxException {
     	// 式の判定
     	Equation equation1 = equation();
     	
@@ -654,10 +654,14 @@ public class LL1 {
     	SimpleEquation simpleEquation1 = simpleEquation();
     	
     	// 関係演算子の判定
-    	RelationalOperator relationalOperator = relationalOperator();
+    	String token = getToken(tokenIndex);
+    	RelationalOperator relationalOperator = null;
+    	SimpleEquation simpleEquation2 = null;
     	
-    	// 単純式の判定
-    	SimpleEquation simpleEquation2 = simpleEquation();
+    	if (token.equals("SEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
+    		relationalOperator = relationalOperator();
+    		simpleEquation2 = simpleEquation();
+    	}
     	
     	return new Equation(simpleEquation1, relationalOperator, simpleEquation2);
     }
@@ -668,7 +672,11 @@ public class LL1 {
      */
     public SimpleEquation simpleEquation() throws SyntaxException {
     	// 符号の判定
-    	Sign sign = sign();
+    	String token = getToken(tokenIndex);
+    	Sign sign = null;
+    	if (token.equals("SPLUS") || token.equals("SMINUS")) {
+    		sign = sign();
+    	}
     	
     	// 項の判定
     	Term term1 = term();
@@ -728,23 +736,43 @@ public class LL1 {
      * 乗法演算子
      * 
      */
+    public MultipleOperator multipleOperator() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SSTAR") || token.equals("SDIV") || token.equals("SMOD") || token.equals("SAND")) {
+    		return new MultipleOperator(getLexical(tokenIndex - 1));
+    	} else {
+    		return null;
+    	}    	
+    }
     
     /**
      * 入出力文
      * 
      */
     public InputOutputStatement inputOutputStatement() throws SyntaxException {
-    	// 入力文
+    	String token = getToken(tokenIndex);
+    	VariableGroup variableGroup = null;
+    	EquationGroup equationGroup = null;
     	
+    	if (token.equals("SREADLN")) {
+    		// 入力文
+    		variableGroup = variableGroup();
+    	} else if (token.equals("SWRITELN")) {
+    		// 出力文
+    		equationGroup = equationGroup();
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
     	
-    	// 出力文
+    	return new InputOutputStatement(variableGroup, equationGroup);
     }
     
     /**
      * 変数の並び
      * 
      */
-    public VariableGroup variableGrop() throws SyntaxException {
+    public VariableGroup variableGroup() throws SyntaxException {
     	// 変数
     	Variable variable1 = variable();
     	
@@ -760,6 +788,19 @@ public class LL1 {
     /**
      * 定数
      */
+    public Constant constant() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) {
+    		return new Constant(getLexical(tokenIndex - 1), null);
+    	} else if (token.equals("SCONSTANT")) {
+    		UnsignedInteger unsignedInteger = unsignedInteger();
+    		return new Constant(null, unsignedInteger);
+    	} else {
+    		e.throwError(tokenIndex);
+    		return null;
+    	}
+    }
     
     /**
      * 符号なし整数
