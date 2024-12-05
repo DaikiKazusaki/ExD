@@ -24,7 +24,7 @@ public abstract class Visitor {
 	public abstract void visit(ComplexStatement complexStatement);
 	public abstract void visit(StatementGroup statementGroup);
 	public abstract void visit(Statement statement);
-	public abstract void visit(IfThenElse ifThenElse);
+	public abstract void visit(Else Else);
 	public abstract void visit(IfThen ifThen);
 	public abstract void visit(WhileDo whileDo);
 	public abstract void visit(BasicStatement basicStatement);

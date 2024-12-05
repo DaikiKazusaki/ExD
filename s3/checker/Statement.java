@@ -2,11 +2,11 @@ package enshud.s3.checker;
 
 public class Statement {
 	private BasicStatement basicStatement;
-	private IfThenElse ifThenElse;
+	private Else ifThenElse;
 	private IfThen ifThen;
 	private WhileDo whileDo;
 	
-	public Statement(BasicStatement basicStatement, IfThenElse ifThenElse, IfThen ifThen, WhileDo whileDo) {
+	public Statement(BasicStatement basicStatement, Else ifThenElse, IfThen ifThen, WhileDo whileDo) {
 		this.basicStatement = basicStatement;
 		this.ifThenElse = ifThenElse;
 		this.ifThen = ifThen;

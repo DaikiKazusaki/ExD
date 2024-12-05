@@ -422,49 +422,30 @@ public class LL1 {
      * 
      */
     public Statement statement() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	BasicStatement basicStatement = null;
+    	IfThen ifThen = null;
+    	WhileDo whileDo = null;
+    	
+    	if (token.equals("SIF")) {
+    		// if-then
+        	ifThen = ifThen();
+    	} else if (token.equals("SWHILE")) {
+    		// while-do
+    		whileDo = whileDo();
+    	}
     	// 基本文
-    	BasicStatement basicStatement = basicStatement();
+    	basicStatement = basicStatement();    	
     	
-    	// if-then-else
-    	IfThenElse ifThenElse = ifThenElse();
     	
-    	// if-then
-    	IfThen ifThen = ifThen();
     	
-    	// while-do
-    	WhileDo whileDo = whileDo();
+    	
     	
     	return new Statement(basicStatement, ifThenElse, ifThen, whileDo);    	
     }
     
     /**
      * if-then-else
-     * 
-     */
-    public IfThenElse ifThenElse() throws SyntaxException {
-    	// "SIF"の判定
-    	checkToken("SIF");
-    	
-    	// 式の判定
-    	Equation equation = equation();
-    	
-    	// "STHEN"の判定
-    	checkToken("STHEN");
-    	
-    	// 複合文の判定
-    	ComplexStatement complexStatement1 = complexStatement();
-    	
-    	// "SELSE"の判定
-    	checkToken("SELSE");
-    	
-    	// 複合文の判定
-    	ComplexStatement complexStatement2 = complexStatement();
-    	
-    	return new IfThenElse(equation, complexStatement1, complexStatement2);
-    }
-    
-    /**
-     * if-then
      * 
      */
     public IfThen ifThen() throws SyntaxException {
@@ -480,7 +461,27 @@ public class LL1 {
     	// 複合文の判定
     	ComplexStatement complexStatement = complexStatement();
     	
-    	return new IfThen(equation, complexStatement);
+    	// "SIF"の判定
+    	String token = getToken(tokenIndex);
+    	Else Else = null;
+    	if (token.equals("SIF")) {
+    		Else = Else();
+    	}
+    	
+    	return new IfThen(equation, complexStatement, Else);
+    }
+    
+    /**
+     * else
+     * 
+     */
+    public Else Else() throws SyntaxException {
+    	// "SIF"の判定は終わっているので，tokenIndexをインクリメントのみ行う
+    	tokenIndex++;
+    	
+    	ComplexStatement complexStatement = complexStatement();
+    	
+    	return new Else(complexStatement);
     }
     
     /**
