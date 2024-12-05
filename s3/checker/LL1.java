@@ -685,11 +685,28 @@ public class LL1 {
      * 因子の判定
      * 
      */
+    public Factor factor() throws SyntaxException {
+    	// 変数の判定
+    	// 式の判定
+    	Equation equation = equation();
+    	
+    	// "not"因子
+    	
+    }
     
     /**
      * 関係演算子
      * 
      */
+    public RelationalOperator relationalOperator() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
+    		return new RelationalOperator(token);
+    	} else {
+    		return null;
+    	}
+    }
     
     /**
      * 乗法演算子
@@ -700,11 +717,29 @@ public class LL1 {
      * 入出力文
      * 
      */
+    public InputOutputStatement inputOutputStatement() throws SyntaxException {
+    	// 入力文
+    	
+    	
+    	// 出力文
+    }
     
     /**
      * 変数の並び
      * 
      */
+    public VariableGroup variableGrop() throws SyntaxException {
+    	// 変数
+    	Variable variable1 = variable();
+    	
+    	// "SCOLON"の判定
+    	checkToken("SCOLON");
+    	
+    	// 変数の判定
+    	Variable variable2 = variable();
+    	
+    	return new VariableGroup(variable1, variable2);
+    }
     
     /**
      * 定数
