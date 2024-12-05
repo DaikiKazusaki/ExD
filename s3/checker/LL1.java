@@ -67,7 +67,7 @@ public class LL1 {
     }
     
     /**
-     * 識別子名を取得するメソッド
+     * 字句を取得するメソッド
      * 
      */
     public String getLexical(int lineNum) {
@@ -101,13 +101,11 @@ public class LL1 {
      * 
      */
     public Block block() throws SyntaxException {
-    	// 変数宣言の判定
-    	if (isToken("SVAR")) {
-    		VariableDeclaration variableDeclaration = variableDeclaration();
-    	}
-    	
+    	// 変数宣言
+		VariableDeclaration variableDeclaration = variableDeclaration();
+    	    	
     	// 副プログラム宣言群の判定
-    	SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclaratioinGroup();
+    	SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclarationGroup();
     	
     	return new Block(variableDeclaration, subprogramDeclarationGroup);
     }
@@ -116,8 +114,13 @@ public class LL1 {
      * 変数宣言
      */
     public VariableDeclaration variableDeclaration() throws SyntaxException {
+    	// "SVAR"の判定
+    	if (!isToken("SVAR")) {
+    		return null;
+    	}    	
+    	
     	// 変数宣言の並び
-    	VariableDeclarationGroup variableDeclarationGroup = variableDeclarationGroup();
+    	VariableDeclarationGroup variableDeclarationGroup = variableDeclarationGroup();    		
     	
     	return new VariableDeclaration(variableDeclarationGroup);
     }
