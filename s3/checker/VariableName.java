@@ -11,7 +11,6 @@ public class VariableName implements Element {
         return variableName;
     }
 
-    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

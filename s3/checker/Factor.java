@@ -1,10 +1,15 @@
 package enshud.s3.checker;
 
 public class Factor {
-	Variable variable;
-	Constant constant;
-	Equation equation;
-	Factor factor;
+	private Variable variable;
+	private Constant constant;
+	private Equation equation;
+	private Factor factor;
+	
+	public Factor(Variable variable, Constant constant) {
+		this.variable = variable;
+		this.constant = constant;
+	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

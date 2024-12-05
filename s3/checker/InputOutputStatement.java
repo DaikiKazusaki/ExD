@@ -1,8 +1,13 @@
 package enshud.s3.checker;
 
 public class InputOutputStatement {
-	VariableGroup variableGroup;
-	EquationGroup equationGroup;
+	private VariableGroup variableGroup;
+	private EquationGroup equationGroup;
+	
+	public InputOutputStatement(VariableGroup variableGroup, EquationGroup equationGroup) {
+		this.variableGroup = variableGroup;
+		this.equationGroup = equationGroup;
+	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

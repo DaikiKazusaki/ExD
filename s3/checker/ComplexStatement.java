@@ -7,7 +7,6 @@ public class ComplexStatement {
 		this.statementGroup = statementGroup;
 	}
 
-	// @Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		statementGroup.accept(visitor);

@@ -1,10 +1,17 @@
 package enshud.s3.checker;
 
 public class AdditionalOperator {
-	String additionalOperator;
+	private String additionalOperator;
 
-	@Override
+	public AdditionalOperator(String additionalOperator) {
+		this.additionalOperator = additionalOperator;
+	}
+	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+	}
+	
+	public String getAdditionalOperator() {
+		return additionalOperator;
 	}
 }

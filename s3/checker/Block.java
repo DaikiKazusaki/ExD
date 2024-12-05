@@ -9,7 +9,6 @@ public class Block implements Element {
 		this.subprogramDeclarationGroup = subprogramDeclarationGroup;
 	}
 	
-	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		

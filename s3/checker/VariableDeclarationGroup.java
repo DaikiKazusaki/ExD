@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VariableDeclarationGroup implements Element {
-	List<VariableName> variableName = new ArrayList<>();
-	List<Type> type = new ArrayList<>();
+	private List<VariableName> variableName = new ArrayList<>();
+	private List<Type> type = new ArrayList<>();
+	
+	public VariableDeclarationGroup(List<VariableName> variableName, List<Type> type) {
+		this.variableName = variableName;
+		this.type = type;
+	}
 	
 	@Override
 	public void accept(Visitor visitor) {

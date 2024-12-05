@@ -9,7 +9,6 @@ public class Type {
 		this.arrayType = arrayType;
 	}
 	
-	// @Override
 	public void accept(Visitor visitor) {
 		if (generalType != null) {
 			generalType.accept(visitor);

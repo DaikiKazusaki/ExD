@@ -4,9 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Term {
-	Factor nesessaryFactor;
-	List<MultipleOperator> multipleOperator = new ArrayList<>();
-	List<Factor> optionalFactor = new ArrayList<>();
+	private Factor nesessaryFactor;
+	private List<MultipleOperator> multipleOperator = new ArrayList<>();
+	private List<Factor> optionalFactor = new ArrayList<>();
+	
+	public Term(Factor nesessaryFactor, List<MultipleOperator> multipleOperator, List<Factor> optionalFactor) {
+		this.nesessaryFactor = nesessaryFactor;
+		this.multipleOperator = multipleOperator;
+		this.optionalFactor = optionalFactor;
+	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

@@ -4,10 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleEquation {
-	Sign sign;
-	Term nesessaryTerm;
-	List<AdditionalOperator> additionalOperator = new ArrayList<>();
-	List<Term> optionalTerm = new ArrayList<>();
+	private Sign sign;
+	private Term nesessaryTerm;
+	private List<AdditionalOperator> additionalOperator = new ArrayList<>();
+	private List<Term> optionalTerm = new ArrayList<>();
+	
+	public SimpleEquation(Sign sign, Term nesessaryTerm, List<AdditionalOperator> additionalOperator, List<Term> optionalTerm) {
+		this.sign = sign;
+		this.nesessaryTerm = nesessaryTerm;
+		this.additionalOperator = additionalOperator;
+		this.optionalTerm = optionalTerm;
+	}
 	
 	public void accept(Visitor visitor) {	
 		visitor.visit(this);

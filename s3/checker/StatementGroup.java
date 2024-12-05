@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StatementGroup {
-	List<Statement> statement = new ArrayList<>();
+	private List<Statement> statement = new ArrayList<>();
 
-	// @Override
+	public StatementGroup(List<Statement> statement) {
+		this.statement = statement;
+	}
+	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		for(Statement item: statement) {

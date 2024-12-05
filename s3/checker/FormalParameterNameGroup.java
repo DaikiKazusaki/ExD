@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FormalParameterNameGroup {
-	List<FormalParameterName> formalParameterName = new ArrayList<>();
+	private List<FormalParameterName> formalParameterName = new ArrayList<>();
+	
+	public FormalParameterNameGroup(List<FormalParameterName> formalParameterName) {
+		this.formalParameterName = formalParameterName;
+	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

@@ -252,15 +252,16 @@ public class LL1 {
     
     /**
      * 副プログラム宣言群を判定するメソッド
+     * @return 
      * 
      * @throws SyntaxException
      */
-    public void subprogramDeclarations() throws SyntaxException {
+    public SubprogramDeclarationGroup subprogramDeclarations() throws SyntaxException {
     	// "SPROGRAM"の判定
     	if (isSPROCEDURE() == true) {
     		tokenIndex++;
     	} else {
-    		return ;
+    		return null;
     	}
     	
     	//　副プログラム頭部の判定

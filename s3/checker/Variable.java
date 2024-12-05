@@ -1,8 +1,13 @@
 package enshud.s3.checker;
 
 public class Variable {
-	NaturalVariable naturalVariable;
-	VariableWithIndex variableWithIndex;
+	private NaturalVariable naturalVariable;
+	private VariableWithIndex variableWithIndex;
+	
+	public Variable(NaturalVariable naturalVariable, VariableWithIndex variableWithIndex) {
+		this.naturalVariable = naturalVariable;
+		this.variableWithIndex = variableWithIndex;
+	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

@@ -1,8 +1,13 @@
 package enshud.s3.checker;
 
 public class IfThen {
-	Equation equation;
-	ComplexStatement complexStatement;
+	private Equation equation;
+	private ComplexStatement complexStatement;
+	
+	public IfThen(Equation equation, ComplexStatement complexStatement) {
+		this.equation = equation;
+		this.complexStatement = complexStatement;
+	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

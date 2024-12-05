@@ -9,7 +9,6 @@ public class AssignStatement {
 		this.equation = equation;
 	}
 	
-	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		

@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VariableGroup {
-	List<Variable> variable = new ArrayList<>();
+	private List<Variable> variable = new ArrayList<>();
 
+	public VariableGroup(List<Variable> variable) {
+		this.variable = variable;
+	}
+	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		

@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FormalParameterGroup {
-	List<FormalParameterNameGroup> formalParameterNameGroup = new ArrayList<>();
-	List<GeneralType> generalType = new ArrayList<>();	
+	private List<FormalParameterNameGroup> formalParameterNameGroup = new ArrayList<>();
+	private List<GeneralType> generalType = new ArrayList<>();	
+	
+	public FormalParameterGroup(List<FormalParameterNameGroup> formalParameterNameGroup, List<GeneralType> generalType) {
+		this.formalParameterNameGroup = formalParameterNameGroup;
+		this.generalType = generalType;
+	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

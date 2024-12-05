@@ -1,8 +1,12 @@
 package enshud.s3.checker;
 
 public class FormalParameter {
-	FormalParameterGroup formalParameterGroup;
+	private FormalParameterGroup formalParameterGroup;
 
+	public FormalParameter(FormalParameterGroup formalParameterGroup) {
+		this.formalParameterGroup = formalParameterGroup;
+	}
+	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		
