@@ -210,28 +210,19 @@ public class LL1 {
      */
     public ArrayType arrayType() throws SyntaxException {
     	// "SARRAY"の判定
-    	if (!isToken("SARRAY")) {
-    		e.throwError(tokenIndex);
-    		return null;
-    	}
+    	checkToken("SARRAY");
     	
     	// 添え字の最小値
     	Integer minimumIndex = integer();
     	
     	// "SDOT"の判定
-    	if (!isToken("SDOT")) {
-    		e.throwError(tokenIndex);
-    		return null;
-    	}
+    	checkToken("SDOT");
     	
     	// 添え字の最大値
     	Integer maximumIndex = integer();
     	
     	// "SOF"
-    	if (!isToken("SOF")) {
-    		e.throwError(tokenIndex);
-    		return null;
-    	}
+    	checkToken("SOF");
     	
     	// 標準型
     	GeneralType generalType = generalType();
@@ -260,6 +251,7 @@ public class LL1 {
     public Sign sign() throws SyntaxException {
     	// "SPLUS", "SMINUS"の判定
     	if (isToken("SPLUS") || isToken("SMINUS")) {
+    		tokenIndex++;
     		return new Sign(getLexical(tokenIndex));
     	} else {
     		return null;
@@ -277,7 +269,7 @@ public class LL1 {
     	// "SSEMICOLON"の判定
     	checkToken("SSEMICOLON");
     	
-    	return SubprogramDeclaration(subprogramDeclaration);
+    	return new SubprogramDeclarationGroup(subprogramDeclaration);
     }
     
     /**
@@ -337,7 +329,7 @@ public class LL1 {
     	checkToken("SLPAREN");
     	
     	// 仮パラメータの並び
-    	FormalParameter formalParameterGroup = formalParameterGroup();
+    	FormalParameterGroup formalParameterGroup = formalParameterGroup();
     	
     	// "SRPAREN"
     	checkToken("SRPAREN");
@@ -427,21 +419,18 @@ public class LL1 {
     	IfThen ifThen = null;
     	WhileDo whileDo = null;
     	
-    	if (token.equals("SIF")) {
+    	if (token.equals("SIDENTIFIER") || token.equals("SREADLN") || token.equals("SWRITELN") || token.equals("SBEGIN")) {
+    		// 基本文
+        	basicStatement = basicStatement();
+    	} else if (token.equals("SIF")) {
     		// if-then
         	ifThen = ifThen();
     	} else if (token.equals("SWHILE")) {
     		// while-do
     		whileDo = whileDo();
     	}
-    	// 基本文
-    	basicStatement = basicStatement();    	
-    	
-    	
-    	
-    	
-    	
-    	return new Statement(basicStatement, ifThenElse, ifThen, whileDo);    	
+    	    	
+    	return new Statement(basicStatement, ifThen, whileDo);    	
     }
     
     /**
@@ -710,12 +699,35 @@ public class LL1 {
      * 
      */
     public Factor factor() throws SyntaxException {
-    	// 変数の判定
-    	// 式の判定
-    	Equation equation = equation();
+    	Variable variable = null;
+    	Constant constant = null;
+    	Equation equation = null;
+    	Factor factor = null;
+    	String token = getToken(tokenIndex);
     	
-    	// "not"因子
-    	
+    	if (token.equals("SIDENTIFIER")) {
+    		// 変数の判定
+    		variable = variable();
+    	} else if (token.equals("SCONSTANT")) {
+    		constant = constant();
+    	} else if (token.equals("SLPAREN")) {
+    		tokenIndex++;
+    		
+    		// 式の判定
+        	equation = equation();
+        	
+        	// "SLPAREN"の判定
+        	checkToken("SLPAREN");
+    	} else if (token.equals("SNOT")) {
+    		tokenIndex++;
+    		
+    		// 因子の判定
+    		factor = factor();
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
+    	   	
+    	return new Factor(variable, constant, equation, factor);
     }
     
     /**

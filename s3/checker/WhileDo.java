@@ -11,7 +11,6 @@ public class WhileDo {
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		
 		equation.accept(visitor);
 		complexStatement.accept(visitor);
 	}
