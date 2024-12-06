@@ -9,9 +9,5 @@ public class FormalParameter {
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		
-		if (formalParameterGroup != null) {
-			formalParameterGroup.accept(visitor);
-		}
 	}
 }

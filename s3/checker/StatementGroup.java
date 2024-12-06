@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StatementGroup {
-	private List<Statement> statement = new ArrayList<>();
+	private Statement statement1;
+	private List<Statement> statement2 = new ArrayList<>();
 
-	public StatementGroup(List<Statement> statement) {
-		this.statement = statement;
+	public StatementGroup(Statement statement1, List<Statement> statement2) {
+		this.statement1 = statement1;
+		this.statement2 = statement2;
 	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		for(Statement item: statement) {
-			item.accept(visitor);
-		}
 	}
 }
