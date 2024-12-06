@@ -6,10 +6,10 @@ import java.util.List;
 public class SimpleEquation {
 	private Sign sign;
 	private Term nesessaryTerm;
-	private List<AdditionalOperator> additionalOperator = new ArrayList<>();
-	private List<Term> optionalTerm = new ArrayList<>();
+	private AdditionalOperator additionalOperator;
+	private Term optionalTerm;
 	
-	public SimpleEquation(Sign sign, Term nesessaryTerm, List<AdditionalOperator> additionalOperator, List<Term> optionalTerm) {
+	public SimpleEquation(Sign sign, Term nesessaryTerm, AdditionalOperator additionalOperator, Term optionalTerm) {
 		this.sign = sign;
 		this.nesessaryTerm = nesessaryTerm;
 		this.additionalOperator = additionalOperator;
@@ -17,17 +17,6 @@ public class SimpleEquation {
 	}
 	
 	public void accept(Visitor visitor) {	
-		visitor.visit(this);
-		
-		if (sign != null) {
-			sign.accept(visitor);
-		}
-		nesessaryTerm.accept(visitor);
-		if (additionalOperator != null) {
-			for (int i = 0; i < additionalOperator.size(); i++) {
-				additionalOperator.get(i).accept(visitor);
-				optionalTerm.get(i).accept(visitor);
-			}
-		}		
+		visitor.visit(this);	
 	}
 }

@@ -3,14 +3,14 @@ package enshud.s3.checker;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LL1 {
+public class Parser {
     private int tokenIndex = 0;
     private int LEXERICALCOLS = 0;
     private int TOKENCOLS = 1;
     private List<List<String>> tokens = new ArrayList<>();
     private SyntaxException e;
 
-    public LL1(List<List<String>> tokens) {
+    public Parser(List<List<String>> tokens) {
         this.tokens = tokens;
         e = new SyntaxException(tokens);
     }
@@ -93,7 +93,7 @@ public class LL1 {
     		e.throwError(tokenIndex);
     	}
     	
-		return new ProgramName(tokens.get(tokenIndex).get(LEXERICALCOLS));
+		return new ProgramName(tokens.get(tokenIndex - 1).get(LEXERICALCOLS));
     }
 
     /**
@@ -153,6 +153,7 @@ public class LL1 {
     public VariableNameGroup variableNameGroup() throws SyntaxException {
     	// 変数名の判定
     	VariableName variableName = variableName();
+    	tokenIndex++;
     	
     	// ","の判定
     	checkToken("SCOMMA");
@@ -252,7 +253,6 @@ public class LL1 {
     public Sign sign() throws SyntaxException {
     	// "+", "-"の判定
     	if (isToken("SPLUS") || isToken("SMINUS")) {
-    		tokenIndex++;
     		return new Sign(getLexical(tokenIndex));
     	} else {
     		return null;
@@ -296,7 +296,10 @@ public class LL1 {
      */
     public SubprogramHead subprogramHead() throws SyntaxException {
     	// "procedure"の判定
-    	checkToken("SPROCEDURE");
+    	String token = getToken(tokenIndex);
+    	if (!token.equals("SPROCEDURE")) {
+    		return null;
+    	}
     	
     	// 手続き名
     	ProcedureName procedureName = procedureName();
@@ -641,7 +644,7 @@ public class LL1 {
     	Equation equation1 = equation();
     	
     	// ","の判定
-    	checkToken("SCOMMA");
+    	// checkToken("SCOMMA");
     	
     	// 式の判定
     	Equation equation2 = equation();
@@ -685,11 +688,14 @@ public class LL1 {
     	// 項の判定
     	Term term1 = term();
     	
+    	token = getToken(tokenIndex);
     	// 加法演算子の判定
-    	AdditionalOperator additonalOperator = additonalOperator();
+    	AdditionalOperator additionalOperator = additionalOperator();
     	
     	// 項の判定
     	Term term2 = term();
+    	
+		return new SimpleEquation(sign, term1, additionalOperator, term2);
     }
     
     /**
@@ -756,6 +762,22 @@ public class LL1 {
     	if (token.equals("SEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
     		return new RelationalOperator(token);
     	} else {
+    		e.throwError(tokenIndex);
+    		return null;
+    	}
+    }
+    
+    /**
+     * 加法演算子
+     * 
+     */
+    public AdditionalOperator additionalOperator() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SPLUS") || token.equals("SMINUS") || token.equals("SOR")) {
+    		return new AdditionalOperator(getLexical(tokenIndex));
+    	} else {
+    		e.throwError(tokenIndex);
     		return null;
     	}
     }
