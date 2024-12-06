@@ -5,13 +5,13 @@ import java.util.List;
 
 public class Term {
 	private Factor nesessaryFactor;
-	private MultipleOperator multipleOperator;
-	private Factor optionalFactor;
+	private List<MultipleOperator> multipleOperator = new ArrayList<>();
+	private List<Factor> optionalFactor = new ArrayList<>();
 	
-	public Term(Factor nesessaryFactor, MultipleOperator multipleOperator, Factor optionalFactor) {
+	public Term(Factor nesessaryFactor, List<MultipleOperator> multipleOperator, List<Factor> factor) {
 		this.nesessaryFactor = nesessaryFactor;
 		this.multipleOperator = multipleOperator;
-		this.optionalFactor = optionalFactor;
+		this.optionalFactor = factor;
 	}
 	
 	public void accept(Visitor visitor) {

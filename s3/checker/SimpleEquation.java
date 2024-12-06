@@ -6,14 +6,14 @@ import java.util.List;
 public class SimpleEquation {
 	private Sign sign;
 	private Term nesessaryTerm;
-	private AdditionalOperator additionalOperator;
-	private Term optionalTerm;
+	private List<AdditionalOperator> additionalOperator = new ArrayList<>();
+	private List<Term> optionalTerm = new ArrayList<>();
 	
-	public SimpleEquation(Sign sign, Term nesessaryTerm, AdditionalOperator additionalOperator, Term optionalTerm) {
+	public SimpleEquation(Sign sign, Term nesessaryTerm, List<AdditionalOperator> additionalOperator, List<Term> term) {
 		this.sign = sign;
 		this.nesessaryTerm = nesessaryTerm;
 		this.additionalOperator = additionalOperator;
-		this.optionalTerm = optionalTerm;
+		this.optionalTerm = term;
 	}
 	
 	public void accept(Visitor visitor) {	

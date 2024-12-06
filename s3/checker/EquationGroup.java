@@ -5,9 +5,9 @@ import java.util.List;
 
 public class EquationGroup {
 	private Equation equation1;
-	private Equation equation2;
+	private List<Equation> equation2 = new ArrayList<>();
 
-	public EquationGroup(Equation equation1, Equation equation2) {
+	public EquationGroup(Equation equation1, List<Equation> equation2) {
 		this.equation1 = equation1;
 		this.equation2 = equation2;
 	}

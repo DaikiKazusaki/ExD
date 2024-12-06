@@ -16,9 +16,9 @@ public class Checker {
 	public static void main(final String[] args) {
 		// normalの確認
 		System.out.println(new Checker().run("data/ts/normal01.ts"));
-		System.out.println(new Checker().run("data/ts/normal02.ts"));
-		System.out.println(new Checker().run("data/ts/normal03.ts"));
-		System.out.println(new Checker().run("data/ts/normal04.ts"));
+		// System.out.println(new Checker().run("data/ts/normal02.ts"));
+		// System.out.println(new Checker().run("data/ts/normal03.ts"));
+		// System.out.println(new Checker().run("data/ts/normal04.ts"));
 
 		// synerrの確認
 		// System.out.println(new Checker().run("data/ts/synerr01.ts"));

@@ -10,7 +10,7 @@ public class Statement {
 		this.ifThen = ifThen;
 		this.whileDo = whileDo;
 	}
-	
+
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		
