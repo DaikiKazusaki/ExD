@@ -6,9 +6,11 @@ public class Factor {
 	private Equation equation;
 	private Factor factor;
 	
-	public Factor(Variable variable, Constant constant) {
+	public Factor(Variable variable, Constant constant, Equation equation, Factor factor) {
 		this.variable = variable;
 		this.constant = constant;
+		this.equation = equation;
+		this.factor = factor;
 	}
 	
 	public void accept(Visitor visitor) {

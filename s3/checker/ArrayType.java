@@ -13,8 +13,5 @@ public class ArrayType {
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		minimumIndex.accept(visitor);
-		maximumIndex.accept(visitor);
-		generalType.accept(visitor);
 	}
 }

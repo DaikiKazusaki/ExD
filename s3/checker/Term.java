@@ -8,21 +8,13 @@ public class Term {
 	private List<MultipleOperator> multipleOperator = new ArrayList<>();
 	private List<Factor> optionalFactor = new ArrayList<>();
 	
-	public Term(Factor nesessaryFactor, List<MultipleOperator> multipleOperator, List<Factor> optionalFactor) {
+	public Term(Factor nesessaryFactor, List<MultipleOperator> multipleOperator, List<Factor> factor) {
 		this.nesessaryFactor = nesessaryFactor;
 		this.multipleOperator = multipleOperator;
-		this.optionalFactor = optionalFactor;
+		this.optionalFactor = factor;
 	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		
-		nesessaryFactor.accept(visitor);
-		if (multipleOperator != null) {
-			for (int i = 0; i < multipleOperator.size(); i++) {
-				multipleOperator.get(i).accept(visitor);
-				optionalFactor.get(i).accept(visitor);
-			}
-		}
 	}
 }
