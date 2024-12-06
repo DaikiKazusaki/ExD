@@ -112,6 +112,7 @@ public class LL1 {
     
     /**
      * 変数宣言
+     * 
      */
     public VariableDeclaration variableDeclaration() throws SyntaxException {
     	// "SVAR"の判定
@@ -133,13 +134,13 @@ public class LL1 {
     	// 変数名の並び
     	VariableNameGroup variableNameGroup = variableNameGroup();
     	
-    	// "SCOLON"の判定
-    	checkToken("SCOLON")
+    	// ":"の判定
+    	checkToken("SCOLON");
     	
     	// 型
     	Type type = type();
     	
-    	// "SSEMICOLON"の判定
+    	// ";"の判定
     	checkToken("SSEMICOLON");
     	
     	return new VariableDeclarationGroup(variableNameGroup, type);
@@ -153,8 +154,8 @@ public class LL1 {
     	// 変数名の判定
     	VariableName variableName = variableName();
     	
-    	// "SCOLON"の判定
-    	checkToken("SCOLON");
+    	// ","の判定
+    	checkToken("SCOMMA");
     	
     	return new VariableNameGroup(variableName);
     }
@@ -215,13 +216,13 @@ public class LL1 {
     	// 添え字の最小値
     	Integer minimumIndex = integer();
     	
-    	// "SDOT"の判定
-    	checkToken("SDOT");
+    	// ".."の判定
+    	checkToken("SRANGE");
     	
     	// 添え字の最大値
     	Integer maximumIndex = integer();
     	
-    	// "SOF"
+    	// "of"の判定
     	checkToken("SOF");
     	
     	// 標準型
@@ -249,7 +250,7 @@ public class LL1 {
      * 
      */
     public Sign sign() throws SyntaxException {
-    	// "SPLUS", "SMINUS"の判定
+    	// "+", "-"の判定
     	if (isToken("SPLUS") || isToken("SMINUS")) {
     		tokenIndex++;
     		return new Sign(getLexical(tokenIndex));
@@ -266,7 +267,7 @@ public class LL1 {
     	// 副プログラム宣言
     	SubprogramDeclaration subprogramDeclaration = subprogramDeclaration();
     	
-    	// "SSEMICOLON"の判定
+    	// ";"の判定
     	checkToken("SSEMICOLON");
     	
     	return new SubprogramDeclarationGroup(subprogramDeclaration);
@@ -294,7 +295,7 @@ public class LL1 {
      * 
      */
     public SubprogramHead subprogramHead() throws SyntaxException {
-    	// "SPROCEDURE"の判定
+    	// "procedure"の判定
     	checkToken("SPROCEDURE");
     	
     	// 手続き名
@@ -303,7 +304,7 @@ public class LL1 {
     	// 仮パラメータ
     	FormalParameter formalParameter = formalParameter();
     	
-    	// "SSEMICOLON"の判定
+    	// ";"の判定
     	checkToken("SSEMICOLON");
     	
     	return new SubprogramHead(procedureName, formalParameter);
@@ -325,13 +326,13 @@ public class LL1 {
      * 
      */
     public FormalParameter formalParameter() throws SyntaxException {
-    	// "SLPAREN"の判定
+    	// "("の判定
     	checkToken("SLPAREN");
     	
     	// 仮パラメータの並び
     	FormalParameterGroup formalParameterGroup = formalParameterGroup();
     	
-    	// "SRPAREN"
+    	// ")"
     	checkToken("SRPAREN");
     	
     	return new FormalParameter(formalParameterGroup);
@@ -345,7 +346,7 @@ public class LL1 {
     	// 仮パラメータ名の並び
     	FormalParameterNameGroup formalParameterNameGroup = formalParameterNameGroup();
     	
-    	// "SCOLON"
+    	// ":"の判定
     	checkToken("SCOLON");
     	
     	// 標準型
@@ -360,10 +361,10 @@ public class LL1 {
      */
     public FormalParameterNameGroup formalParameterNameGroup() throws SyntaxException {
     	// 仮パラメータ名
-    	FormalParameterName formalParameterName = new formalParameterName();
+    	FormalParameterName formalParameterName = formalParameterName();
     	
-    	// "SCOLON"の判定
-    	checkToken("SCOLON");
+    	// ","の判定
+    	checkToken("SCOMMA");
     	
     	return new FormalParameterNameGroup(formalParameterName);
     }
@@ -383,13 +384,13 @@ public class LL1 {
      * 複合文
      */
     public ComplexStatement complexStatement() throws SyntaxException {
-    	// "SBEGIN"の判定
+    	// "begin"の判定
     	checkToken("SBEGIN");
     	
     	// 文の並びの判定
     	StatementGroup statementGroup = statementGroup();
     	
-    	// "SEND"の判定
+    	// "end"の判定
     	checkToken("SEND");
     	
     	return new ComplexStatement(statementGroup);
@@ -403,7 +404,7 @@ public class LL1 {
     	// 文の判定
     	Statement statement = statement();
     	
-    	// "SSEMICOLON"の判定
+    	// ";"の判定
     	checkToken("SSEMICOLON");
     	
     	return new StatementGroup(statement);
@@ -438,19 +439,19 @@ public class LL1 {
      * 
      */
     public IfThen ifThen() throws SyntaxException {
-    	// "SIF"の判定
+    	// "if"の判定
     	checkToken("SIF");
     	
     	// 式の判定
     	Equation equation = equation();
     	
-    	// "STHEN"の判定
+    	// "then"の判定
     	checkToken("STHEN");
     	
     	// 複合文の判定
     	ComplexStatement complexStatement = complexStatement();
     	
-    	// "SIF"の判定
+    	// "if"の判定
     	String token = getToken(tokenIndex);
     	Else Else = null;
     	if (token.equals("SIF")) {
@@ -465,7 +466,7 @@ public class LL1 {
      * 
      */
     public Else Else() throws SyntaxException {
-    	// "SIF"の判定は終わっているので，tokenIndexをインクリメントのみ行う
+    	// "if"の判定は終わっているので，tokenIndexをインクリメントのみ行う
     	tokenIndex++;
     	
     	ComplexStatement complexStatement = complexStatement();
@@ -478,13 +479,13 @@ public class LL1 {
      * 
      */
     public WhileDo whileDo() throws SyntaxException {
-    	// "SWHILE"の判定
+    	// "while"の判定
     	checkToken("SWHILE");
     	
     	// 式の判定
     	Equation equation = equation();
     	
-    	// "SDOの判定
+    	// "doの判定
     	checkToken("SDO");
     	
     	// 複合文の判定
@@ -498,17 +499,26 @@ public class LL1 {
      * 
      */
     public BasicStatement basicStatement() throws SyntaxException {
-    	// 代入文
-    	AssignStatement assignStatement = assignStatement();
+    	AssignStatement assignStatement = null;
+    	ProcedureCallStatement procedureCallStatement = null;
+    	InputOutputStatement inputOutputStatement = null;
+    	ComplexStatement complexStatement = null;
     	
-    	// 手続き呼び出し文
-    	ProcedureCallStatement procedureCallStatement = procedureCallStatement();
+    	String token = getToken(tokenIndex);
     	
-    	// 入出力文
-    	InputOutputStatement inputOutputStatement = inputOutputStatement();
-    	
-    	// 複合文
-    	ComplexStatement complexStatement = complexStatement();
+    	if (token.equals("SIDENTIFIER")) {
+    		// 代入文
+        	assignStatement = assignStatement();
+    	} else if (token.equals("SIDENTIFIER")) {
+    		// 手続き呼び出し文
+        	procedureCallStatement = procedureCallStatement();
+    	} else if (token.equals("SREADLN") || token.equals("SWRITELN")) {
+    		// 入出力文
+        	inputOutputStatement = inputOutputStatement();
+    	} else if (token.equals("SBEGIN")) {
+    		// 複合文
+        	complexStatement = complexStatement();
+    	}
     	
     	return new BasicStatement(assignStatement, procedureCallStatement, inputOutputStatement, complexStatement);
     }
@@ -521,7 +531,7 @@ public class LL1 {
     	// 左辺
     	LeftSide leftSide = leftSide();
     	
-    	// "SASSIGN"の判定
+    	// ":="の判定
     	checkToken("SASSIGN");
     	
     	// 式
@@ -605,14 +615,19 @@ public class LL1 {
     	// 手続き名
     	ProcedureName procedureName = procedureName();
     	
-    	// "SLPAREN"の判定
-    	checkToken("SLPAREN");
+    	EquationGroup equationGroup = null;
+    	String token = getToken(tokenIndex);
     	
-    	//　式の並び
-    	EquationGroup equationGroup = equationGroup();
-    	
-    	// "SRPAREN"の判定
-    	checkToken("SRPAREN");
+    	if (token.equals("SLPAREN")) {
+    		// "("の判定
+    		tokenIndex++;
+    		
+    		//　式の並び
+        	equationGroup = equationGroup();
+        	
+        	// ")"の判定
+        	checkToken("SRPAREN");
+    	}
     	
     	return new ProcedureCallStatement(procedureName, equationGroup);
     }
@@ -625,8 +640,8 @@ public class LL1 {
     	// 式の判定
     	Equation equation1 = equation();
     	
-    	// "SCOLON"の判定
-    	checkToken("SCOLON");
+    	// ","の判定
+    	checkToken("SCOMMA");
     	
     	// 式の判定
     	Equation equation2 = equation();
@@ -709,6 +724,7 @@ public class LL1 {
     		// 変数の判定
     		variable = variable();
     	} else if (token.equals("SCONSTANT")) {
+    		// 定数の判定
     		constant = constant();
     	} else if (token.equals("SLPAREN")) {
     		tokenIndex++;
