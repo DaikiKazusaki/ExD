@@ -9,25 +9,14 @@ public class SimpleEquation {
 	private List<AdditionalOperator> additionalOperator = new ArrayList<>();
 	private List<Term> optionalTerm = new ArrayList<>();
 	
-	public SimpleEquation(Sign sign, Term nesessaryTerm, List<AdditionalOperator> additionalOperator, List<Term> optionalTerm) {
+	public SimpleEquation(Sign sign, Term nesessaryTerm, List<AdditionalOperator> additionalOperator, List<Term> term) {
 		this.sign = sign;
 		this.nesessaryTerm = nesessaryTerm;
 		this.additionalOperator = additionalOperator;
-		this.optionalTerm = optionalTerm;
+		this.optionalTerm = term;
 	}
 	
 	public void accept(Visitor visitor) {	
-		visitor.visit(this);
-		
-		if (sign != null) {
-			sign.accept(visitor);
-		}
-		nesessaryTerm.accept(visitor);
-		if (additionalOperator != null) {
-			for (int i = 0; i < additionalOperator.size(); i++) {
-				additionalOperator.get(i).accept(visitor);
-				optionalTerm.get(i).accept(visitor);
-			}
-		}		
+		visitor.visit(this);	
 	}
 }

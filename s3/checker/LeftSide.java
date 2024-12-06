@@ -1,17 +1,14 @@
 package enshud.s3.checker;
 
 public class LeftSide {
-	private String variableName;
+	private Variable variableName;
 
-	public LeftSide(String variableName) {
-		this.variableName = variableName;
+	public LeftSide(Variable variable) {
+		this.variableName = variable;
 	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-	}
-	
-	public String getVariableName() {
-		return variableName;
+		variableName.accept(visitor);
 	}
 }

@@ -1,23 +1,20 @@
 package enshud.s3.checker;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Equation {
 	private SimpleEquation nesessarySimpleEquation;
-	private RelationalOperator relationalOperator;
-	private SimpleEquation optionalSimpleEquation;
+	private List<RelationalOperator> relationalOperator = new ArrayList<>();
+	private List<SimpleEquation> optionalSimpleEquation = new ArrayList<>();
 	
-	public Equation(SimpleEquation nesessarySimpleEquation, RelationalOperator relationalOperator, SimpleEquation optionalSimpleEquation) {
+	public Equation(SimpleEquation nesessarySimpleEquation, List<RelationalOperator> relationalOperator, List<SimpleEquation> simpleEquation) {
 		this.nesessarySimpleEquation = nesessarySimpleEquation;
 		this.relationalOperator = relationalOperator;
-		this.optionalSimpleEquation = optionalSimpleEquation;
+		this.optionalSimpleEquation = simpleEquation;
 	}
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		
-		nesessarySimpleEquation.accept(visitor);
-		if (relationalOperator != null) {
-			relationalOperator.accept(visitor);
-			optionalSimpleEquation.accept(visitor);
-		}
 	}
 }

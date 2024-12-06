@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Block implements Element {
+public class Block extends ASTNode implements Element {
 	private VariableDeclaration variableDeclaration;
 	private SubprogramDeclarationGroup subprogramDeclarationGroup;
 	

@@ -1,12 +1,9 @@
 package enshud.s3.checker;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class UnsignedInteger {
-	private List<String> number = new ArrayList<>();
+	private String number;
 
-	public UnsignedInteger(List<String> number) {
+	public UnsignedInteger(String number) {
 		this.number = number;
 	}
 	
@@ -14,7 +11,7 @@ public class UnsignedInteger {
 		visitor.visit(this);
 	}
 	
-	public List<String> getNumber() {
+	public String getNumber() {
 		return number;
 	}
 }

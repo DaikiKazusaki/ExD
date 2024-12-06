@@ -16,15 +16,17 @@ public class Checker {
 	public static void main(final String[] args) {
 		// normalの確認
 		System.out.println(new Checker().run("data/ts/normal01.ts"));
-		System.out.println(new Checker().run("data/ts/normal02.ts"));
+		// System.out.println(new Checker().run("data/ts/normal02.ts"));
+		// System.out.println(new Checker().run("data/ts/normal03.ts"));
+		// System.out.println(new Checker().run("data/ts/normal04.ts"));
 
 		// synerrの確認
-		System.out.println(new Checker().run("data/ts/synerr01.ts"));
-		System.out.println(new Checker().run("data/ts/synerr02.ts"));
+		// System.out.println(new Checker().run("data/ts/synerr01.ts"));
+		// System.out.println(new Checker().run("data/ts/synerr02.ts"));
 
 		// semerrの確認
-		System.out.println(new Checker().run("data/ts/semerr01.ts"));
-		System.out.println(new Checker().run("data/ts/semerr02.ts"));
+		// System.out.println(new Checker().run("data/ts/semerr01.ts"));
+		// System.out.println(new Checker().run("data/ts/semerr02.ts"));
 	}
 
 	/**
@@ -55,9 +57,12 @@ public class Checker {
             }
             
             // 構文解析開始
-            new LL1(tokens).program();
+            new Parser(tokens).program();
+            
             // 意味解析開始
             new CreateSimbolTable().readTokens();
+            
+            // 構文解析，意味解析が終了したら"OK"を返す
             return "OK"; 
         } catch (final IOException e) {
             return "File not found";
