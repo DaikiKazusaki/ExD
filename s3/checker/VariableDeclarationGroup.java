@@ -14,10 +14,6 @@ public class VariableDeclarationGroup extends ASTNode implements Element {
 		this.type = type;
 	}
 	
-	public void parse() {
-		
-	}
-	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

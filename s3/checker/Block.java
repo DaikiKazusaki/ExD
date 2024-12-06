@@ -11,8 +11,5 @@ public class Block extends ASTNode implements Element {
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		
-		variableDeclaration.accept(visitor);
-		subprogramDeclarationGroup.accept(visitor);
 	}
 }
