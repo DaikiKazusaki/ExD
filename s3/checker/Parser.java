@@ -268,8 +268,9 @@ public class Parser {
     	
     	while (getToken(tokenIndex).equals("SPROCEDURE")) {    		
     		subprogramDeclaration.add(subprogramDeclaration());
+    		
     		// ";"の判定
-    		checkToken("SEMICOLON");
+    		checkToken("SSEMICOLON");
     	}
     	
     	return new SubprogramDeclarationGroup(subprogramDeclaration);
@@ -280,8 +281,13 @@ public class Parser {
      * 
      */
     public SubprogramDeclaration subprogramDeclaration() throws SyntaxException {
+    	// 副プログラム頭部の判定
     	SubprogramHead subprogramHead = subprogramHead();
+    	
+    	// 変数宣言の判定
     	VariableDeclaration variableDeclaration = variableDeclaration();
+    	
+    	// 複合文の判定
     	ComplexStatement complexStatement = complexStatement();
     	
     	return new SubprogramDeclaration(subprogramHead, variableDeclaration, complexStatement);
@@ -295,8 +301,10 @@ public class Parser {
     	// "procedure"の判定
     	checkToken("SPROCEDURE");
     	
+    	// 手続き名の判定
     	ProcedureName procedureName = procedureName();
     	
+    	// 仮パラメータ名の判定
     	FormalParameter formalParameter = formalParameter();
     	
     	// ";"の判定
@@ -475,8 +483,7 @@ public class Parser {
     	ComplexStatement complexStatement = complexStatement();
     	
     	Else Else = null;
-    	String token = getToken(tokenIndex);
-    	if (token.equals("SELSE")) {
+    	if (getToken(tokenIndex).equals("SELSE")) {
     		Else = Else();
     	}
     	
@@ -488,6 +495,7 @@ public class Parser {
      * 
      */
     public Else Else() throws SyntaxException {
+    	tokenIndex++;
     	ComplexStatement complexStatement = complexStatement();
     	
     	return new Else(complexStatement);
@@ -645,7 +653,7 @@ public class Parser {
     	Equation equation1 = equation();
     	List<Equation> equation2 = new ArrayList<>();
     	
-    	if (getToken(tokenIndex).equals("SCOMMA")) {
+    	while (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
     		equation2.add(equation());
     	}
@@ -658,6 +666,7 @@ public class Parser {
      * 
      */
     public Equation equation() throws SyntaxException {
+    	// 単純式の判定
     	SimpleEquation simpleEquation1 = simpleEquation();
     	List<RelationalOperator> relationalOperator = new ArrayList<>();
     	List<SimpleEquation> simpleEquation2 = new ArrayList<>();
@@ -665,7 +674,7 @@ public class Parser {
     	String token = getToken(tokenIndex);
     	
     	// 関連演算子の判定
-    	if (token.equals("SLESSEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
+    	if (token.equals("SEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
     		relationalOperator.add(relationalOperator());
     		simpleEquation2.add(simpleEquation());
     	}
@@ -679,8 +688,7 @@ public class Parser {
      */
     public SimpleEquation simpleEquation() throws SyntaxException {
     	Sign sign = null;
-    	String token = getToken(tokenIndex);
-    	if (token.equals("SPLUS") || token.equals("SMINUS")) {
+    	if (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS")) {
     		sign = sign();
     	}
     	
@@ -688,7 +696,7 @@ public class Parser {
     	List<AdditionalOperator> additionalOperator = new ArrayList<>();
     	List<Term> term2 = new ArrayList<>();
     	
-    	while (getToken(tokenIndex).equals("SPLUS") || token.equals("SMINUS")) {
+    	while (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS") || getToken(tokenIndex).equals("SOR")) {
     		additionalOperator.add(additionalOperator());
     		term2.add(term());
     	} 
@@ -745,15 +753,9 @@ public class Parser {
      * 
      */
     public RelationalOperator relationalOperator() throws SyntaxException {
-    	String token = getToken(tokenIndex);
+    	tokenIndex++;
     	
-    	if (token.equals("SEQUALS") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
-    		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}  	
-    	
-    	return new RelationalOperator(token);
+    	return new RelationalOperator(getLexicality(tokenIndex - 1));
     }
     
     /**
@@ -761,15 +763,9 @@ public class Parser {
      * 
      */
     public AdditionalOperator additionalOperator() throws SyntaxException {
-    	String token = getToken(tokenIndex);
+    	tokenIndex++;
     	
-    	if (token.equals("SPLUS") || token.equals("SMINUS") || token.equals("SOR")) {
-    		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    	
-    	return new AdditionalOperator(getLexicality(tokenIndex));
+    	return new AdditionalOperator(getLexicality(tokenIndex - 1));
     }
     
     /**
@@ -777,15 +773,9 @@ public class Parser {
      * 
      */
     public MultipleOperator multipleOperator() throws SyntaxException {
-    	String token = getToken(tokenIndex);
+    	tokenIndex++;
     	
-    	if (token.equals("SSTAR") || token.equals("SDIV") || token.equals("SMOD") || token.equals("SAND")) {
-    		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    	
-    	return new MultipleOperator(getLexicality(tokenIndex));
+    	return new MultipleOperator(getLexicality(tokenIndex - 1));
     }
     
     /**
@@ -849,7 +839,7 @@ public class Parser {
     		unsignedInteger = unsignedInteger();
     	} else if (token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) {
     		tokenIndex++;
-    		lexicality = getLexicality(tokenIndex);
+    		lexicality = getLexicality(tokenIndex - 1);
     	}
     	
     	return new Constant(lexicality, unsignedInteger);

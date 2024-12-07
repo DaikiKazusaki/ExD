@@ -21,7 +21,7 @@ public class Checker {
 		for (int i = 10; i <= 20; i++) {
 			System.out.println(i + ": " + new Checker().run("data/ts/normal" + i + ".ts"));
 		}
-		// System.out.println(new Checker().run("data/ts/normal05.ts"));
+		// System.out.println(new Checker().run("data/ts/normal08.ts"));
 		// System.out.println(new Checker().run("data/ts/normal05.ts"));
 
 		// synerrの確認
