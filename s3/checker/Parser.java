@@ -757,7 +757,6 @@ public class Parser {
      */
     public RelationalOperator relationalOperator() throws SyntaxException {
     	tokenIndex++;
-    	
     	return new RelationalOperator(getLexicality(tokenIndex - 1));
     }
     
@@ -767,7 +766,6 @@ public class Parser {
      */
     public AdditionalOperator additionalOperator() throws SyntaxException {
     	tokenIndex++;
-    	
     	return new AdditionalOperator(getLexicality(tokenIndex - 1));
     }
     
@@ -777,7 +775,6 @@ public class Parser {
      */
     public MultipleOperator multipleOperator() throws SyntaxException {
     	tokenIndex++;
-    	
     	return new MultipleOperator(getLexicality(tokenIndex - 1));
     }
     
