@@ -432,7 +432,7 @@ public class Parser {
     	
     	List<Statement> statement2 = new ArrayList<>();
     	// 繰り返しの判定
-    	while (getToken(tokenIndex).equals("SIDENTIFIER") || getToken(tokenIndex).equals("SREADLN") || getToken(tokenIndex).equals("SWRITELN") || getToken(tokenIndex).equals("SBEGIN")) {
+    	while (getToken(tokenIndex).equals("SIDENTIFIER") || getToken(tokenIndex).equals("SREADLN") || getToken(tokenIndex).equals("SWRITELN") || getToken(tokenIndex).equals("SBEGIN") || getToken(tokenIndex).equals("SIF") || getToken(tokenIndex).equals("SWHILE")) {
     		statement2.add(statement());
     		
     		// ";"の判定
@@ -448,15 +448,67 @@ public class Parser {
      */
     public Statement statement() throws SyntaxException {
     	BasicStatement basicStatement = null;
-    	IfThen ifthen = null;
+    	IfThen ifThen = null;
     	WhileDo whileDo = null;
     	String token = getToken(tokenIndex);
     	
     	if (token.equals("SIDENTIFIER") || token.equals("SREADLN") || token.equals("SWRITELN") || token.equals("SBEGIN")) {
     		basicStatement = basicStatement();
+    	} else if (token.equals("SIF")) {
+    		tokenIndex++;
+    		ifThen = ifThen();
+    	} else if (token.equals("SWHILE")) {
+    		tokenIndex++;
+    		whileDo = whileDo();
     	}
     	
-    	return new Statement(basicStatement, ifthen, whileDo);
+    	return new Statement(basicStatement, ifThen, whileDo);
+    }
+    
+    /**
+     * if-thenの判定
+     * 
+     */
+    public IfThen ifThen() throws SyntaxException {
+    	Equation equation = equation();
+    	
+    	// "then"の判定
+    	checkToken("STHEN");
+    	
+    	ComplexStatement complexStatement = complexStatement();
+    	
+    	Else Else = null;
+    	String token = getToken(tokenIndex);
+    	if (token.equals("SELSE")) {
+    		Else = Else();
+    	}
+    	
+    	return new IfThen(equation, complexStatement, Else);
+    }
+    
+    /**
+     * elseの判定
+     * 
+     */
+    public Else Else() throws SyntaxException {
+    	ComplexStatement complexStatement = complexStatement();
+    	
+    	return new Else(complexStatement);
+    }
+    
+    /**
+     * while-doの判定
+     * 
+     */
+    public WhileDo whileDo() throws SyntaxException {
+    	Equation equation = equation();
+    	
+    	// "do"の判定
+    	checkToken("SDO");
+    	
+    	ComplexStatement complexStatement = complexStatement();
+    	
+    	return new WhileDo(equation, complexStatement);
     }
     
     /**
@@ -470,24 +522,58 @@ public class Parser {
     	InputOutputStatement inputOutputStatement = null;
     	ComplexStatement complexStatement = null;
     	
-    	if (token.equals("SREADLN") || token.equals("SWRITELN")) {
+    	if (token.equals("SIDENTIFIER")) {
+    		if (getToken(tokenIndex + 1).equals("SASSIGN")) {
+    			assignStatement = assignStatement();
+    		} else {
+    			procedureCallStatement = procedureCallStatement();
+    		}
+    	} else if (token.equals("SREADLN") || token.equals("SWRITELN")) {
     		inputOutputStatement = inputOutputStatement();
+    	} else if (token.equals("SBEGIN")) {
+    		complexStatement = complexStatement();
     	}
     	
     	return new BasicStatement(assignStatement, procedureCallStatement, inputOutputStatement, complexStatement);
     }
     
     /**
+     * 代入文の判定
+     * 
+     */
+    public AssignStatement assignStatement() throws SyntaxException {
+    	LeftSide leftSide = leftSide();
+    	
+    	// ":="の判定
+    	checkToken("SASSIGN");
+    	
+    	Equation equation = equation();
+    	
+    	return new AssignStatement(leftSide, equation);
+    }
+    
+    /**
+     * 左辺の判定
+     * 
+     */
+    public LeftSide leftSide() throws SyntaxException {
+    	Variable variable = variable();
+    	
+    	return new LeftSide(variable);
+    }
+    
+    /**
      * 変数の判定
+     * 
      */
     public Variable variable() throws SyntaxException {
     	NaturalVariable naturalVariable = null;
     	VariableWithIndex variableWithIndex = null;
     	String token = getToken(tokenIndex);
     	
-    	if (token.equals("SSTRING") || getToken(tokenIndex + 1).equals("SLBRACKET")) {
-    		// variableWithArray = varuableWithArray();
-    	} else if (token.equals("SSTRING")) {
+    	if (token.equals("SIDENTIFIER") && getToken(tokenIndex + 1).equals("SLBRACKET")) {
+    		variableWithIndex = variableWithIndex();
+    	} else if (token.equals("SIDENTIFIER")) {
     		naturalVariable = naturalVariable();
     	}
     	
@@ -503,6 +589,56 @@ public class Parser {
     	return new NaturalVariable(variableName);
     }
     
+    
+    /**
+     * 添え字付き変数の判定
+     * 
+     */
+    public VariableWithIndex variableWithIndex() throws SyntaxException {
+    	VariableName variableName = variableName();
+    	
+    	// "["の判定
+    	checkToken("SLBRACKET");
+    	
+    	Index index = index();
+    	
+    	// "]"の判定
+    	checkToken("SRBRACKET");
+    	
+    	return new VariableWithIndex(variableName, index);
+    }
+    
+    
+    /**
+     * 添え字の判定
+     * 
+     */
+    public Index index() throws SyntaxException {
+    	Equation equation = equation();
+    	
+    	return new Index(equation);
+    }
+    
+    /**
+     * 手続き呼び出し文の判定
+     * 
+     */
+    public ProcedureCallStatement procedureCallStatement() throws SyntaxException {
+    	ProcedureName procedureName = procedureName();
+    	String token = getToken(tokenIndex);
+    	EquationGroup equationGroup = null;
+    	
+    	if (token.equals("SLPAREN")) {
+    		tokenIndex++;
+    		equationGroup = equationGroup();
+    		
+    		// ")"の判定
+    		checkToken("SRPAREN");
+    	}
+    	
+    	return new ProcedureCallStatement(procedureName, equationGroup);
+    }
+    
     /**
      * 式の並びの判定
      * 
@@ -511,7 +647,6 @@ public class Parser {
     	Equation equation1 = equation();
     	List<Equation> equation2 = new ArrayList<>();
     	
-    	tokenIndex++;
     	if (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
     		equation2.add(equation());
@@ -533,7 +668,6 @@ public class Parser {
     	String token = getToken(tokenIndex);
     	
     	if (token.equals("SPLUS") || token.equals("SMINUS") || token.equals("SOR")) {
-    		tokenIndex++;
     		relationalOperator.add(relationalOperator());
     		simpleEquation2.add(simpleEquation());
     	}
@@ -593,10 +727,10 @@ public class Parser {
     	Factor factor = null;    	
     	String token = getToken(tokenIndex);
     	
-    	if (token.equals("SSTRING")) {
+    	if (token.equals("SIDENTIFIER")) {
     		variable = variable();
-    	} else if (token.equals("SCONSTANT")) {
-    		// constant = constant();
+    	} else if (token.equals("SCONSTANT") || token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) { 
+    		constant = constant();
     	} else if (token.equals("SLPAREN")) {
     		tokenIndex++;
     		equation = equation();
@@ -604,7 +738,7 @@ public class Parser {
     	} else if (token.equals("SNOT")) {
     		tokenIndex++;
     		factor = factor();
-    	}
+    	} 
     	
     	return new Factor(variable, constant, equation, factor);
     }
@@ -626,7 +760,7 @@ public class Parser {
     }
     
     /**
-     * 加法演算子
+     * 加法演算子の判定
      * 
      */
     public AdditionalOperator additionalOperator() throws SyntaxException {
@@ -642,7 +776,7 @@ public class Parser {
     }
     
     /**
-     * 乗法演算子
+     * 乗法演算子の判定
      * 
      */
     public MultipleOperator multipleOperator() throws SyntaxException {
@@ -671,7 +805,7 @@ public class Parser {
     		// "("の判定
     		if (getToken(tokenIndex).equals("SLPAREN")) {
     			tokenIndex++;
-    			// variableGroup = variableGroup();
+    			variableGroup = variableGroup();
     			// ")"の判定
     			checkToken("SRPAREN");
     		}
@@ -687,6 +821,40 @@ public class Parser {
     	} 
     	
     	return new InputOutputStatement(variableGroup, equationGroup);
+    }
+    
+    /**
+     * 変数の並びの判定
+     * 
+     */
+    public VariableGroup variableGroup() throws SyntaxException {
+    	Variable variable1 = variable();
+    	List<Variable> variable2 = new ArrayList<>();
+    	
+    	while (getToken(tokenIndex).equals("SCOMMA")) {
+    		tokenIndex++;
+    		variable2.add(variable());
+    	}
+    	
+    	return new VariableGroup(variable1, variable2);
+    }
+    
+    /**
+     * 定数の判定
+     * 
+     */
+    public Constant constant() throws SyntaxException {
+    	UnsignedInteger unsignedInteger = null;
+    	String token = getToken(tokenIndex);
+    	String lexicality = null;
+    	
+    	if (token.equals("SCONSTANT")) {
+    		unsignedInteger = unsignedInteger();
+    	} else if (token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) {
+    		lexicality = getLexicality(tokenIndex);
+    	}
+    	
+    	return new Constant(lexicality, unsignedInteger);
     }
     
     /**
