@@ -166,9 +166,7 @@ public class Parser {
      * 
      */
     public VariableName variableName() throws SyntaxException {
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SIDENTIFIER")) {
+    	if (getToken(tokenIndex).equals("SIDENTIFIER")) {
     		tokenIndex++;
     	} else {
     		e.throwError(tokenIndex);
@@ -245,7 +243,6 @@ public class Parser {
     	String token = getToken(tokenIndex);
     	
     	if (token.equals("SPLUS") || token.equals("SMINUS")) {
-        	tokenIndex++;
     		sign = sign();
     	} 
     	
@@ -523,7 +520,7 @@ public class Parser {
     	ComplexStatement complexStatement = null;
     	
     	if (token.equals("SIDENTIFIER")) {
-    		if (getToken(tokenIndex + 1).equals("SASSIGN")) {
+    		if (getToken(tokenIndex + 1).equals("SASSIGN") || getToken(tokenIndex + 1).equals("SLBRACKET")) {
     			assignStatement = assignStatement();
     		} else {
     			procedureCallStatement = procedureCallStatement();
@@ -570,8 +567,9 @@ public class Parser {
     	NaturalVariable naturalVariable = null;
     	VariableWithIndex variableWithIndex = null;
     	String token = getToken(tokenIndex);
+    	String nextToken = getToken(tokenIndex + 1);
     	
-    	if (token.equals("SIDENTIFIER") && getToken(tokenIndex + 1).equals("SLBRACKET")) {
+    	if (token.equals("SIDENTIFIER") && nextToken.equals("SLBRACKET")) {
     		variableWithIndex = variableWithIndex();
     	} else if (token.equals("SIDENTIFIER")) {
     		naturalVariable = naturalVariable();
@@ -650,7 +648,6 @@ public class Parser {
     	if (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
     		equation2.add(equation());
-    		tokenIndex++;
     	}
     	
     	return new EquationGroup(equation1, equation2);
@@ -667,7 +664,8 @@ public class Parser {
     	
     	String token = getToken(tokenIndex);
     	
-    	if (token.equals("SPLUS") || token.equals("SMINUS") || token.equals("SOR")) {
+    	// 関連演算子の判定
+    	if (token.equals("SLESSEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
     		relationalOperator.add(relationalOperator());
     		simpleEquation2.add(simpleEquation());
     	}
@@ -681,17 +679,18 @@ public class Parser {
      */
     public SimpleEquation simpleEquation() throws SyntaxException {
     	Sign sign = null;
+    	String token = getToken(tokenIndex);
+    	if (token.equals("SPLUS") || token.equals("SMINUS")) {
+    		sign = sign();
+    	}
+    	
     	Term term1 = term();
     	List<AdditionalOperator> additionalOperator = new ArrayList<>();
     	List<Term> term2 = new ArrayList<>();
-    	String token = getToken(tokenIndex);
     	
-    	while (token.equals("SPLUS") || token.equals("SMINUS")) {
-    		tokenIndex++;
+    	while (getToken(tokenIndex).equals("SPLUS") || token.equals("SMINUS")) {
     		additionalOperator.add(additionalOperator());
-    		tokenIndex++;
     		term2.add(term());
-    		tokenIndex++;
     	} 
     	
     	return new SimpleEquation(sign, term1, additionalOperator, term2);
@@ -851,6 +850,7 @@ public class Parser {
     	if (token.equals("SCONSTANT")) {
     		unsignedInteger = unsignedInteger();
     	} else if (token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) {
+    		tokenIndex++;
     		lexicality = getLexicality(tokenIndex);
     	}
     	
