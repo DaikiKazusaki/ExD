@@ -705,9 +705,7 @@ public class Parser {
     	List<MultipleOperator> multipleOperator = new ArrayList<>();
     	List<Factor> factor2 = new ArrayList<>();
     	
-    	String token = getToken(tokenIndex);
-    	
-    	while (token.equals("SSTAR") || token.equals("SDIVD") || token.equals("SMOD") || token.equals("SAND")) {
+    	while (getToken(tokenIndex).equals("SSTAR") || getToken(tokenIndex).equals("SDIVD") || getToken(tokenIndex).equals("SMOD") || getToken(tokenIndex).equals("SAND")) {
     		multipleOperator.add(multipleOperator());
     		factor2.add(factor());
     	}
