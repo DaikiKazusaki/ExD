@@ -79,26 +79,253 @@ public class Parser {
     	
     	if (token.equals("SIDENTIFIER")) {
     		tokenIndex++;
-    		return new ProgramName(getLexicality(tokenIndex - 1));
     	} else {
     		e.throwError(tokenIndex);
-    		return null;
+    	}
+    	
+    	return new ProgramName(getLexicality(tokenIndex - 1));
+    }
+    
+    /**
+     * ブロックの判定
+     * 
+     */
+    public Block block() throws SyntaxException {
+    	VariableDeclaration variableDeclaration = variableDeclaration();    	
+    	SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclarionGroup();
+    	
+    	return new Block(variableDeclaration, subprogramDeclarationGroup);
+    }
+    
+    /**
+     * 変数宣言
+     * 
+     */
+    public VariableDeclaration variableDeclaration() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	VariableDeclarationGroup variableDeclarationGroup = null;
+    	
+    	if (token.equals("SVAR")) {
+    		tokenIndex++;
+    		variableDeclarationGroup = variableDeclarationGroup();
+    	}
+    	
+    	return new VariableDeclaration(variableDeclarationGroup);
+    }
+    
+    /**
+     * 変数宣言の並び
+     * 
+     */
+    public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxEzxception {
+    	VariableNameGroup variableNameGroup1 = variableNameGroup();
+    	Type type1 = type();
+    	List<VariableNameGroup> variableNameGroup2 = new ArrayList<>();
+    	List<Type> type2 = new ArrayList<>();
+    	
+    	
+    	return VariableDeclarationGroup(variableNameGroup1, type1, variableNameGroup2, type2);
+    }
+    
+    /**
+     * 変数名の並び
+     * 
+     */
+    public VariableNameGroup variableNameGroup() throws SyntaxException {
+    	VariableName variableName1 = variableName();
+    	String token = getToken(tokenIndex);
+    	List<VariableName> variableName2 = new ArrayList<>();
+    	
+    	while (token.equals("SCOMMA")) {
+    		tokenIndex++;
+    		variableName2.add(variableName());
+    		tokenIndex++;
     	}
     }
     
     /**
-     * 変数名の取得
+     * 変数名の判定
      * 
      */
     public VariableName variableName() throws SyntaxException {
     	String token = getToken(tokenIndex);
     	
     	if (token.equals("SSTRING")) {
-    		return new VariableName(getLexicality(tokenIndex));
+    		tokenIndex++;
     	} else {
     		e.throwError(tokenIndex);
-    		return null;
     	}
+    	
+    	return new VariableName(getLexicality(tokenIndex - 1));
+    }
+    
+    /**
+     * 型の判定
+     * 
+     */
+    public Type type() throws SyntaxException {
+    	GeneralType generalType = null;
+    	ArrayType arrayType = null;
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SINTEGER") || token.equals("SCHAR") || token.equals("SBOOLEAN")) {
+    		generalType = generalType();
+    	} else if (token.equals("SARRAY")) {
+    		tokenIndex++;
+    		arrayType = arrayType();
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
+    	
+    	return new Type(generalType, arrayType);
+    }
+    
+    /**
+     * 標準型の判定
+     * 
+     */
+    public GeneralType generalType() throws SyntaxException {
+    	return new GeneralType(getLexicality(tokenIndex));
+    }
+    
+    /**
+     * 配列型の判定
+     * 
+     */
+    public ArrayType arrayType() throws SyntaxException {
+    	// "["の判定
+    	checkToken("SLBRACKET");
+    	
+    	// 添え字の最小値
+    	Integer minimumInteger = interger();
+    	
+    	// ".."の判定
+    	checkToken("SRANGE");
+    	
+    	// 添え字の最大値
+    	Integer maximumInteger = integer();
+    	
+    	// "]"の判定
+    	checkToken("SRBRACKET");
+    	
+    	// "of"の判定
+    	checkToken("SOF");
+    	
+    	// 標準型の判定
+    	GeneralType generalType = generalType();
+    }
+    
+    /**
+     * 整数の判定
+     * 
+     */
+    public Integer integer() throws SyntaxException {
+    	Sign sign = null;
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SPLUS") || token.equals("SMINUS")) {
+    		sign = sign();
+    	} 
+    	
+    	UnsignedInteger unsignedInteger = unsignedInteger();
+    	
+    	return new Integer(sign, unsignedInteger);
+    }
+    
+    /**
+     * 符号の判定
+     * 
+     */
+    public Sign sign() throws SyntaxException {
+    	tokenIndex++;
+    	return new Sign(getLexicality(tokenIndex - 1));
+    }
+    
+    /**
+     * 副プログラム宣言群の判定
+     * 
+     */
+    public SubprogramDeclarationGroup subprogramDeclarationGroup() throws SyntaxException {
+    	List<SubprogramDeclaration> subprogramDeclaration = new ArrayList<>();
+    	
+    	while (getToken(tokenIndex).equals("SPROCEDURE")) {
+    		SubprogramDeclaration.add(subprogramDeclaration());
+    		// ";"の判定
+    		checkToken("SEMICOLON");
+    	}
+    	
+    	return new SubprogramDeclarationGroup(subprogramDeclaration);
+    }
+    
+    /**
+     * 副プログラム宣言
+     * 
+     */
+    public SubprogramDeclaration subprogramDeclaration() throws SyntaxException {
+    	SubprogramHead subprogramHead = subprogramHead();
+    	VariableDeclaration variableDeclaration = variableDeclaration();
+    	ComplexStatement complexStatement = complexStatement();
+    	
+    	return new SubprogramDeclaration(subprogramHead, variableDeclaration, complexStatement);
+    }
+    
+    /**
+     * 副プログラム頭部
+     * 
+     */
+    public SubprogramHead subprogramHead() throws SyntaxException {
+    	// "procedure"の判定
+    	checkToken("SPROCEDURE");
+    	
+    	ProcedureName procedureName = procedureName();
+    	
+    	FormalParameter formalParameter = formalParameter();
+    	
+    	// ";"の判定
+    	checkToken("SSEMICOLON");
+    	
+    	return new SubprogramHead(procedureName, formalParameter);
+    }
+    
+    /**
+     * 手続き名
+     * 
+     */
+    public ProcedureName procedureName() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SSTRING")) {
+    		tokenIndex++;
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
+    	
+    	return new ProcedureName(getLexicality(tokenIndex - 1));
+    }
+    
+    /**
+     * 仮パラメータ
+     * 
+     */
+    public FormalParameter formalParameter() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	FormalParameterGroup formalParameterGroup = null;
+    	
+    	if (token.equals("SLPAREN")) {
+    		tokenIndex++;
+    		formalParameterGroup = formalParameterGroup();
+    		checkToken("SRPAREN");
+    	}
+    	
+    	return new FormalParameter(formalParameterGroup);
+    }
+    
+    /**
+     * 仮パラメータの並び
+     * 
+     */
+    public FormalParameter formalParameter() throws SyntaxException {
+    	
     }
     
     /**
@@ -317,11 +544,11 @@ public class Parser {
     	
     	if (token.equals("SEQUALS") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
     		tokenIndex++;
-    		return new RelationalOperator(token);
     	} else {
     		e.throwError(tokenIndex);
-    		return null;
     	}  	
+    	
+    	return new RelationalOperator(token);
     }
     
     /**
@@ -332,11 +559,12 @@ public class Parser {
     	String token = getToken(tokenIndex);
     	
     	if (token.equals("SPLUS") || token.equals("SMINUS") || token.equals("SOR")) {
-    		return new AdditionalOperator(getLexicality(tokenIndex));
+    		tokenIndex++;
     	} else {
     		e.throwError(tokenIndex);
-    		return null;
     	}
+    	
+    	return new AdditionalOperator(getLexicality(tokenIndex));
     }
     
     /**
@@ -348,12 +576,11 @@ public class Parser {
     	
     	if (token.equals("SSTAR") || token.equals("SDIV") || token.equals("SMOD") || token.equals("SAND")) {
     		tokenIndex++;
-    		return new MultipleOperator(getLexicality(tokenIndex));
     	} else {
     		e.throwError(tokenIndex);
-    		return null;
     	}
     	
+    	return new MultipleOperator(getLexicality(tokenIndex));
     }
     
     /**
@@ -386,5 +613,21 @@ public class Parser {
     	} 
     	
     	return new InputOutputStatement(variableGroup, equationGroup);
+    }
+    
+    /**
+     * 符号なし整数の判定
+     * 
+     */
+    public UnsignedInteger unsignedInteger() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SCONSTANT")) {
+    		tokenIndex++;
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
+    	
+    	return new UnsignedInteger(getLexicality(tokenIndex - 1));
     }
 }
