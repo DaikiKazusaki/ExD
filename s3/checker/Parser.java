@@ -30,8 +30,7 @@ public class Parser {
         checkToken("SSEMICOLON");
         
         // ブロックの判定
-        Block block = null;
-        // Block block = block();
+        Block block = block();
         
         // 複合文の判定
         ComplexStatement complexStatement = complexStatement();
@@ -92,7 +91,7 @@ public class Parser {
      */
     public Block block() throws SyntaxException {
     	VariableDeclaration variableDeclaration = variableDeclaration();    	
-    	SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclarionGroup();
+    	SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclarationGroup();
     	
     	return new Block(variableDeclaration, subprogramDeclarationGroup);
     }
@@ -117,14 +116,33 @@ public class Parser {
      * 変数宣言の並び
      * 
      */
-    public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxEzxception {
+    public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxException {
     	VariableNameGroup variableNameGroup1 = variableNameGroup();
+    	
+    	// ":"の判定
+    	checkToken("SCOLON");
+    	
     	Type type1 = type();
+    	
+    	// ";"の判定
+    	checkToken("SSEMICOLON");
+    	
     	List<VariableNameGroup> variableNameGroup2 = new ArrayList<>();
     	List<Type> type2 = new ArrayList<>();
     	
+    	if (getToken(tokenIndex).equals("SIDENTIFIER")) {
+    		variableNameGroup2.add(variableNameGroup());
+    		
+    		// ":"の判定
+        	checkToken("SCOLON");
+        	
+        	type2.add(type());
+        	
+        	// ";"の判定
+        	checkToken("SSEMICOLON");
+    	}
     	
-    	return VariableDeclarationGroup(variableNameGroup1, type1, variableNameGroup2, type2);
+    	return new VariableDeclarationGroup(variableNameGroup1, type1, variableNameGroup2, type2);
     }
     
     /**
@@ -133,14 +151,14 @@ public class Parser {
      */
     public VariableNameGroup variableNameGroup() throws SyntaxException {
     	VariableName variableName1 = variableName();
-    	String token = getToken(tokenIndex);
     	List<VariableName> variableName2 = new ArrayList<>();
     	
-    	while (token.equals("SCOMMA")) {
+    	while (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
     		variableName2.add(variableName());
-    		tokenIndex++;
     	}
+    	
+    	return new VariableNameGroup(variableName1, variableName2);
     }
     
     /**
@@ -150,7 +168,7 @@ public class Parser {
     public VariableName variableName() throws SyntaxException {
     	String token = getToken(tokenIndex);
     	
-    	if (token.equals("SSTRING")) {
+    	if (token.equals("SIDENTIFIER")) {
     		tokenIndex++;
     	} else {
     		e.throwError(tokenIndex);
@@ -185,7 +203,8 @@ public class Parser {
      * 
      */
     public GeneralType generalType() throws SyntaxException {
-    	return new GeneralType(getLexicality(tokenIndex));
+    	tokenIndex++;
+    	return new GeneralType(getLexicality(tokenIndex - 1));
     }
     
     /**
@@ -197,7 +216,7 @@ public class Parser {
     	checkToken("SLBRACKET");
     	
     	// 添え字の最小値
-    	Integer minimumInteger = interger();
+    	Integer minimumInteger = integer();
     	
     	// ".."の判定
     	checkToken("SRANGE");
@@ -213,6 +232,8 @@ public class Parser {
     	
     	// 標準型の判定
     	GeneralType generalType = generalType();
+    	
+    	return new ArrayType(minimumInteger, maximumInteger, generalType);
     }
     
     /**
@@ -224,6 +245,7 @@ public class Parser {
     	String token = getToken(tokenIndex);
     	
     	if (token.equals("SPLUS") || token.equals("SMINUS")) {
+        	tokenIndex++;
     		sign = sign();
     	} 
     	
@@ -237,7 +259,6 @@ public class Parser {
      * 
      */
     public Sign sign() throws SyntaxException {
-    	tokenIndex++;
     	return new Sign(getLexicality(tokenIndex - 1));
     }
     
@@ -248,8 +269,8 @@ public class Parser {
     public SubprogramDeclarationGroup subprogramDeclarationGroup() throws SyntaxException {
     	List<SubprogramDeclaration> subprogramDeclaration = new ArrayList<>();
     	
-    	while (getToken(tokenIndex).equals("SPROCEDURE")) {
-    		SubprogramDeclaration.add(subprogramDeclaration());
+    	while (getToken(tokenIndex).equals("SPROCEDURE")) {    		
+    		subprogramDeclaration.add(subprogramDeclaration());
     		// ";"の判定
     		checkToken("SEMICOLON");
     	}
@@ -324,8 +345,61 @@ public class Parser {
      * 仮パラメータの並び
      * 
      */
-    public FormalParameter formalParameter() throws SyntaxException {
+    public FormalParameterGroup formalParameterGroup() throws SyntaxException {
+    	FormalParameterNameGroup formalParameterNameGroup1 = formalParameterNameGroup();
     	
+    	// ":"の判定
+    	checkToken("SCOLON");
+    	
+    	GeneralType generalType1 = generalType();
+    	
+    	List<FormalParameterNameGroup> formalParameterNameGroup2 = new ArrayList<>();
+    	List<GeneralType> generalType2 = new ArrayList<>();
+    	
+    	while (getToken(tokenIndex).equals("SCOMMA")) {
+    		tokenIndex++;
+    		formalParameterNameGroup2.add(formalParameterNameGroup());
+    		
+    		// ":"の判定
+    		checkToken("SCOLON");
+    		
+    		generalType2.add(generalType());
+    	}
+    	
+    	
+    	return new FormalParameterGroup(formalParameterNameGroup1, generalType1, formalParameterNameGroup2, generalType2);
+    }
+    
+    /**
+     * 仮パラメータ名の並び
+     * 
+     */
+    public FormalParameterNameGroup formalParameterNameGroup() throws SyntaxException {
+    	FormalParameterName formalParameterName1 = formalParameterName();
+    	List<FormalParameterName> formalParameterName2 = new ArrayList<>();
+    	
+    	while (getToken(tokenIndex).equals("SCOMMA")) {
+    		tokenIndex++;
+    		formalParameterName2.add(formalParameterName());
+    	}
+    	
+    	return new FormalParameterNameGroup(formalParameterName1, formalParameterName2);
+    }
+    
+    /**
+     * 仮パラメータ名
+     * 
+     */
+    public FormalParameterName formalParameterName() throws SyntaxException {
+    	String token = getToken(tokenIndex);
+    	
+    	if (token.equals("SSTRING")) {
+    		tokenIndex++;
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
+    	
+    	return new FormalParameterName(getLexicality(tokenIndex - 1));
     }
     
     /**
