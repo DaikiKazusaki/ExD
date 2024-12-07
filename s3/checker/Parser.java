@@ -256,6 +256,7 @@ public class Parser {
      * 
      */
     public Sign sign() throws SyntaxException {
+    	tokenIndex++;
     	return new Sign(getLexicality(tokenIndex - 1));
     }
     
@@ -807,9 +808,7 @@ public class Parser {
     			// ")"の判定
     			checkToken("SRPAREN");
     		}
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
+    	} 
     	
     	return new InputOutputStatement(variableGroup, equationGroup);
     }
@@ -844,8 +843,6 @@ public class Parser {
     	} else if (token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) {
     		tokenIndex++;
     		lexicality = getLexicality(tokenIndex - 1);
-    	} else {
-    		e.throwError(tokenIndex);
     	}
     	
     	return new Constant(lexicality, unsignedInteger);
@@ -860,9 +857,7 @@ public class Parser {
     	
     	if (token.equals("SCONSTANT")) {
     		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
+    	} 
     	
     	return new UnsignedInteger(getLexicality(tokenIndex - 1));
     }

@@ -15,7 +15,13 @@ public class Checker {
 	 */
 	public static void main(final String[] args) {
 		// normalの確認
-		// System.out.println(new Checker().run("data/ts/normal01.ts"));
+		for (int i = 1; i <= 9; i++) {
+			System.out.println("0" + i + ": " + new Checker().run("data/ts/normal0" + i + ".ts"));
+		}
+		for (int i = 10; i <= 20; i++) {
+			System.out.println(i + ": " + new Checker().run("data/ts/normal" + i + ".ts"));
+		}
+		// System.out.println(new Checker().run("data/ts/normal12.ts"));
 		// System.out.println(new Checker().run("data/ts/normal02.ts"));
 
 		// synerrの確認
