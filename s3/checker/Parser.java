@@ -743,7 +743,9 @@ public class Parser {
     	} else if (token.equals("SNOT")) {
     		tokenIndex++;
     		factor = factor();
-    	} 
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
     	
     	return new Factor(variable, constant, equation, factor);
     }
@@ -805,7 +807,9 @@ public class Parser {
     			// ")"の判定
     			checkToken("SRPAREN");
     		}
-    	} 
+    	} else {
+    		e.throwError(tokenIndex);
+    	}
     	
     	return new InputOutputStatement(variableGroup, equationGroup);
     }
@@ -840,6 +844,8 @@ public class Parser {
     	} else if (token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) {
     		tokenIndex++;
     		lexicality = getLexicality(tokenIndex - 1);
+    	} else {
+    		e.throwError(tokenIndex);
     	}
     	
     	return new Constant(lexicality, unsignedInteger);
