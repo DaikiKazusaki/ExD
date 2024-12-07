@@ -130,7 +130,7 @@ public class Parser {
     	List<VariableNameGroup> variableNameGroup2 = new ArrayList<>();
     	List<Type> type2 = new ArrayList<>();
     	
-    	if (getToken(tokenIndex).equals("SIDENTIFIER")) {
+    	while (getToken(tokenIndex).equals("SIDENTIFIER")) {
     		variableNameGroup2.add(variableNameGroup());
     		
     		// ":"の判定
@@ -315,7 +315,7 @@ public class Parser {
     public ProcedureName procedureName() throws SyntaxException {
     	String token = getToken(tokenIndex);
     	
-    	if (token.equals("SSTRING")) {
+    	if (token.equals("SIDENTIFIER")) {
     		tokenIndex++;
     	} else {
     		e.throwError(tokenIndex);
@@ -393,7 +393,7 @@ public class Parser {
     public FormalParameterName formalParameterName() throws SyntaxException {
     	String token = getToken(tokenIndex);
     	
-    	if (token.equals("SSTRING")) {
+    	if (token.equals("SIDENTIFIER")) {
     		tokenIndex++;
     	} else {
     		e.throwError(tokenIndex);
