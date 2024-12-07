@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SubprogramDeclarationGroup {
-	private SubprogramDeclaration subprogramDeclaration;
+	private List<SubprogramDeclaration> subprogramDeclaration = new ArrayList<>();
 	
-	public SubprogramDeclarationGroup(SubprogramDeclaration subprogramDeclaration) {
+	public SubprogramDeclarationGroup(List<SubprogramDeclaration> subprogramDeclaration) {
 		this.subprogramDeclaration = subprogramDeclaration;
 	}
 	

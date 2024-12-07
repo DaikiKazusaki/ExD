@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Program extends ASTNode implements Element {
+public class Program implements Element {
     private ProgramName programName;
     private Block block;
     private ComplexStatement complexStatement;

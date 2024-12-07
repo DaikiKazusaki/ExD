@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Block extends ASTNode implements Element {
+public class Block implements Element {
 	private VariableDeclaration variableDeclaration;
 	private SubprogramDeclarationGroup subprogramDeclarationGroup;
 	
@@ -11,8 +11,5 @@ public class Block extends ASTNode implements Element {
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		
-		variableDeclaration.accept(visitor);
-		subprogramDeclarationGroup.accept(visitor);
 	}
 }

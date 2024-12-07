@@ -11,7 +11,6 @@ public class Constant {
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		unsignedInteger.accept(visitor);
 	}
 	
 	public String getToken() {
