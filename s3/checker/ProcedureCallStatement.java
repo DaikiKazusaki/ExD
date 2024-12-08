@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class ProcedureCallStatement {
+public class ProcedureCallStatement implements Element {
 	private ProcedureName procedureName;
 	private EquationGroup equationGroup;
 	
@@ -9,6 +9,7 @@ public class ProcedureCallStatement {
 		this.equationGroup = equationGroup;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		procedureName.accept(visitor);

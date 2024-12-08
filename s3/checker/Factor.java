@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Factor {
+public class Factor implements Element {
 	private Variable variable;
 	private Constant constant;
 	private Equation equation;
@@ -13,6 +13,7 @@ public class Factor {
 		this.factor = factor;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		

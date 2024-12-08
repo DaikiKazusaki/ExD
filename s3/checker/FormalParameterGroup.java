@@ -3,7 +3,7 @@ package enshud.s3.checker;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FormalParameterGroup {
+public class FormalParameterGroup implements Element {
 	private FormalParameterNameGroup formalParameterNameGroup1;
 	private GeneralType generalType1;
 	private List<FormalParameterNameGroup> formalParameterNameGroup2 = new ArrayList<>();
@@ -16,7 +16,14 @@ public class FormalParameterGroup {
 		this.generalType2 = generalType2;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		formalParameterNameGroup1.accept(visitor);
+		generalType1.accept(visitor);
+		for (int i = 0; i < formalParameterNameGroup2.size(); i++) {
+			formalParameterNameGroup2.get(i).accept(visitor);
+			generalType2.get(i).accept(visitor);
+		}
 	}
 }

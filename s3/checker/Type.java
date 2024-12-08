@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Type {
+public class Type implements Element {
 	private GeneralType generalType;
 	private ArrayType arrayType;
 	
@@ -9,7 +9,10 @@ public class Type {
 		this.arrayType = arrayType;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
+		visitor.visit(this);
+		
 		if (generalType != null) {
 			generalType.accept(visitor);
 		} else {

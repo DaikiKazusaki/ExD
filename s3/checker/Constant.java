@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Constant {
+public class Constant implements Element {
 	private String token;
 	private UnsignedInteger unsignedInteger;
 	
@@ -9,8 +9,12 @@ public class Constant {
 		this.unsignedInteger = unsignedInteger;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		if (unsignedInteger != null) {
+			unsignedInteger.accept(visitor);
+		}
 	}
 	
 	public String getToken() {

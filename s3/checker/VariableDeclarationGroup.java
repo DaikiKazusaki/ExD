@@ -21,5 +21,11 @@ public class VariableDeclarationGroup extends ASTNode implements Element {
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		variableNameGroup1.accept(visitor);
+		type1.accept(visitor);
+		for (int i = 0; i < variableNameGroup2.size(); i++) {
+			variableNameGroup2.get(i).accept(visitor);
+			type2.get(i).accept(visitor);
+		}
 	}
 }

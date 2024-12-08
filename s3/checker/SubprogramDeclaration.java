@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class SubprogramDeclaration {
+public class SubprogramDeclaration implements Element {
 	private SubprogramHead subprogramHead;
 	private VariableDeclaration variableDeclaration;
 	private ComplexStatement complexStatement;
@@ -11,6 +11,7 @@ public class SubprogramDeclaration {
 		this.complexStatement = complexStatement;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		subprogramHead.accept(visitor);

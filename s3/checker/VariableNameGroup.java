@@ -15,5 +15,9 @@ public class VariableNameGroup implements Element {
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		variableName1.accept(visitor);
+		for (VariableName item: variableName2) {
+			item.accept(visitor);
+		}
 	}
 }
