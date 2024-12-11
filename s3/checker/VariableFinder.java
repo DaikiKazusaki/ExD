@@ -10,23 +10,21 @@ public class VariableFinder extends Visitor {
         return variableNames;
     }
 
-    @Override
     public void visit(VariableName variableName) {
         // 変数名を収集
         variableNames.add(variableName.getVariableName()); 
     }
-    
-    public void printVariable() {
-    	System.out.println(variableNames);
-    }
+
 
     @Override
     public void visit(VariableDeclarationGroup variableDeclarationGroup) {
+    	// 変数名の並びのaccept
         for (VariableNameGroup variableNameGroup : variableDeclarationGroup.getVariableNameGroups()) {
             variableNameGroup.accept(this);
         }
     }
 
+    /*
     @Override
     public void visit(VariableNameGroup variableNameGroup) {
         // 各変数名を訪問
@@ -34,6 +32,6 @@ public class VariableFinder extends Visitor {
             variableName.accept(this);
         }
     }
-
+    */
     // 必要に応じて他の visit メソッドをオーバーライドする
 }
