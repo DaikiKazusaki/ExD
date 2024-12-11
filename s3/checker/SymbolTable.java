@@ -1,5 +1,9 @@
 package enshud.s3.checker;
 
-public class SymbolTable {
+// import java.util.ArrayList;
+// import java.util.List;
 
+public class SymbolTable {
+	// private List<Symbol> symbolTable = new ArrayList<>();	
+	
 }
