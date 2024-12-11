@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class SubprogramHead {
+public class SubprogramHead implements Element {
 	private ProcedureName procedureName;
 	private FormalParameter formalParameter;
 	
@@ -9,6 +9,7 @@ public class SubprogramHead {
 		this.formalParameter = formalParameter;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		procedureName.accept(visitor);

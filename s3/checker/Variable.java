@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Variable {
+public class Variable implements Element {
 	private NaturalVariable naturalVariable;
 	private VariableWithIndex variableWithIndex;
 	
@@ -9,6 +9,7 @@ public class Variable {
 		this.variableWithIndex = variableWithIndex;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		

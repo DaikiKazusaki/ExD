@@ -26,12 +26,15 @@ public class Checker {
 
 		// synerrの確認
 		for (int i = 1; i <= 8; i++) {
-			System.out.println(i + ": " + new Checker().run("data/ts/synerr0" + i + ".ts"));
+			System.out.println("0" + i + ": " + new Checker().run("data/ts/synerr0" + i + ".ts"));
 		}
 		// System.out.println(new Checker().run("data/ts/synerr01.ts"));
 		// System.out.println(new Checker().run("data/ts/synerr02.ts"));
 
 		// semerrの確認
+		for (int i = 1; i <= 8; i++) {
+			System.out.println("0" + i + ": " + new Checker().run("data/ts/semerr0" + i + ".ts"));
+		}
 		// System.out.println(new Checker().run("data/ts/semerr01.ts"));
 		// System.out.println(new Checker().run("data/ts/semerr02.ts"));
 	}

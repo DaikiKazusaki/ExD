@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class AssignStatement {
+public class AssignStatement implements Element {
 	private LeftSide leftSide;
 	private Equation equation;
 	
@@ -11,5 +11,7 @@ public class AssignStatement {
 	
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		leftSide.accept(visitor);
+		equation.accept(visitor);
 	}
 }

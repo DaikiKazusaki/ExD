@@ -1,5 +1,5 @@
 package enshud.s3.checker;
 
-public abstract class ASTNode {
+public abstract class Entry {
 	
 }

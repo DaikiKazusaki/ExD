@@ -11,7 +11,11 @@ public class Program implements Element {
     	this.complexStatement = complexStatement;
     }
     
+    @Override
     public void accept(Visitor visitor) {
     	visitor.visit(this);
+    	programName.accept(visitor);
+    	block.accept(visitor);
+    	complexStatement.accept(visitor);
     }
 }

@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class WhileDo {
+public class WhileDo implements Element {
 	private Equation equation;
 	private ComplexStatement complexStatement;
 	
@@ -9,7 +9,10 @@ public class WhileDo {
 		this.complexStatement = complexStatement;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		equation.accept(visitor);
+		complexStatement.accept(visitor);
 	}
 }

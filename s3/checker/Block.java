@@ -9,7 +9,10 @@ public class Block implements Element {
 		this.subprogramDeclarationGroup = subprogramDeclarationGroup;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		variableDeclaration.accept(visitor);
+		subprogramDeclarationGroup.accept(visitor);
 	}
 }

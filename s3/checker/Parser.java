@@ -117,12 +117,15 @@ public class Parser {
      * 
      */
     public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxException {
-    	VariableNameGroup variableNameGroup1 = variableNameGroup();
+    	List<VariableNameGroup> variableNameGroup = new ArrayList<>();
+    	List<Type> type = new ArrayList<>();
+    	
+    	variableNameGroup.add(variableNameGroup());
     	
     	// ":"の判定
     	checkToken("SCOLON");
     	
-    	Type type1 = type();
+    	type.add(type());
     	
     	// ";"の判定
     	checkToken("SSEMICOLON");
@@ -142,7 +145,7 @@ public class Parser {
         	checkToken("SSEMICOLON");
     	}
     	
-    	return new VariableDeclarationGroup(variableNameGroup1, type1, variableNameGroup2, type2);
+    	return new VariableDeclarationGroup(variableNameGroup, type);
     }
     
     /**
@@ -352,28 +355,28 @@ public class Parser {
      * 
      */
     public FormalParameterGroup formalParameterGroup() throws SyntaxException {
-    	FormalParameterNameGroup formalParameterNameGroup1 = formalParameterNameGroup();
+    	List<FormalParameterNameGroup> formalParameterNameGroup = new ArrayList<>();
+    	List<GeneralType> generalType = new ArrayList<>();
+    	
+    	formalParameterNameGroup.add(formalParameterNameGroup());
     	
     	// ":"の判定
     	checkToken("SCOLON");
     	
-    	GeneralType generalType1 = generalType();
-    	
-    	List<FormalParameterNameGroup> formalParameterNameGroup2 = new ArrayList<>();
-    	List<GeneralType> generalType2 = new ArrayList<>();
+    	generalType.add(generalType());
     	
     	while (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
-    		formalParameterNameGroup2.add(formalParameterNameGroup());
+    		formalParameterNameGroup.add(formalParameterNameGroup());
     		
     		// ":"の判定
     		checkToken("SCOLON");
     		
-    		generalType2.add(generalType());
+    		
     	}
     	
     	
-    	return new FormalParameterGroup(formalParameterNameGroup1, generalType1, formalParameterNameGroup2, generalType2);
+    	return new FormalParameterGroup(formalParameterNameGroup, generalType);
     }
     
     /**
@@ -381,15 +384,16 @@ public class Parser {
      * 
      */
     public FormalParameterNameGroup formalParameterNameGroup() throws SyntaxException {
-    	FormalParameterName formalParameterName1 = formalParameterName();
-    	List<FormalParameterName> formalParameterName2 = new ArrayList<>();
+    	List<FormalParameterName> formalParameterName = new ArrayList<>();
+    	
+    	formalParameterName.add(formalParameterName());
     	
     	while (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
-    		formalParameterName2.add(formalParameterName());
+    		formalParameterName.add(formalParameterName());
     	}
     	
-    	return new FormalParameterNameGroup(formalParameterName1, formalParameterName2);
+    	return new FormalParameterNameGroup(formalParameterName);
     }
     
     /**
@@ -430,22 +434,23 @@ public class Parser {
      * 
      */
     public StatementGroup statementGroup() throws SyntaxException {
+    	List<Statement> statement = new ArrayList<>();
+    	
     	// 文の判定
-    	Statement statement1 = statement();
+    	statement.add(statement());
     	
     	// ";"の判定
     	checkToken("SSEMICOLON");
     	
-    	List<Statement> statement2 = new ArrayList<>();
     	// 繰り返しの判定
     	while (getToken(tokenIndex).equals("SIDENTIFIER") || getToken(tokenIndex).equals("SREADLN") || getToken(tokenIndex).equals("SWRITELN") || getToken(tokenIndex).equals("SBEGIN") || getToken(tokenIndex).equals("SIF") || getToken(tokenIndex).equals("SWHILE")) {
-    		statement2.add(statement());
+    		statement.add(statement());
     		
     		// ";"の判定
         	checkToken("SSEMICOLON");
     	}
     	
-    	return new StatementGroup(statement1, statement2);
+    	return new StatementGroup(statement);
     }
     
     /**
@@ -651,15 +656,16 @@ public class Parser {
      * 
      */
     public EquationGroup equationGroup() throws SyntaxException {
-    	Equation equation1 = equation();
-    	List<Equation> equation2 = new ArrayList<>();
+    	List<Equation> equation = new ArrayList<>();
+    	
+    	equation.add(equation());
     	
     	while (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
-    		equation2.add(equation());
+    		equation.add(equation());
     	}
     	
-    	return new EquationGroup(equation1, equation2);
+    	return new EquationGroup(equation);
     }
     
     /**
@@ -757,7 +763,6 @@ public class Parser {
      */
     public RelationalOperator relationalOperator() throws SyntaxException {
     	tokenIndex++;
-    	
     	return new RelationalOperator(getLexicality(tokenIndex - 1));
     }
     
@@ -767,7 +772,6 @@ public class Parser {
      */
     public AdditionalOperator additionalOperator() throws SyntaxException {
     	tokenIndex++;
-    	
     	return new AdditionalOperator(getLexicality(tokenIndex - 1));
     }
     
@@ -777,7 +781,6 @@ public class Parser {
      */
     public MultipleOperator multipleOperator() throws SyntaxException {
     	tokenIndex++;
-    	
     	return new MultipleOperator(getLexicality(tokenIndex - 1));
     }
     

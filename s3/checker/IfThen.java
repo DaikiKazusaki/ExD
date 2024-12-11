@@ -15,6 +15,8 @@ public class IfThen {
 		visitor.visit(this);
 		equation.accept(visitor);
 		complexStatement.accept(visitor);
-		Else.accept(visitor);
+		if (Else != null) {
+			Else.accept(visitor);
+		}
 	}
 }

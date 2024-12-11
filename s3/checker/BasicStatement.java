@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class BasicStatement {
+public class BasicStatement implements Element {
 	private AssignStatement assignStatement;
 	private ProcedureCallStatement procedureCallStatement;
 	private InputOutputStatement inputOutputStatement;
@@ -13,7 +13,17 @@ public class BasicStatement {
 		this.complexStatement = complexStatement;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		if (assignStatement != null) {
+			assignStatement.accept(visitor);
+		} else if (procedureCallStatement != null) {
+			procedureCallStatement.accept(visitor);
+		} else if (inputOutputStatement != null) {
+			inputOutputStatement.accept(visitor);
+		} else if (complexStatement != null) {
+			complexStatement.accept(visitor);
+		}
 	}
 }

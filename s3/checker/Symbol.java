@@ -1,18 +1,13 @@
 package enshud.s3.checker;
 
-public class Symbol {
+public class Symbol extends Entry {
 	private String name;
 	private String type;
-	private String lineNumber;
-	private int size;
-	private boolean isAssigned;
+	private int size = claclateSize(name, type);
 	
-	public Symbol(String name, String type, String lineNumber, int size, boolean isAssigned) {
+	public Symbol(String name, String type) {
         this.name = name;
         this.type = type;
-        this.lineNumber = lineNumber;
-        this.size = size;
-        this.isAssigned = isAssigned;
     }
 	
     public String getName() {
@@ -23,20 +18,28 @@ public class Symbol {
         return type;
     }
 
-    public String getLineNumber() {
-        return lineNumber;
-    }
-
     public int getSize() {
         return size;
     }
-
-    public boolean isAssigned() {
-        return isAssigned;
-    }
-
-    // セッター
-    public void setAssigned(boolean assigned) {
-        isAssigned = assigned;
-    }
+    
+    /**
+	 * 変数のサイズを計算するメソッド
+	 * 
+	 * @param name: 変数名，char型で使用する
+	 * @param type: 型
+	 * @return size: 変数のサイズ
+	 */
+	public int claclateSize(String name, String type) {
+		int size;
+		
+		if (type.equals("true") || type.equals("false")) {
+			size = 1;
+		} else if (type.equals("integer")) {
+			size = 16;
+		} else {
+			size = 8 * name.length();
+		}
+		
+		return size;
+	}
 }

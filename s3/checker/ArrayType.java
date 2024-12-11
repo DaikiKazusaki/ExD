@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class ArrayType {
+public class ArrayType implements Element {
 	private Integer minimumIndex;
 	private Integer maximumIndex;
 	private GeneralType generalType;
@@ -11,7 +11,11 @@ public class ArrayType {
 		this.generalType = generalType;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
+		minimumIndex.accept(visitor);
+		maximumIndex.accept(visitor);
+		generalType.accept(visitor);
 	}
 }
