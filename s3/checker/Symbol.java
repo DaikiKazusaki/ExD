@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Symbol extends Entry {
+public class Symbol {
 	private String name;
 	private String type;
 	private int size = claclateSize(name, type);

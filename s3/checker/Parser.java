@@ -153,15 +153,16 @@ public class Parser {
      * 
      */
     public VariableNameGroup variableNameGroup() throws SyntaxException {
-    	VariableName variableName1 = variableName();
-    	List<VariableName> variableName2 = new ArrayList<>();
+    	List<VariableName> variableName = new ArrayList<>();
+    	
+    	variableName.add(variableName());
     	
     	while (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
-    		variableName2.add(variableName());
+    		variableName.add(variableName());
     	}
     	
-    	return new VariableNameGroup(variableName1, variableName2);
+    	return new VariableNameGroup(variableName);
     }
     
     /**
