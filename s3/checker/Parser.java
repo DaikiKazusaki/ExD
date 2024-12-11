@@ -822,15 +822,16 @@ public class Parser {
      * 
      */
     public VariableGroup variableGroup() throws SyntaxException {
-    	Variable variable1 = variable();
-    	List<Variable> variable2 = new ArrayList<>();
+    	List<Variable> variable = new ArrayList<>();
+    	
+    	variable.add(variable());
     	
     	while (getToken(tokenIndex).equals("SCOMMA")) {
     		tokenIndex++;
-    		variable2.add(variable());
+    		variable.add(variable());
     	}
     	
-    	return new VariableGroup(variable1, variable2);
+    	return new VariableGroup(variable);
     }
     
     /**

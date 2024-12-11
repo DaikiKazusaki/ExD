@@ -4,19 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VariableGroup implements Element {
-	private Variable variable1;
-	private List<Variable> variable2 = new ArrayList<>();
+	private List<Variable> variable = new ArrayList<>();
 	
-	public VariableGroup(Variable variable1, List<Variable> variable2) {
-		this.variable1 = variable1;
-		this.variable2 = variable2;
+	public VariableGroup(List<Variable> variable) {
+		this.variable = variable;
 	}
 
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		variable1.accept(visitor);
-		for (Variable item: variable2) {
+		for (Variable item: variable) {
 			item.accept(visitor);
 		}
 	}
