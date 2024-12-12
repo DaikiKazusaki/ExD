@@ -10,7 +10,7 @@ public class Variable implements Element {
 	}
 	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		
 		if (naturalVariable != null) {

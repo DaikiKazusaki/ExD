@@ -52,14 +52,13 @@ public class ListVisitor extends Visitor {
 	}
 
 	/**
-	 * 配列型
-	 * 添え字の型を判定
+	 * 副プログラム宣言
+	 * スコープ管理をする変数
 	 * 
 	 */
-	public void visit(ArrayType arrayType) throws SemanticException {
-		Integer minimumInteger = arrayType.getMinimumIndex();
-		Integer maximumInteger = arrayType.getMaximumIndex();
-		String lineNum = arrayType.getLineNum();
+	public void visit(SubprogramDeclaration subprogramDeclaration) throws SemanticException {
+		HashMap<String, String> symbolTableForSubprogram = symbolTable.getSymbolTable();
+		int minimumIndex = symbolTableForSubprogram.size();
 		
 		
 	}
@@ -76,19 +75,28 @@ public class ListVisitor extends Visitor {
 	}
 	
 	/**
-	 * 変数，関数の宣言の処理ここまで
-	 * *********************************
-	 * 以下は左辺値と右辺値の型の一致についての判定
-	 * 
-	 */
-	
-	/**
 	 * 代入文
 	 * 左辺の型と右辺の型を取り出す
 	 * 
 	 */
 	public void visit(AssignStatement assignssStatement) throws SemanticException {
 		
+	}
+	
+	/**
+	 * 添え字
+	 * 添え字の型が式
+	 * 
+	 */
+	public void visit(Index index) throws SemanticException {
+		/*
+		String indexWithArray = index.getEquation().getSimpleEquationList().getTermList().getFactor().getVariable();
+		String lineNum = index.getLineNum();
+		
+		if (indexWithArray != "SCONSTANT") {
+			throw new SemanticException(lineNum);
+		}
+		*/
 	}
 	
 	/**
@@ -136,26 +144,6 @@ public class ListVisitor extends Visitor {
 	}
 	
 	/**
-	 * 項
-	 * 乗法演算子の個数分，因子同士の判定
-	 * 
-	 */
-	public void visit(Term term) {
-		/*
-		List<Factor> factor = term.getFactorList();
-		
-		for (int i = 0; i < factor.size() - 2; i++) {
-			Factor leftFactor = factor.get(i);
-			Factor rightFactor = factor.get(i + 1);
-			
-			if (!leftFactor.equals(rightFactor)) {
-				// エラー処理を記述
-			}
-		}
-		*/
-	}
-	
-	/**
 	 * 以下のvisitorでは何もしない
 	 * 
 	 */
@@ -167,12 +155,13 @@ public class ListVisitor extends Visitor {
 	public void visit(VariableName variableName) {}	
 	public void visit(Type type) {}	
 	public void visit(GeneralType generalType) {}
+	public void visit(ArrayType arrayType) {}
 	public void visit(Integer integer) {}
 	public void visit(Sign sign) {}
 	public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) {}
-	public void visit(SubprogramDeclaration subprogramDeclaration) {}
 	public void visit(ProcedureName procedureName) {};
 	public void visit(FormalParameter formalParameter) {}
+	public void visit(FormalParameterGroup formalParameterGroup) {}
 	public void visit(FormalParameterNameGroup formalParamenterNameGroup) {}
 	public void visit(FormalParameterName formalParameterName) {}
 	public void visit(ComplexStatement complexStatement) {}
@@ -186,7 +175,6 @@ public class ListVisitor extends Visitor {
 	public void visit(Variable variable) {}
 	public void visit(NaturalVariable naturalVariable) {}
 	public void visit(VariableWithIndex variableWithIndex) {}
-	public void visit(Index index) {}
 	public void visit(EquationGroup equationGruop) {}
 	public void visit(Factor factor) {}
 	public void visit(RelationalOperator relationalOperator) {}

@@ -21,7 +21,7 @@ public class FormalParameterGroup implements Element {
 	}
 	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		for (int i = 0; i < formalParameterNameGroup.size(); i++) {
 			formalParameterNameGroup.get(i).accept(visitor);

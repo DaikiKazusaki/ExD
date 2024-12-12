@@ -13,8 +13,16 @@ public class Factor implements Element {
 		this.factor = factor;
 	}
 	
+	public Variable getVariable() {
+		return variable;
+	}
+	
+	public Constant getConstant() {
+		return constant;
+	}
+	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		
 		if (variable != null) {

@@ -639,8 +639,9 @@ public class Parser {
      */
     public Index index() throws SyntaxException {
     	Equation equation = equation();
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
-    	return new Index(equation);
+    	return new Index(equation, lineNum);
     }
     
     /**

@@ -1,13 +1,14 @@
 package enshud.s3.checker;
 
-public class LeftSide {
+public class LeftSide implements Element {
 	private Variable variable;
 
 	public LeftSide(Variable variable) {
 		this.variable = variable;
 	}
 	
-	public void accept(Visitor visitor) {
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		variable.accept(visitor);
 	}

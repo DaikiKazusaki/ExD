@@ -17,7 +17,7 @@ public class Term implements Element {
 	}
 	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		factor.get(0).accept(visitor);
 		for (int i = 0; i < multipleOperator.size(); i++) {

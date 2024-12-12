@@ -12,8 +12,16 @@ public class Equation implements Element {
 		this.relationalOperator = relationalOperator;
 	}
 	
+	public List<SimpleEquation> getSimpleEquationList(){
+		return simpleEquation;
+	}
+	
+	public List<RelationalOperator> getRelationalOperatorList(){
+		return relationalOperator;
+	}
+	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		simpleEquation.get(0).accept(visitor);
 		for (int i = 0; i < relationalOperator.size(); i++) {

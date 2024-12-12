@@ -10,7 +10,7 @@ public class VariableWithIndex implements Element {
 	}
 	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		variablename.accept(visitor);
 		index.accept(visitor);
