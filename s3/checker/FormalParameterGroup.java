@@ -12,6 +12,14 @@ public class FormalParameterGroup implements Element {
 		this.generalType = generalType;
 	}
 	
+	public List<FormalParameterNameGroup> getFormalParameterNameGroup() {
+		return formalParameterNameGroup;
+	}
+	
+	public List<GeneralType> getGeneralType() {
+		return generalType;
+	}
+	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

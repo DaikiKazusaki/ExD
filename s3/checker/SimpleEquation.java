@@ -5,15 +5,17 @@ import java.util.List;
 
 public class SimpleEquation implements Element {
 	private Sign sign;
-	private Term nesessaryTerm;
+	private List<Term> term = new ArrayList<>();
 	private List<AdditionalOperator> additionalOperator = new ArrayList<>();
-	private List<Term> optionalTerm = new ArrayList<>();
 	
-	public SimpleEquation(Sign sign, Term nesessaryTerm, List<AdditionalOperator> additionalOperator, List<Term> term) {
+	public SimpleEquation(Sign sign, List<Term> term, List<AdditionalOperator> additionalOperator) {
 		this.sign = sign;
-		this.nesessaryTerm = nesessaryTerm;
+		this.term = term;
 		this.additionalOperator = additionalOperator;
-		this.optionalTerm = term;
+	}
+	
+	public List<Term> getTermList(){
+		return term;
 	}
 	
 	@Override
@@ -23,11 +25,12 @@ public class SimpleEquation implements Element {
 		if (sign != null) {
 			sign.accept(visitor);
 		}
-		nesessaryTerm.accept(visitor);
+		
+		term.get(0).accept(visitor);
 		
 		for (int i = 0; i < additionalOperator.size(); i++) {
 			additionalOperator.get(i).accept(visitor);
-			optionalTerm.get(i).accept(visitor);
+			term.get(i + 1).accept(visitor);
 		}
 	}
 }

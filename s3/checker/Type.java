@@ -19,4 +19,12 @@ public class Type implements Element {
 			arrayType.accept(visitor);
 		}
 	}
+	
+	public GeneralType getGeneralType() {
+		return generalType;
+	}
+	
+	public ArrayType getArrayType() {
+		return arrayType;
+	}
 }

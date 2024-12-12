@@ -4,24 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VariableNameGroup implements Element {
-	private VariableName variableName1; 
-	private List<VariableName> variableName2 = new ArrayList<>();
+	private List<VariableName> variableName = new ArrayList<>();
+	private String lineNum;
 	
-	public VariableNameGroup(VariableName variableName1, List<VariableName> variableName2) {
-		this.variableName1 = variableName1;
-		this.variableName2 = variableName2;
+	public VariableNameGroup(List<VariableName> variableName, String lineNum) {
+		this.variableName = variableName;
+		this.lineNum = lineNum;
+	}
+
+	public List<VariableName> getVariableNameList() {
+		return variableName;
 	}
 	
-	public List<VariableName> getVariableNameGroup() {
-		variableName2.add(0, variableName1);		
-		return variableName2;
+	public String getVariableNameGroupLineNum() {
+		return lineNum;
 	}
 	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		variableName1.accept(visitor);
-		for (VariableName item: variableName2) {
+		for (VariableName item: variableName) {
 			item.accept(visitor);
 		}
 	}

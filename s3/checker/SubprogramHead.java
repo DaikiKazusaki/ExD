@@ -15,4 +15,8 @@ public class SubprogramHead implements Element {
 		procedureName.accept(visitor);
 		formalParameter.accept(visitor);
 	}
+	
+	public ProcedureName getProcedureName() {
+		return procedureName;
+	}
 }

@@ -12,7 +12,7 @@ public class GeneralType implements Element {
 		visitor.visit(this);
 	}
 	
-	public String getGeneralType() {
+	public String getType() {
 		return type;
 	}
 }

@@ -5,7 +5,7 @@ public abstract class Visitor {
     public void visit(ProgramName programName) {}
     public void visit(Block block) {}
     public void visit(VariableDeclaration variableDeclaration) {}
-    public void visit(VariableDeclarationGroup variableDeclarationGroup) {}
+    public void visit(VariableDeclarationGroup variableDeclarationGroup) throws SemanticException {}
     public void visit(VariableNameGroup variableNameGroup) {}
     public void visit(VariableName variableName) {}
     public void visit(Type type) {}
