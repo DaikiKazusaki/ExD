@@ -689,20 +689,19 @@ public class Parser {
      */
     public Equation equation() throws SyntaxException {
     	// 単純式の判定
-    	List<SimpleEquation> simpleEquation = new ArrayList<>();
+    	SimpleEquation simpleEquation =simpleEquation();
     	List<RelationalOperator> relationalOperator = new ArrayList<>();
-    	
-    	simpleEquation.add(simpleEquation());
+    	List<SimpleEquation> simpleEquationList = new ArrayList<>();
     	
     	String token = getToken(tokenIndex);
     	
     	// 関連演算子の判定
     	if (token.equals("SEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
     		relationalOperator.add(relationalOperator());
-    		simpleEquation.add(simpleEquation());
+    		simpleEquationList.add(simpleEquation());
     	}
     	
-    	return new Equation(simpleEquation, relationalOperator);
+    	return new Equation(simpleEquation, relationalOperator, simpleEquationList);
     }
     
     /**
@@ -715,17 +714,16 @@ public class Parser {
     		sign = sign();
     	}
     	
-    	List<Term> term = new ArrayList<>();
+    	Term term = term();
     	List<AdditionalOperator> additionalOperator = new ArrayList<>();
-    	
-    	term.add(term());
+    	List<Term> termList = new ArrayList<>();
     	
     	while (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS") || getToken(tokenIndex).equals("SOR")) {
     		additionalOperator.add(additionalOperator());
-    		term.add(term());
+    		termList.add(term());
     	} 
     	
-    	return new SimpleEquation(sign, term, additionalOperator);
+    	return new SimpleEquation(sign, term, additionalOperator, termList);
     }
     
     /**
@@ -733,17 +731,16 @@ public class Parser {
      * 
      */
     public Term term() throws SyntaxException {
-    	List<Factor> factor = new ArrayList<>();
+    	Factor factor = factor();
     	List<MultipleOperator> multipleOperator = new ArrayList<>();
-    	
-    	factor.add(factor());
+    	List<Factor> factorList = new ArrayList<>();
     	
     	while (getToken(tokenIndex).equals("SSTAR") || getToken(tokenIndex).equals("SDIVD") || getToken(tokenIndex).equals("SMOD") || getToken(tokenIndex).equals("SAND")) {
     		multipleOperator.add(multipleOperator());
-    		factor.add(factor());
+    		factorList.add(factor());
     	}
     	
-    	return new Term(factor, multipleOperator);
+    	return new Term(factor, multipleOperator, factorList);
     }
     
     /**

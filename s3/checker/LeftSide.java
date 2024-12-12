@@ -9,7 +9,7 @@ public class LeftSide implements Element {
 		this.lineNum = lineNum;
 	}
 	
-	public Variable getVarialbe() {
+	public Variable getVariable() {
 		return variable;
 	}
 	

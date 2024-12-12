@@ -6,6 +6,7 @@ import java.util.List;
 public class ListVisitor extends Visitor {
 	private int scope = 0;
 	private SymbolTable symbolTable = new SymbolTable();
+	private FunctionTable functionTable = new FunctionTable(); 
 	
 	/**
 	 * 変数宣言の並び
@@ -56,8 +57,8 @@ public class ListVisitor extends Visitor {
 	 */
 	public void visit(SubprogramHead subprogramHead) {
 		// 手続き名を登録
-		String functionName = subprogramHead.getProcedureName().getProcedureName();
-		new FunctionTable().addProcedureName(functionName);
+		String functionName = subprogramHead.getProcedureName().getProcedureName();		
+		functionTable.addProcedureName(functionName);
 	}
 	
 	/**
@@ -72,14 +73,34 @@ public class ListVisitor extends Visitor {
 	/**
 	 * 左辺
 	 * 左辺に使われる変数を判定
+	 * 
 	 */
 	public void visit(LeftSide leftSide) throws SemanticException {
-		String variableName = leftSide.getVarialbe().getNaturalVariable().getVariableName().getVariableName();
-		String lineNum = leftSide.getLineNum();
-		
-		if (!symbolTable.getSymbolTable().containsKey(variableName)) {
-			throw new SemanticException(lineNum);
-		}
+		Variable variable = leftSide.getVariable();
+	    String variableName = null;
+	    String lineNum = leftSide.getLineNum();
+
+	    if (variable.getNaturalVariable() != null) {
+	        variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+	        if (!symbolTable.getSymbolTable().containsKey(variableName)) {
+	            throw new SemanticException(lineNum);
+	        } else {
+	        	String variableType = symbolTable.getSymbolTable().get(variableName).get(0); // 型情報を取得
+		        if (variableType.equals("array of integer") || variableType.equals("array of char") || variableType.equals("array of boolean")) {
+		            throw new SemanticException(lineNum);
+		        }
+	        }
+	    } else {
+	        variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+	        if (!symbolTable.getSymbolTable().containsKey(variableName)) {
+	            throw new SemanticException(lineNum);
+	        } else {
+	        	String variableType = symbolTable.getSymbolTable().get(variableName).get(0); // 型情報を取得
+		        if (variableType.equals("integer") || variableType.equals("char") || variableType.equals("boolean")) {
+		            throw new SemanticException(lineNum);
+		        }
+	        }
+	    }
 	}
 	
 	/**
@@ -88,14 +109,12 @@ public class ListVisitor extends Visitor {
 	 * 
 	 */
 	public void visit(Index index) throws SemanticException {
-		/*
-		String indexWithArray = index.getEquation().getSimpleEquationList().getTermList().getFactor().getVariable();
+		String indexWithArray = index.getEquation().getSimpleEquation().getTerm().getFactor().getVariable().getNaturalVariable().getVariableName().getVariableName();
 		String lineNum = index.getLineNum();
 		
-		if (indexWithArray != "SCONSTANT") {
+		if (indexWithArray == null) {
 			throw new SemanticException(lineNum);
 		}
-		*/
 	}
 	
 	/**
@@ -104,11 +123,11 @@ public class ListVisitor extends Visitor {
 	 * 
 	 */
 	public void visit(ProcedureCallStatement procedureCallStatement) throws SemanticException {
-		List<String> functionTable = new FunctionTable().getFunctionTable();
+		List<String> table = functionTable.getFunctionTable();
 		String functionName = procedureCallStatement.getProcedureName().getProcedureName();
 		String lineNum = procedureCallStatement.getLineNum();
 		
-		if (!functionTable.contains(functionName)) {			
+		if (!table.contains(functionName)) {			
 			throw new SemanticException(lineNum);
 		}
 	}

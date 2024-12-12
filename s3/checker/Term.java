@@ -4,25 +4,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Term implements Element {
-	private List<Factor> factor = new ArrayList<>();
+	private Factor factor;
 	private List<MultipleOperator> multipleOperator = new ArrayList<>();
+	private List<Factor> factorList = new ArrayList<>();
 	
-	public Term(List<Factor> factor, List<MultipleOperator> multipleOperator) {
+	public Term(Factor factor, List<MultipleOperator> multipleOperator, List<Factor> factorList) {
 		this.factor = factor;
 		this.multipleOperator = multipleOperator;
+		this.factorList = factorList;
 	}
 	
-	public List<Factor> getFactorList(){
+	public Factor getFactor(){
 		return factor;
 	}
 	
 	@Override
 	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
-		factor.get(0).accept(visitor);
+		factor.accept(visitor);
 		for (int i = 0; i < multipleOperator.size(); i++) {
 			multipleOperator.get(i).accept(visitor);
-			factor.get(i + 1).accept(visitor);
+			factorList.get(i).accept(visitor);
 		}
 	}
 }

@@ -4,15 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Equation implements Element {
-	private List<SimpleEquation> simpleEquation = new ArrayList<>();
+	private SimpleEquation simpleEquation;
 	private List<RelationalOperator> relationalOperator = new ArrayList<>();
+	private List<SimpleEquation> simpleEquationList = new ArrayList<>();
 	
-	public Equation(List<SimpleEquation> simpleEquation, List<RelationalOperator> relationalOperator) {
+	public Equation(SimpleEquation simpleEquation, List<RelationalOperator> relationalOperator, List<SimpleEquation> simpleEquationList) {
 		this.simpleEquation = simpleEquation;
+		this.simpleEquationList = simpleEquationList;
 		this.relationalOperator = relationalOperator;
 	}
 	
-	public List<SimpleEquation> getSimpleEquationList(){
+	public SimpleEquation getSimpleEquation(){
 		return simpleEquation;
 	}
 	
@@ -23,10 +25,10 @@ public class Equation implements Element {
 	@Override
 	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
-		simpleEquation.get(0).accept(visitor);
+		simpleEquation.accept(visitor);
 		for (int i = 0; i < relationalOperator.size(); i++) {
 			relationalOperator.get(i).accept(visitor);
-			simpleEquation.get(i + 1).accept(visitor);
+			simpleEquationList.get(i).accept(visitor);
 		}
 	}
 }

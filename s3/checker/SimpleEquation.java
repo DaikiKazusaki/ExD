@@ -5,16 +5,18 @@ import java.util.List;
 
 public class SimpleEquation implements Element {
 	private Sign sign;
-	private List<Term> term = new ArrayList<>();
+	private Term term ;
 	private List<AdditionalOperator> additionalOperator = new ArrayList<>();
+	private List<Term> termList = new ArrayList<>();
 	
-	public SimpleEquation(Sign sign, List<Term> term, List<AdditionalOperator> additionalOperator) {
+	public SimpleEquation(Sign sign, Term term, List<AdditionalOperator> additionalOperator, List<Term> termList) {
 		this.sign = sign;
 		this.term = term;
 		this.additionalOperator = additionalOperator;
+		this.termList = termList;
 	}
 	
-	public List<Term> getTermList(){
+	public Term getTerm(){
 		return term;
 	}
 	
@@ -26,11 +28,11 @@ public class SimpleEquation implements Element {
 			sign.accept(visitor);
 		}
 		
-		term.get(0).accept(visitor);
+		term.accept(visitor);
 		
 		for (int i = 0; i < additionalOperator.size(); i++) {
 			additionalOperator.get(i).accept(visitor);
-			term.get(i + 1).accept(visitor);
+			termList.get(i).accept(visitor);
 		}
 	}
 }
