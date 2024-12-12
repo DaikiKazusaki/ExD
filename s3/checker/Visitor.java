@@ -28,13 +28,13 @@ public abstract class Visitor {
     public void visit(IfThen ifThen) {}
     public void visit(WhileDo whileDo) {}
     public void visit(BasicStatement basicStatement) {}
-    public void visit(AssignStatement assignStatement) {}
+    public void visit(AssignStatement assignStatement) throws SemanticException {}
     public void visit(LeftSide leftSide) {}
     public void visit(Variable variable) {}
     public void visit(NaturalVariable naturalVariable) {}
     public void visit(VariableWithIndex variableWithIndex) {}
     public void visit(Index index) {}
-    public void visit(ProcedureCallStatement procedureCallStatement) {}
+    public void visit(ProcedureCallStatement procedureCallStatement) throws SemanticException {}
     public void visit(EquationGroup equationGroup) {}
     public void visit(Equation equation) {}
     public void visit(SimpleEquation simpleEquation) {}

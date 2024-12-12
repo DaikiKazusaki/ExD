@@ -14,7 +14,7 @@ public class BasicStatement implements Element {
 	}
 	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		if (assignStatement != null) {
 			assignStatement.accept(visitor);

@@ -563,13 +563,14 @@ public class Parser {
      */
     public AssignStatement assignStatement() throws SyntaxException {
     	LeftSide leftSide = leftSide();
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
     	// ":="の判定
     	checkToken("SASSIGN");
     	
     	Equation equation = equation();
     	
-    	return new AssignStatement(leftSide, equation);
+    	return new AssignStatement(leftSide, equation, lineNum);
     }
     
     /**
@@ -648,6 +649,7 @@ public class Parser {
     	ProcedureName procedureName = procedureName();
     	String token = getToken(tokenIndex);
     	EquationGroup equationGroup = null;
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
     	if (token.equals("SLPAREN")) {
     		tokenIndex++;
@@ -657,7 +659,7 @@ public class Parser {
     		checkToken("SRPAREN");
     	}
     	
-    	return new ProcedureCallStatement(procedureName, equationGroup);
+    	return new ProcedureCallStatement(procedureName, equationGroup, lineNum);
     }
     
     /**

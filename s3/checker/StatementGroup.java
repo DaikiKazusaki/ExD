@@ -11,7 +11,7 @@ public class StatementGroup implements Element {
 	}
 
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		for (Statement item: statement) {
 			item.accept(visitor);

@@ -60,7 +60,6 @@ public class ListVisitor extends Visitor {
 	public void visit(SubprogramHead subprogramHead) {
 		// 手続き名を登録
 		String functionName = subprogramHead.getProcedureName().getProcedureName();
-		System.out.println(functionName);
 		new FunctionTable().addProcedureName(functionName);
 	}
 	
@@ -76,7 +75,7 @@ public class ListVisitor extends Visitor {
 	 * 左辺の型と右辺の型を取り出す
 	 * 
 	 */
-	public void visit(AssignStatement assignssStatement) {
+	public void visit(AssignStatement assignssStatement) throws SemanticException {
 		
 	}
 	
@@ -85,14 +84,13 @@ public class ListVisitor extends Visitor {
 	 * 関数表の中に手続き名が存在するか判定
 	 * 
 	 */
-	public void visit(ProcedureCallStatement procedureCallStatement) {
+	public void visit(ProcedureCallStatement procedureCallStatement) throws SemanticException {
 		List<String> functionTable = new FunctionTable().getFunctionTable();
 		String functionName = procedureCallStatement.getProcedureName().getProcedureName();
-		// int lineNum;
+		String lineNum = procedureCallStatement.getLineNum();
 		
-		if (!functionTable.contains(functionName)) {
-			// エラー処理
-			//
+		if (!functionTable.contains(functionName)) {			
+			throw new SemanticException(lineNum);
 		}
 	}
 	

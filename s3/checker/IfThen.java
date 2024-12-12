@@ -11,7 +11,7 @@ public class IfThen {
 		this.Else = Else;
 	}
 	
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		equation.accept(visitor);
 		complexStatement.accept(visitor);
