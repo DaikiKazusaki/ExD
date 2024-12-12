@@ -8,7 +8,7 @@ public class VariableDeclaration implements Element {
 	}
 	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		
 		if (variableDeclarationGroup != null) {

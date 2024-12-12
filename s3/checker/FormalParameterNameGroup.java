@@ -10,6 +10,10 @@ public class FormalParameterNameGroup implements Element {
 		this.formalParameterName = formalParameterName;
 	}
 	
+	public List<FormalParameterName> getFormalParameterName() {
+		return formalParameterName;
+	}
+	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

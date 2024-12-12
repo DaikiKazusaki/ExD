@@ -20,7 +20,7 @@ public class Factor implements Element {
 		if (variable != null) {
 			variable.accept(visitor);
 		} else if (constant != null) {
-			variable.accept(visitor);
+			constant.accept(visitor);
 		} else if (equation != null) {
 			equation.accept(visitor);
 		} else {

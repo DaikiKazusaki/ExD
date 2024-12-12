@@ -11,8 +11,12 @@ public class Program implements Element {
     	this.complexStatement = complexStatement;
     }
     
+    public Program getProgram() {
+    	return new Program(programName, block, complexStatement);
+    }
+    
     @Override
-    public void accept(Visitor visitor) {
+    public void accept(Visitor visitor) throws SemanticException {
     	visitor.visit(this);
     	programName.accept(visitor);
     	block.accept(visitor);

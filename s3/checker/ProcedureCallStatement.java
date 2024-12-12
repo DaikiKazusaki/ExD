@@ -13,6 +13,13 @@ public class ProcedureCallStatement implements Element {
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		procedureName.accept(visitor);
-		equationGroup.accept(visitor);
+		
+		if (equationGroup != null) {
+			equationGroup.accept(visitor);
+		}
+	}
+	
+	public ProcedureName getProcedureName() {
+		return procedureName;
 	}
 }

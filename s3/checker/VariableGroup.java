@@ -9,6 +9,10 @@ public class VariableGroup implements Element {
 	public VariableGroup(List<Variable> variable) {
 		this.variable = variable;
 	}
+	
+	public List<Variable> getVariable(){
+		return variable;
+	}
 
 	@Override
 	public void accept(Visitor visitor) {

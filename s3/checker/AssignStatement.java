@@ -9,6 +9,7 @@ public class AssignStatement implements Element {
 		this.equation = equation;
 	}
 	
+	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 		leftSide.accept(visitor);

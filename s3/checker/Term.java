@@ -4,23 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Term implements Element {
-	private Factor nesessaryFactor;
+	private List<Factor> factor = new ArrayList<>();
 	private List<MultipleOperator> multipleOperator = new ArrayList<>();
-	private List<Factor> optionalFactor = new ArrayList<>();
 	
-	public Term(Factor nesessaryFactor, List<MultipleOperator> multipleOperator, List<Factor> factor) {
-		this.nesessaryFactor = nesessaryFactor;
+	public Term(List<Factor> factor, List<MultipleOperator> multipleOperator) {
+		this.factor = factor;
 		this.multipleOperator = multipleOperator;
-		this.optionalFactor = factor;
+	}
+	
+	public List<Factor> getFactorList(){
+		return factor;
 	}
 	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		nesessaryFactor.accept(visitor);
+		factor.get(0).accept(visitor);
 		for (int i = 0; i < multipleOperator.size(); i++) {
 			multipleOperator.get(i).accept(visitor);
-			optionalFactor.get(i).accept(visitor);
+			factor.get(i + 1).accept(visitor);
 		}
 	}
 }

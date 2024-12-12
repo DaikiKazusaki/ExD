@@ -7,12 +7,22 @@ public class Parser {
     private int tokenIndex = 0;
     private int LEXICALCOLS = 0;
     private int TOKENCOLS = 1;
+    private int LINENUMBERCOLS = 3;
     private List<List<String>> tokens = new ArrayList<>();
     private SyntaxException e;
 
     public Parser(List<List<String>> tokens) {
         this.tokens = tokens;
         e = new SyntaxException(tokens);
+    }
+    
+    /**
+     * Programメソッドの返り値を取得するメソッド
+     * 
+     * @throws SyntaxException 
+     */
+    public Program getProgram() throws SyntaxException {
+    	return program();
     }
 
     /**
@@ -130,16 +140,13 @@ public class Parser {
     	// ";"の判定
     	checkToken("SSEMICOLON");
     	
-    	List<VariableNameGroup> variableNameGroup2 = new ArrayList<>();
-    	List<Type> type2 = new ArrayList<>();
-    	
     	while (getToken(tokenIndex).equals("SIDENTIFIER")) {
-    		variableNameGroup2.add(variableNameGroup());
+    		variableNameGroup.add(variableNameGroup());
     		
     		// ":"の判定
         	checkToken("SCOLON");
         	
-        	type2.add(type());
+        	type.add(type());
         	
         	// ";"の判定
         	checkToken("SSEMICOLON");
@@ -154,6 +161,7 @@ public class Parser {
      */
     public VariableNameGroup variableNameGroup() throws SyntaxException {
     	List<VariableName> variableName = new ArrayList<>();
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
     	variableName.add(variableName());
     	
@@ -162,7 +170,7 @@ public class Parser {
     		variableName.add(variableName());
     	}
     	
-    	return new VariableNameGroup(variableName);
+    	return new VariableNameGroup(variableName, lineNum);
     }
     
     /**
@@ -700,16 +708,17 @@ public class Parser {
     		sign = sign();
     	}
     	
-    	Term term1 = term();
+    	List<Term> term = new ArrayList<>();
     	List<AdditionalOperator> additionalOperator = new ArrayList<>();
-    	List<Term> term2 = new ArrayList<>();
+    	
+    	term.add(term());
     	
     	while (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS") || getToken(tokenIndex).equals("SOR")) {
     		additionalOperator.add(additionalOperator());
-    		term2.add(term());
+    		term.add(term());
     	} 
     	
-    	return new SimpleEquation(sign, term1, additionalOperator, term2);
+    	return new SimpleEquation(sign, term, additionalOperator);
     }
     
     /**
@@ -717,16 +726,17 @@ public class Parser {
      * 
      */
     public Term term() throws SyntaxException {
-    	Factor factor1 = factor();
+    	List<Factor> factor = new ArrayList<>();
     	List<MultipleOperator> multipleOperator = new ArrayList<>();
-    	List<Factor> factor2 = new ArrayList<>();
+    	
+    	factor.add(factor());
     	
     	while (getToken(tokenIndex).equals("SSTAR") || getToken(tokenIndex).equals("SDIVD") || getToken(tokenIndex).equals("SMOD") || getToken(tokenIndex).equals("SAND")) {
     		multipleOperator.add(multipleOperator());
-    		factor2.add(factor());
+    		factor.add(factor());
     	}
     	
-    	return new Term(factor1, multipleOperator, factor2);
+    	return new Term(factor, multipleOperator);
     }
     
     /**

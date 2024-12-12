@@ -11,6 +11,10 @@ public class ArrayType implements Element {
 		this.generalType = generalType;
 	}
 	
+	public GeneralType getGeneralType() {
+		return generalType;
+	}
+	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
