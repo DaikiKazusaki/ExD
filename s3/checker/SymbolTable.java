@@ -6,10 +6,10 @@ import java.util.List;
 
 public class SymbolTable {
 	HashMap<String, List<String>> symbolTable = new HashMap<>();
-	List<String> typeAndScope = new ArrayList<>();
 	
 	// 記号表の作成
-	public void addSymbolTable(String name, String type, int scope) {
+	public void addSymbolTable(String name, String type, int scope) {		
+		List<String> typeAndScope = new ArrayList<>(); // 新しいリストを作成
 		typeAndScope.add(type);
 		typeAndScope.add(String.valueOf(scope));
 		symbolTable.put(name, typeAndScope);
@@ -20,3 +20,4 @@ public class SymbolTable {
 		return symbolTable;
 	}
 }
+

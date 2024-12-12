@@ -110,9 +110,10 @@ public class ListVisitor extends Visitor {
 	 */
 	public void visit(Index index) throws SemanticException {
 		String indexWithArray = index.getEquation().getSimpleEquation().getTerm().getFactor().getVariable().getNaturalVariable().getVariableName().getVariableName();
+		String type = symbolTable.getSymbolTable().get(indexWithArray).get(0);
 		String lineNum = index.getLineNum();
 		
-		if (indexWithArray == null) {
+		if (!type.equals("integer")) {
 			throw new SemanticException(lineNum);
 		}
 	}
