@@ -4,13 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ListVisitor extends Visitor {
+	private int scope = 0;
 	private SymbolTable symbolTable = new SymbolTable();
-	private HashMap<String, String> variableTable = symbolTable.getSymbolTable();
-	
-	/**
-	 * 変数，関数の宣言の処理
-	 * 
-	 */
 	
 	/**
 	 * 変数宣言の並び
@@ -29,6 +24,7 @@ public class ListVisitor extends Visitor {
 	        String stringType;
 	        String lineNum = variableNameGroup.getVariableNameGroupLineNum();
 	        
+	        // 型情報を取得
 	        if (type.getGeneralType() != null) {
 	            stringType = type.getGeneralType().getType();
 	        } else {
@@ -39,29 +35,19 @@ public class ListVisitor extends Visitor {
 	        for (VariableName variableName : variableNameGroup.getVariableNameList()) {
 	            String varName = variableName.getVariableName();
 	            
-	            // 同じ名前が記号表に存在するか確認
-	            if (variableTable.containsKey(varName)) {
-	                throw new SemanticException(lineNum);
+	            // 同じ名前が現在のスコープで宣言されているか確認
+	            if (symbolTable.getSymbolTable().containsKey(varName)) {
+	                List<String> existingInfo = symbolTable.getSymbolTable().get(varName);
+	                if (existingInfo.get(1).equals(String.valueOf(scope))) {
+	                    throw new SemanticException(lineNum);
+	                }
 	            }
-
 	            // 記号表に追加
-	            Symbol symbol = new Symbol(varName, stringType);
-	            symbolTable.addSymbolTable(symbol.getName(), symbol.getType());
+	            symbolTable.addSymbolTable(varName, stringType, scope);
 	        }
 	    }
-	}
-
-	/**
-	 * 副プログラム宣言
-	 * スコープ管理をする変数
-	 * 
-	 */
-	public void visit(SubprogramDeclaration subprogramDeclaration) throws SemanticException {
-		HashMap<String, String> symbolTableForSubprogram = symbolTable.getSymbolTable();
-		int minimumIndex = symbolTableForSubprogram.size();
-		
-		
-	}
+	    scope++;
+	}	
 	
 	/**
 	 * 副プログラム頭部
@@ -81,6 +67,19 @@ public class ListVisitor extends Visitor {
 	 */
 	public void visit(AssignStatement assignssStatement) throws SemanticException {
 		
+	}
+	
+	/**
+	 * 左辺
+	 * 左辺に使われる変数を判定
+	 */
+	public void visit(LeftSide leftSide) throws SemanticException {
+		String variableName = leftSide.getVarialbe().getNaturalVariable().getVariableName().getVariableName();
+		String lineNum = leftSide.getLineNum();
+		
+		if (!symbolTable.getSymbolTable().containsKey(variableName)) {
+			throw new SemanticException(lineNum);
+		}
 	}
 	
 	/**
@@ -158,6 +157,7 @@ public class ListVisitor extends Visitor {
 	public void visit(ArrayType arrayType) {}
 	public void visit(Integer integer) {}
 	public void visit(Sign sign) {}
+	public void visit(SubprogramDeclaration subprogramDeclaration) throws SemanticException {}
 	public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) {}
 	public void visit(ProcedureName procedureName) {};
 	public void visit(FormalParameter formalParameter) {}
@@ -171,7 +171,6 @@ public class ListVisitor extends Visitor {
 	public void visit(Else Else) {}
 	public void visit(WhileDo whileDo) {}
 	public void visit(BasicStatement basicStatement) {}
-	public void visit(LeftSide leftSide) {}
 	public void visit(Variable variable) {}
 	public void visit(NaturalVariable naturalVariable) {}
 	public void visit(VariableWithIndex variableWithIndex) {}

@@ -7,6 +7,10 @@ public class NaturalVariable implements Element {
 		this.variableName = variableName;
 	} 
 	
+	public VariableName getVariableName() {
+		return variableName;
+	}
+	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

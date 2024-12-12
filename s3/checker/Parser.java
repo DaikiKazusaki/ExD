@@ -581,8 +581,9 @@ public class Parser {
      */
     public LeftSide leftSide() throws SyntaxException {
     	Variable variable = variable();
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
-    	return new LeftSide(variable);
+    	return new LeftSide(variable, lineNum);
     }
     
     /**

@@ -29,7 +29,7 @@ public abstract class Visitor {
     public void visit(WhileDo whileDo) {}
     public void visit(BasicStatement basicStatement) {}
     public void visit(AssignStatement assignStatement) throws SemanticException {}
-    public void visit(LeftSide leftSide) {}
+    public void visit(LeftSide leftSide) throws SemanticException {}
     public void visit(Variable variable) {}
     public void visit(NaturalVariable naturalVariable) {}
     public void visit(VariableWithIndex variableWithIndex) {}
