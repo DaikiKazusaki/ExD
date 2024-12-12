@@ -51,6 +51,18 @@ public class ListVisitor extends Visitor {
 	    }
 	}
 
+	/**
+	 * 配列型
+	 * 添え字の型を判定
+	 * 
+	 */
+	public void visit(ArrayType arrayType) throws SemanticException {
+		Integer minimumInteger = arrayType.getMinimumIndex();
+		Integer maximumInteger = arrayType.getMaximumIndex();
+		String lineNum = arrayType.getLineNum();
+		
+		
+	}
 	
 	/**
 	 * 副プログラム頭部
@@ -155,7 +167,6 @@ public class ListVisitor extends Visitor {
 	public void visit(VariableName variableName) {}	
 	public void visit(Type type) {}	
 	public void visit(GeneralType generalType) {}
-	public void visit(ArrayType arrayType) {}
 	public void visit(Integer integer) {}
 	public void visit(Sign sign) {}
 	public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) {}

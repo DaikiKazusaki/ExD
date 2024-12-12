@@ -4,23 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Equation implements Element {
-	private SimpleEquation nesessarySimpleEquation;
+	private List<SimpleEquation> simpleEquation = new ArrayList<>();
 	private List<RelationalOperator> relationalOperator = new ArrayList<>();
-	private List<SimpleEquation> optionalSimpleEquation = new ArrayList<>();
 	
-	public Equation(SimpleEquation nesessarySimpleEquation, List<RelationalOperator> relationalOperator, List<SimpleEquation> simpleEquation) {
-		this.nesessarySimpleEquation = nesessarySimpleEquation;
+	public Equation(List<SimpleEquation> simpleEquation, List<RelationalOperator> relationalOperator) {
+		this.simpleEquation = simpleEquation;
 		this.relationalOperator = relationalOperator;
-		this.optionalSimpleEquation = simpleEquation;
 	}
 	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
-		nesessarySimpleEquation.accept(visitor);
+		simpleEquation.get(0).accept(visitor);
 		for (int i = 0; i < relationalOperator.size(); i++) {
 			relationalOperator.get(i).accept(visitor);
-			optionalSimpleEquation.get(i).accept(visitor);
+			simpleEquation.get(i + 1).accept(visitor);
 		}
 	}
 }

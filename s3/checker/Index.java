@@ -7,6 +7,10 @@ public class Index implements Element {
 		this.equation = equation;
 	}
 	
+	public Equation getEquation() {
+		return equation;
+	}
+	
 	@Override
 	public void accept(Visitor visitor) {
 		visitor.visit(this);

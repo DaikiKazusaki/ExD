@@ -222,6 +222,8 @@ public class Parser {
      * 
      */
     public ArrayType arrayType() throws SyntaxException {
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
+    	
     	// "["の判定
     	checkToken("SLBRACKET");
     	
@@ -243,7 +245,7 @@ public class Parser {
     	// 標準型の判定
     	GeneralType generalType = generalType();
     	
-    	return new ArrayType(minimumInteger, maximumInteger, generalType);
+    	return new ArrayType(minimumInteger, maximumInteger, generalType, lineNum);
     }
     
     /**
@@ -685,19 +687,20 @@ public class Parser {
      */
     public Equation equation() throws SyntaxException {
     	// 単純式の判定
-    	SimpleEquation simpleEquation1 = simpleEquation();
+    	List<SimpleEquation> simpleEquation = new ArrayList<>();
     	List<RelationalOperator> relationalOperator = new ArrayList<>();
-    	List<SimpleEquation> simpleEquation2 = new ArrayList<>();
+    	
+    	simpleEquation.add(simpleEquation());
     	
     	String token = getToken(tokenIndex);
     	
     	// 関連演算子の判定
     	if (token.equals("SEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
     		relationalOperator.add(relationalOperator());
-    		simpleEquation2.add(simpleEquation());
+    		simpleEquation.add(simpleEquation());
     	}
     	
-    	return new Equation(simpleEquation1, relationalOperator, simpleEquation2);
+    	return new Equation(simpleEquation, relationalOperator);
     }
     
     /**

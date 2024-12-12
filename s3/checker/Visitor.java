@@ -10,7 +10,7 @@ public abstract class Visitor {
     public void visit(VariableName variableName) {}
     public void visit(Type type) {}
     public void visit(GeneralType generalType) {}
-    public void visit(ArrayType arrayType) {}
+    public void visit(ArrayType arrayType) throws SemanticException {}
     public void visit(Integer integer) {}
     public void visit(Sign sign) {}
     public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) {}
