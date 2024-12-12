@@ -8,16 +8,26 @@ public class SimpleEquation implements Element {
 	private Term term ;
 	private List<AdditionalOperator> additionalOperator = new ArrayList<>();
 	private List<Term> termList = new ArrayList<>();
+	private String lineNum;
 	
-	public SimpleEquation(Sign sign, Term term, List<AdditionalOperator> additionalOperator, List<Term> termList) {
+	public SimpleEquation(Sign sign, Term term, List<AdditionalOperator> additionalOperator, List<Term> termList, String lineNum) {
 		this.sign = sign;
 		this.term = term;
 		this.additionalOperator = additionalOperator;
 		this.termList = termList;
+		this.lineNum = lineNum;
+	}
+	
+	public String getLineNum() {
+		return lineNum;
 	}
 	
 	public Term getTerm(){
 		return term;
+	}
+	
+	public List<Term> getTermList() {
+		return termList;
 	}
 	
 	@Override

@@ -37,7 +37,7 @@ public abstract class Visitor {
     public void visit(ProcedureCallStatement procedureCallStatement) throws SemanticException {}
     public void visit(EquationGroup equationGroup) {}
     public void visit(Equation equation) {}
-    public void visit(SimpleEquation simpleEquation) {}
+    public void visit(SimpleEquation simpleEquation) throws SemanticException {}
     public void visit(Term term) {}
     public void visit(Factor factor) {}
     public void visit(RelationalOperator relationalOperator) {}

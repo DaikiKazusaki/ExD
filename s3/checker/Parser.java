@@ -709,6 +709,8 @@ public class Parser {
      * 
      */
     public SimpleEquation simpleEquation() throws SyntaxException {
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
+    	
     	Sign sign = null;
     	if (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS")) {
     		sign = sign();
@@ -723,7 +725,7 @@ public class Parser {
     		termList.add(term());
     	} 
     	
-    	return new SimpleEquation(sign, term, additionalOperator, termList);
+    	return new SimpleEquation(sign, term, additionalOperator, termList, lineNum);
     }
     
     /**

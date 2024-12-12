@@ -145,21 +145,19 @@ public class ListVisitor extends Visitor {
 	/**
 	 * 単純式
 	 * 加法演算子の個数分，項同士判定
+	 * @throws SemanticException 
 	 * 
 	 */
-	public void visit(SimpleEquation simpleEquation) {
-		/*
-		List<Term> term = simpleEquation.getTermList();
+	public void visit(SimpleEquation simpleEquation) throws SemanticException {
+		List<Term> termList = simpleEquation.getTermList();
+		String lineNum = simpleEquation.getLineNum();
 		
-		for (int i = 0; i < term.size() - 2; i++) {
-			Term leftTerm = term.get(i);
-			Term rightTerm = term.get(i + 1);
-			
-			if (!leftTerm.equals(rightTerm)) {
-				// エラー処理記述
+		for (Term item: termList) {
+			UnsignedInteger token = item.getFactor().getConstant().getUnsignedInteger();
+			if (token == null) {
+				throw new SemanticException(lineNum);
 			}
 		}
-		*/
 	}
 	
 	/**
