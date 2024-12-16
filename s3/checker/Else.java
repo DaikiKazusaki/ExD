@@ -1,14 +1,17 @@
 package enshud.s3.checker;
 
-public class Else {
+public class Else implements Element {
 	private ComplexStatement complexStatement;
 	
 	public Else(ComplexStatement complexStatement) {
 		this.complexStatement = complexStatement;
 	}
 	
-	public void accept(Visitor visitor) {
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
-		complexStatement.accept(visitor);
+		if (complexStatement != null) {
+			complexStatement.accept(visitor);
+		}
 	}
 }

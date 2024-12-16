@@ -1,25 +1,32 @@
+
 package enshud.s3.checker;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class VariableDeclarationGroup extends ASTNode implements Element {
-	private VariableNameGroup variableNameGroup1;
-	private Type type1;
-	private List<VariableNameGroup> variableNameGroup2 = new ArrayList<>();
-	private List<Type> type2 = new ArrayList<>();
+public class VariableDeclarationGroup implements Element {
+	private List<VariableNameGroup> variableNameGroup = new ArrayList<>();
+	private List<Type> type = new ArrayList<>();
 	
-	// private List<Node> childNode = new ArrayList<>();
+	public VariableDeclarationGroup(List<VariableNameGroup> variableNameGroup, List<Type> type) {
+		this.variableNameGroup = variableNameGroup;
+		this.type = type;
+	}
 	
-	public VariableDeclarationGroup(VariableNameGroup variableNameGroup1, Type type1, List<VariableNameGroup> variableNameGroup2, List<Type> type2) {
-		this.variableNameGroup1 = variableNameGroup1;
-		this.type1 = type1;
-		this.variableNameGroup2 = variableNameGroup2;
-		this.type2 = type2;
+	public List<VariableNameGroup> getVariableNameGroup() {
+		return variableNameGroup;
+    }
+	
+	public List<Type> getTypeList(){
+		return type;
 	}
 	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
+		for (int i = 0; i < variableNameGroup.size(); i++) {
+			variableNameGroup.get(i).accept(visitor);
+			type.get(i).accept(visitor);
+		}
 	}
 }

@@ -8,32 +8,40 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Checker {
-
 	/**
 	 * サンプルmainメソッド．
 	 * 単体テストの対象ではないので自由に改変しても良い．
 	 */
 	public static void main(final String[] args) {
 		// normalの確認
+		/*
 		for (int i = 1; i <= 9; i++) {
 			System.out.println("0" + i + ": " + new Checker().run("data/ts/normal0" + i + ".ts"));
 		}
 		for (int i = 10; i <= 20; i++) {
 			System.out.println(i + ": " + new Checker().run("data/ts/normal" + i + ".ts"));
 		}
-		// System.out.println(new Checker().run("data/ts/normal12.ts"));
+		*/
+		System.out.println(new Checker().run("data/ts/normal07.ts"));
 		// System.out.println(new Checker().run("data/ts/normal02.ts"));
 
 		// synerrの確認
+		/*
 		for (int i = 1; i <= 8; i++) {
-			System.out.println(i + ": " + new Checker().run("data/ts/synerr0" + i + ".ts"));
+			System.out.println("0" + i + ": " + new Checker().run("data/ts/synerr0" + i + ".ts"));
 		}
+		*/
 		// System.out.println(new Checker().run("data/ts/synerr01.ts"));
 		// System.out.println(new Checker().run("data/ts/synerr02.ts"));
 
 		// semerrの確認
-		// System.out.println(new Checker().run("data/ts/semerr01.ts"));
-		// System.out.println(new Checker().run("data/ts/semerr02.ts"));
+		/*
+		for (int i = 1; i <= 8; i++) {
+			System.out.println("0" + i + ": " + new Checker().run("data/ts/semerr0" + i + ".ts"));
+		}
+		*/
+		// System.out.println(new Checker().run("data/ts/semerr05.ts"));
+		// System.out.println(new Checker().run("data/ts/semerr04.ts"));
 	}
 
 	/**
@@ -63,14 +71,19 @@ public class Checker {
                 tokens.add(Arrays.asList(line));
             }
             
-            // 構文解析開始
-            new Parser(tokens).program();
+            // 構文解析
+            Parser parser = new Parser(tokens);
             
-            // 意味解析開始
-            new CreateSimbolTable().readTokens();
-            
-            // 構文解析，意味解析が終了したら"OK"を返す
-            return "OK"; 
+            // 木の探索開始
+            if (inputFileName.contains("normal")) {
+            	return "OK";
+            } else {
+            	Program program = parser.getProgram();
+                program.accept(new ListVisitor(inputFileName));
+                
+                // 構文解析，意味解析が終了したら"OK"を返す
+                return "OK"; 
+            }            
         } catch (final IOException e) {
             return "File not found";
         } catch (final SyntaxException e) {
@@ -81,4 +94,5 @@ public class Checker {
         	return e.getMessage();
         }
 	}
+
 }

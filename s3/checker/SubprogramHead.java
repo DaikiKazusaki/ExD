@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class SubprogramHead {
+public class SubprogramHead implements Element {
 	private ProcedureName procedureName;
 	private FormalParameter formalParameter;
 	
@@ -9,9 +9,14 @@ public class SubprogramHead {
 		this.formalParameter = formalParameter;
 	}
 	
-	public void accept(Visitor visitor) {
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		procedureName.accept(visitor);
 		formalParameter.accept(visitor);
+	}
+	
+	public ProcedureName getProcedureName() {
+		return procedureName;
 	}
 }

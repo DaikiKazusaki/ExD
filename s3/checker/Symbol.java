@@ -3,7 +3,10 @@ package enshud.s3.checker;
 public class Symbol extends Entry {
 	private String name;
 	private String type;
+<<<<<<< HEAD
 	private int size = claclateSize(name, type);
+=======
+>>>>>>> f34e927478a730505bd3101200faafb7d4a41f51
 	
 	public Symbol(String name, String type) {
         this.name = name;
@@ -17,6 +20,7 @@ public class Symbol extends Entry {
     public String getType() {
         return type;
     }
+<<<<<<< HEAD
 
     public int getSize() {
         return size;
@@ -42,4 +46,6 @@ public class Symbol extends Entry {
 		
 		return size;
 	}
+=======
+>>>>>>> f34e927478a730505bd3101200faafb7d4a41f51
 }

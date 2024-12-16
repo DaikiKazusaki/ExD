@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class InputOutputStatement {
+public class InputOutputStatement implements Element {
 	private VariableGroup variableGroup;
 	private EquationGroup equationGroup;
 	
@@ -9,12 +9,14 @@ public class InputOutputStatement {
 		this.equationGroup = equationGroup;
 	}
 	
-	public void accept(Visitor visitor) {
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		
 		if (variableGroup != null) {
 			variableGroup.accept(visitor);
-		} else {
+		} 
+		if (equationGroup != null) {
 			equationGroup.accept(visitor);
 		}
 	}

@@ -1,51 +1,50 @@
 package enshud.s3.checker;
 
 public abstract class Visitor {
-	public abstract void visit(Program program);
-	public abstract void visit(ProgramName programName);
-	public abstract void visit(Block block);
-	public abstract void visit(VariableDeclaration vatiableDeclaration);
-	public abstract void visit(VariableDeclarationGroup variableDeclarationGroup);
-	public abstract void visit(VariableNameGroup variableNameGroup);
-	public abstract void visit(VariableName variableName);
-	public abstract void visit(Type type);
-	public abstract void visit(GeneralType generalType);
-	public abstract void visit(ArrayType arrayType);
-	public abstract void visit(Integer integer);
-	public abstract void visit(Sign sign);
-	public abstract void visit(SubprogramDeclarationGroup subprogramDeclarationGroup);
-	public abstract void visit(SubprogramDeclaration subprogramDeclaration);
-	public abstract void visit(SubprogramHead subprogramHead);
-	public abstract void visit(ProcedureName prodecureName);
-	public abstract void visit(FormalParameter formalParameter);
-	public abstract void visit(FormalParameterGroup formalParameterGroup);
-	public abstract void visit(FormalParameterNameGroup formalParameterNameGroup);
-	public abstract void visit(FormalParameterName formalParameterName);
-	public abstract void visit(ComplexStatement complexStatement);
-	public abstract void visit(StatementGroup statementGroup);
-	public abstract void visit(Statement statement);
-	public abstract void visit(Else Else);
-	public abstract void visit(IfThen ifThen);
-	public abstract void visit(WhileDo whileDo);
-	public abstract void visit(BasicStatement basicStatement);
-	public abstract void visit(AssignStatement assignStatement);
-	public abstract void visit(LeftSide leftSide);
-	public abstract void visit(Variable variable);
-	public abstract void visit(NaturalVariable naturalvariable);
-	public abstract void visit(VariableWithIndex variableWithIndex);
-	public abstract void visit(Index index);
-	public abstract void visit(ProcedureCallStatement procedureCallStatement);
-	public abstract void visit(EquationGroup equationGroup);
-	public abstract void visit(Equation equatioin);
-	public abstract void visit(SimpleEquation simpleEquation);
-	public abstract void visit(Term term);
-	public abstract void visit(Factor factor);
-	public abstract void visit(RelationalOperator relationalOperator);
-	public abstract void visit(AdditionalOperator additionalOperator);
-	public abstract void visit(MultipleOperator multipleOperator);
-	public abstract void visit(InputOutputStatement inputoutputStatement);
-	public abstract void visit(VariableGroup variableGroup);
-	public abstract void visit(Constant constant);
-	public abstract void visit(UnsignedInteger unsignedInteger);
-	public abstract void visit(StringElement stringElement);	
+    public void visit(Program program) {}
+    public void visit(ProgramName programName) {}
+    public void visit(Block block) {}
+    public void visit(VariableDeclaration variableDeclaration) {}
+    public void visit(VariableDeclarationGroup variableDeclarationGroup) throws SemanticException {}
+    public void visit(VariableNameGroup variableNameGroup) {}
+    public void visit(VariableName variableName) {}
+    public void visit(Type type) {}
+    public void visit(GeneralType generalType) {}
+    public void visit(ArrayType arrayType) throws SemanticException {}
+    public void visit(Int integer) {}
+    public void visit(Sign sign) {}
+    public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) {}
+    public void visit(SubprogramDeclaration subprogramDeclaration) throws SemanticException {}
+    public void visit(SubprogramHead subprogramHead) throws SemanticException {}
+    public void visit(ProcedureName procedureName) {}
+    public void visit(FormalParameter formalParameter) {}
+    public void visit(FormalParameterGroup formalParameterGroup) throws SemanticException {}
+    public void visit(FormalParameterNameGroup formalParameterNameGroup) {}
+    public void visit(FormalParameterName formalParameterName) {}
+    public void visit(ComplexStatement complexStatement) {}
+    public void visit(StatementGroup statementGroup) {}
+    public void visit(Statement statement) {}
+    public void visit(Else elseStatement) {}
+    public void visit(IfThen ifThen) throws SemanticException {}
+    public void visit(WhileDo whileDo) {}
+    public void visit(BasicStatement basicStatement) {}
+    public void visit(AssignStatement assignStatement) throws SemanticException {}
+    public void visit(LeftSide leftSide) throws SemanticException {}
+    public void visit(Variable variable) {}
+    public void visit(NaturalVariable naturalVariable) {}
+    public void visit(VariableWithIndex variableWithIndex) {}
+    public void visit(Index index) throws SemanticException {}
+    public void visit(ProcedureCallStatement procedureCallStatement) throws SemanticException {}
+    public void visit(EquationGroup equationGroup) {}
+    public void visit(Equation equation) throws SemanticException {}
+    public void visit(SimpleEquation simpleEquation) throws SemanticException {}
+    public void visit(Term term) {}
+    public void visit(Factor factor) {}
+    public void visit(RelationalOperator relationalOperator) {}
+    public void visit(AdditionalOperator additionalOperator) {}
+    public void visit(MultipleOperator multipleOperator) {}
+    public void visit(InputOutputStatement inputOutputStatement) {}
+    public void visit(VariableGroup variableGroup) {}
+    public void visit(Constant constant) {}
+    public void visit(UnsignedInteger unsignedInteger) {}
 }

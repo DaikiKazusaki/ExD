@@ -1,14 +1,25 @@
 package enshud.s3.checker;
 
-public class LeftSide {
-	private Variable variableName;
+public class LeftSide implements Element {
+	private Variable variable;
+	private String lineNum;
 
-	public LeftSide(Variable variable) {
-		this.variableName = variable;
+	public LeftSide(Variable variable, String lineNum) {
+		this.variable = variable;
+		this.lineNum = lineNum;
 	}
 	
-	public void accept(Visitor visitor) {
+	public Variable getVariable() {
+		return variable;
+	}
+	
+	public String getLineNum() {
+		return lineNum;
+	}
+	
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
-		variableName.accept(visitor);
+		variable.accept(visitor);
 	}
 }

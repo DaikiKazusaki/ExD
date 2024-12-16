@@ -9,7 +9,10 @@ public class Block implements Element {
 		this.subprogramDeclarationGroup = subprogramDeclarationGroup;
 	}
 	
-	public void accept(Visitor visitor) {
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
+		variableDeclaration.accept(visitor);
+		subprogramDeclarationGroup.accept(visitor);
 	}
 }

@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class Statement {
+public class Statement implements Element {
 	private BasicStatement basicStatement;
 	private IfThen ifThen;
 	private WhileDo whileDo;
@@ -11,7 +11,8 @@ public class Statement {
 		this.whileDo = whileDo;
 	}
 
-	public void accept(Visitor visitor) {
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		
 		if (basicStatement != null) {

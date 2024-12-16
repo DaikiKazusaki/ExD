@@ -3,16 +3,22 @@ package enshud.s3.checker;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VariableGroup {
-	private Variable variable1;
-	private List<Variable> variable2 = new ArrayList<>();
+public class VariableGroup implements Element {
+	private List<Variable> variable = new ArrayList<>();
 	
-	public VariableGroup(Variable variable1, List<Variable> variable2) {
-		this.variable1 = variable1;
-		this.variable2 = variable2;
+	public VariableGroup(List<Variable> variable) {
+		this.variable = variable;
+	}
+	
+	public List<Variable> getVariable(){
+		return variable;
 	}
 
-	public void accept(Visitor visitor) {
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
+		for (Variable item: variable) {
+			item.accept(visitor);
+		}
 	}
 }
