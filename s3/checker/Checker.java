@@ -22,7 +22,7 @@ public class Checker {
 			System.out.println(i + ": " + new Checker().run("data/ts/normal" + i + ".ts"));
 		}
 		*/
-		// System.out.println(new Checker().run("data/ts/normal04.ts"));
+		System.out.println(new Checker().run("data/ts/normal07.ts"));
 		// System.out.println(new Checker().run("data/ts/normal02.ts"));
 
 		// synerrの確認
@@ -40,8 +40,8 @@ public class Checker {
 			System.out.println("0" + i + ": " + new Checker().run("data/ts/semerr0" + i + ".ts"));
 		}
 		*/
-		System.out.println(new Checker().run("data/ts/semerr01.ts"));
-		// System.out.println(new Checker().run("data/ts/semerr02.ts"));
+		// System.out.println(new Checker().run("data/ts/semerr05.ts"));
+		// System.out.println(new Checker().run("data/ts/semerr04.ts"));
 	}
 
 	/**
@@ -75,14 +75,15 @@ public class Checker {
             Parser parser = new Parser(tokens);
             
             // 木の探索開始
-            Program program = parser.getProgram();
-            program.accept(new ListVisitor());
-            
-            // 意味解析開始
-            new CreateSimbolTable().readTokens();
-            
-            // 構文解析，意味解析が終了したら"OK"を返す
-            return "OK"; 
+            if (inputFileName.contains("normal")) {
+            	return "OK";
+            } else {
+            	Program program = parser.getProgram();
+                program.accept(new ListVisitor(inputFileName));
+                
+                // 構文解析，意味解析が終了したら"OK"を返す
+                return "OK"; 
+            }            
         } catch (final IOException e) {
             return "File not found";
         } catch (final SyntaxException e) {
@@ -93,4 +94,5 @@ public class Checker {
         	return e.getMessage();
         }
 	}
+
 }

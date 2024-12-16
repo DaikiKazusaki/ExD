@@ -15,7 +15,7 @@ public class VariableGroup implements Element {
 	}
 
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		for (Variable item: variable) {
 			item.accept(visitor);

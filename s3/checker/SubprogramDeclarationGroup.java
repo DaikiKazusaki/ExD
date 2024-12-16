@@ -11,7 +11,7 @@ public class SubprogramDeclarationGroup implements Element {
 	}
 	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		for (SubprogramDeclaration item: subprogramDeclaration) {
 			item.accept(visitor);

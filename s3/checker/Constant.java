@@ -20,4 +20,8 @@ public class Constant implements Element {
 	public String getToken() {
 		return token;
 	}
+	
+	public UnsignedInteger getUnsignedInteger() {
+		return unsignedInteger;
+	}
 }

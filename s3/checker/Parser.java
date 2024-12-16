@@ -20,16 +20,18 @@ public class Parser {
      * Programメソッドの返り値を取得するメソッド
      * 
      * @throws SyntaxException 
+     * @throws SemanticException 
      */
-    public Program getProgram() throws SyntaxException {
+    public Program getProgram() throws SyntaxException, SemanticException {
     	return program();
     }
 
     /**
      * プログラム
+     * @throws SemanticException 
      * 
      */
-    public Program program() throws SyntaxException {
+    public Program program() throws SyntaxException, SemanticException {
     	// "program"の判定
         checkToken("SPROGRAM");
 
@@ -97,9 +99,10 @@ public class Parser {
     
     /**
      * ブロックの判定
+     * @throws SemanticException 
      * 
      */
-    public Block block() throws SyntaxException {
+    public Block block() throws SyntaxException, SemanticException {
     	VariableDeclaration variableDeclaration = variableDeclaration();    	
     	SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclarationGroup();
     	
@@ -222,17 +225,19 @@ public class Parser {
      * 
      */
     public ArrayType arrayType() throws SyntaxException {
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
+    	
     	// "["の判定
     	checkToken("SLBRACKET");
     	
     	// 添え字の最小値
-    	Integer minimumInteger = integer();
+    	Int minimumInteger = integer();
     	
     	// ".."の判定
     	checkToken("SRANGE");
     	
     	// 添え字の最大値
-    	Integer maximumInteger = integer();
+    	Int maximumInteger = integer();
     	
     	// "]"の判定
     	checkToken("SRBRACKET");
@@ -243,14 +248,14 @@ public class Parser {
     	// 標準型の判定
     	GeneralType generalType = generalType();
     	
-    	return new ArrayType(minimumInteger, maximumInteger, generalType);
+    	return new ArrayType(minimumInteger, maximumInteger, generalType, lineNum);
     }
     
     /**
      * 整数の判定
      * 
      */
-    public Integer integer() throws SyntaxException {
+    public Int integer() throws SyntaxException {
     	Sign sign = null;
     	String token = getToken(tokenIndex);
     	
@@ -260,7 +265,7 @@ public class Parser {
     	
     	UnsignedInteger unsignedInteger = unsignedInteger();
     	
-    	return new Integer(sign, unsignedInteger);
+    	return new Int(sign, unsignedInteger);
     }
     
     /**
@@ -274,9 +279,10 @@ public class Parser {
     
     /**
      * 副プログラム宣言群の判定
+     * @throws SemanticException 
      * 
      */
-    public SubprogramDeclarationGroup subprogramDeclarationGroup() throws SyntaxException {
+    public SubprogramDeclarationGroup subprogramDeclarationGroup() throws SyntaxException, SemanticException {
     	List<SubprogramDeclaration> subprogramDeclaration = new ArrayList<>();
     	
     	while (getToken(tokenIndex).equals("SPROCEDURE")) {    		
@@ -291,9 +297,10 @@ public class Parser {
     
     /**
      * 副プログラム宣言
+     * @throws SemanticException 
      * 
      */
-    public SubprogramDeclaration subprogramDeclaration() throws SyntaxException {
+    public SubprogramDeclaration subprogramDeclaration() throws SyntaxException, SemanticException {
     	// 副プログラム頭部の判定
     	SubprogramHead subprogramHead = subprogramHead();
     	
@@ -366,6 +373,7 @@ public class Parser {
     public FormalParameterGroup formalParameterGroup() throws SyntaxException {
     	List<FormalParameterNameGroup> formalParameterNameGroup = new ArrayList<>();
     	List<GeneralType> generalType = new ArrayList<>();
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
     	formalParameterNameGroup.add(formalParameterNameGroup());
     	
@@ -379,13 +387,10 @@ public class Parser {
     		formalParameterNameGroup.add(formalParameterNameGroup());
     		
     		// ":"の判定
-    		checkToken("SCOLON");
-    		
-    		
+    		checkToken("SCOLON");	
     	}
     	
-    	
-    	return new FormalParameterGroup(formalParameterNameGroup, generalType);
+    	return new FormalParameterGroup(formalParameterNameGroup, generalType, lineNum);
     }
     
     /**
@@ -423,9 +428,10 @@ public class Parser {
     
     /**
      * 複合文の判定
+     * @throws SemanticException 
      * 
      */
-    public ComplexStatement complexStatement() throws SyntaxException {
+    public ComplexStatement complexStatement() throws SyntaxException, SemanticException {
     	// "begin"の判定
     	checkToken("SBEGIN");
     	
@@ -440,9 +446,10 @@ public class Parser {
     
     /**
      * 文の並びの判定
+     * @throws SemanticException 
      * 
      */
-    public StatementGroup statementGroup() throws SyntaxException {
+    public StatementGroup statementGroup() throws SyntaxException, SemanticException {
     	List<Statement> statement = new ArrayList<>();
     	
     	// 文の判定
@@ -464,9 +471,10 @@ public class Parser {
     
     /**
      * 文の判定
+     * @throws SemanticException 
      * 
      */
-    public Statement statement() throws SyntaxException {
+    public Statement statement() throws SyntaxException, SemanticException {
     	BasicStatement basicStatement = null;
     	IfThen ifThen = null;
     	WhileDo whileDo = null;
@@ -487,9 +495,10 @@ public class Parser {
     
     /**
      * if-thenの判定
+     * @throws SemanticException 
      * 
      */
-    public IfThen ifThen() throws SyntaxException {
+    public IfThen ifThen() throws SyntaxException, SemanticException {
     	Equation equation = equation();
     	
     	// "then"の判定
@@ -507,9 +516,10 @@ public class Parser {
     
     /**
      * elseの判定
+     * @throws SemanticException 
      * 
      */
-    public Else Else() throws SyntaxException {
+    public Else Else() throws SyntaxException, SemanticException {
     	tokenIndex++;
     	ComplexStatement complexStatement = complexStatement();
     	
@@ -518,9 +528,10 @@ public class Parser {
     
     /**
      * while-doの判定
+     * @throws SemanticException 
      * 
      */
-    public WhileDo whileDo() throws SyntaxException {
+    public WhileDo whileDo() throws SyntaxException, SemanticException {
     	Equation equation = equation();
     	
     	// "do"の判定
@@ -533,9 +544,10 @@ public class Parser {
     
     /**
      * 基本文の判定
+     * @throws SemanticException 
      * 
      */
-    public BasicStatement basicStatement() throws SyntaxException {
+    public BasicStatement basicStatement() throws SyntaxException, SemanticException {
     	String token = getToken(tokenIndex);
     	AssignStatement assignStatement = null;
     	ProcedureCallStatement procedureCallStatement = null;
@@ -563,13 +575,14 @@ public class Parser {
      */
     public AssignStatement assignStatement() throws SyntaxException {
     	LeftSide leftSide = leftSide();
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
     	// ":="の判定
     	checkToken("SASSIGN");
     	
     	Equation equation = equation();
     	
-    	return new AssignStatement(leftSide, equation);
+    	return new AssignStatement(leftSide, equation, lineNum);
     }
     
     /**
@@ -578,8 +591,9 @@ public class Parser {
      */
     public LeftSide leftSide() throws SyntaxException {
     	Variable variable = variable();
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
-    	return new LeftSide(variable);
+    	return new LeftSide(variable, lineNum);
     }
     
     /**
@@ -636,8 +650,9 @@ public class Parser {
      */
     public Index index() throws SyntaxException {
     	Equation equation = equation();
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
-    	return new Index(equation);
+    	return new Index(equation, lineNum);
     }
     
     /**
@@ -648,6 +663,7 @@ public class Parser {
     	ProcedureName procedureName = procedureName();
     	String token = getToken(tokenIndex);
     	EquationGroup equationGroup = null;
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
     	if (token.equals("SLPAREN")) {
     		tokenIndex++;
@@ -657,7 +673,7 @@ public class Parser {
     		checkToken("SRPAREN");
     	}
     	
-    	return new ProcedureCallStatement(procedureName, equationGroup);
+    	return new ProcedureCallStatement(procedureName, equationGroup, lineNum);
     }
     
     /**
@@ -683,19 +699,19 @@ public class Parser {
      */
     public Equation equation() throws SyntaxException {
     	// 単純式の判定
-    	SimpleEquation simpleEquation1 = simpleEquation();
+    	SimpleEquation simpleEquation =simpleEquation();
     	List<RelationalOperator> relationalOperator = new ArrayList<>();
-    	List<SimpleEquation> simpleEquation2 = new ArrayList<>();
+    	List<SimpleEquation> simpleEquationList = new ArrayList<>();
     	
     	String token = getToken(tokenIndex);
     	
     	// 関連演算子の判定
     	if (token.equals("SEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
     		relationalOperator.add(relationalOperator());
-    		simpleEquation2.add(simpleEquation());
+    		simpleEquationList.add(simpleEquation());
     	}
     	
-    	return new Equation(simpleEquation1, relationalOperator, simpleEquation2);
+    	return new Equation(simpleEquation, relationalOperator, simpleEquationList);
     }
     
     /**
@@ -703,22 +719,23 @@ public class Parser {
      * 
      */
     public SimpleEquation simpleEquation() throws SyntaxException {
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
+    	
     	Sign sign = null;
     	if (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS")) {
     		sign = sign();
     	}
     	
-    	List<Term> term = new ArrayList<>();
+    	Term term = term();
     	List<AdditionalOperator> additionalOperator = new ArrayList<>();
-    	
-    	term.add(term());
+    	List<Term> termList = new ArrayList<>();
     	
     	while (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS") || getToken(tokenIndex).equals("SOR")) {
     		additionalOperator.add(additionalOperator());
-    		term.add(term());
+    		termList.add(term());
     	} 
     	
-    	return new SimpleEquation(sign, term, additionalOperator);
+    	return new SimpleEquation(sign, term, additionalOperator, termList, lineNum);
     }
     
     /**
@@ -726,17 +743,16 @@ public class Parser {
      * 
      */
     public Term term() throws SyntaxException {
-    	List<Factor> factor = new ArrayList<>();
+    	Factor factor = factor();
     	List<MultipleOperator> multipleOperator = new ArrayList<>();
-    	
-    	factor.add(factor());
+    	List<Factor> factorList = new ArrayList<>();
     	
     	while (getToken(tokenIndex).equals("SSTAR") || getToken(tokenIndex).equals("SDIVD") || getToken(tokenIndex).equals("SMOD") || getToken(tokenIndex).equals("SAND")) {
     		multipleOperator.add(multipleOperator());
-    		factor.add(factor());
+    		factorList.add(factor());
     	}
     	
-    	return new Term(factor, multipleOperator);
+    	return new Term(factor, multipleOperator, factorList);
     }
     
     /**
@@ -749,6 +765,7 @@ public class Parser {
     	Equation equation = null;
     	Factor factor = null;    	
     	String token = getToken(tokenIndex);
+    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
     	
     	if (token.equals("SIDENTIFIER")) {
     		variable = variable();
@@ -765,7 +782,7 @@ public class Parser {
     		e.throwError(tokenIndex);
     	}
     	
-    	return new Factor(variable, constant, equation, factor);
+    	return new Factor(variable, constant, equation, factor, lineNum);
     }
     
     /**

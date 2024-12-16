@@ -11,7 +11,7 @@ public class EquationGroup implements Element {
 	}
 
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		for (Equation item: equation) {
 			item.accept(visitor);

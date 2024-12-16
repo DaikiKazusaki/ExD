@@ -9,8 +9,16 @@ public class Variable implements Element {
 		this.variableWithIndex = variableWithIndex;
 	}
 	
+	public NaturalVariable getNaturalVariable() {
+		return naturalVariable;
+	}
+	
+	public VariableWithIndex getVariableWithIndex() {
+		return variableWithIndex;
+	}
+	
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		
 		if (naturalVariable != null) {
