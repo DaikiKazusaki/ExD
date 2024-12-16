@@ -1,5 +1,12 @@
 package enshud.s4.compiler;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import enshud.casl.CaslSimulator;
 
 public class Compiler {
@@ -33,9 +40,33 @@ public class Compiler {
 	 * @param outputFileName 出力casファイル名
 	 */
 	public String run(final String inputFileName, final String outputFileName) {
-
-		// TODO
-		return "";
-
+		try {
+            // ファイルを行ごとに読み込む
+            List<String> buffer = Files.readAllLines(Paths.get(inputFileName));            
+            List<List<String>> tokens = new ArrayList<>();
+            
+            for (int i = 0; i < buffer.size(); i++) {
+                String[] line = buffer.get(i).split("\t");
+                tokens.add(Arrays.asList(line));
+            }
+            
+            // 構文解析
+            Parser parser = new Parser(tokens);
+            
+            // 木の探索開始
+            // Program program = parser.getProgram();
+            // program.accept(new ListVisitor());
+            
+            // 構文解析，意味解析が終了したら"OK"を返す
+            return "OK"; 
+        } catch (final IOException e) {
+            return "File not found";
+        } catch (final SyntaxException e) {
+            // Syntax error発生時の処理
+            return e.getMessage();
+        } catch (final SemanticException e) {
+        	// Semantic error発生時の処理
+        	return e.getMessage();
+        }
 	}
 }

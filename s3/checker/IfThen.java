@@ -1,6 +1,6 @@
 package enshud.s3.checker;
 
-public class IfThen {
+public class IfThen implements Element {
 	private Equation equation;
 	private ComplexStatement complexStatement;
 	private Else Else;
@@ -11,6 +11,11 @@ public class IfThen {
 		this.Else = Else;
 	}
 	
+	public Equation getEquation() {
+		return equation;
+	}
+	
+	@Override
 	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
 		equation.accept(visitor);

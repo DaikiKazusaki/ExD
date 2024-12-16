@@ -18,8 +18,8 @@ public class Equation implements Element {
 		return simpleEquation;
 	}
 	
-	public List<RelationalOperator> getRelationalOperatorList(){
-		return relationalOperator;
+	public RelationalOperator getRelationalOperator(){
+		return relationalOperator.get(0);
 	}
 	
 	@Override

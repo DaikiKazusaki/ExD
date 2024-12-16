@@ -6,10 +6,12 @@ import java.util.List;
 public class FormalParameterGroup implements Element {
 	private List<FormalParameterNameGroup> formalParameterNameGroup = new ArrayList<>();
 	private List<GeneralType> generalType = new ArrayList<>();	
+	private String lineNum;
 	
-	public FormalParameterGroup(List<FormalParameterNameGroup> formalParameterNameGroup, List<GeneralType> generalType) {
+	public FormalParameterGroup(List<FormalParameterNameGroup> formalParameterNameGroup, List<GeneralType> generalType, String lineNum) {
 		this.formalParameterNameGroup = formalParameterNameGroup;
 		this.generalType = generalType;
+		this.lineNum = lineNum;
 	}
 	
 	public List<FormalParameterNameGroup> getFormalParameterNameGroup() {
@@ -18,6 +20,10 @@ public class FormalParameterGroup implements Element {
 	
 	public List<GeneralType> getGeneralType() {
 		return generalType;
+	}
+	
+	public String getLineNum() {
+		return lineNum;
 	}
 	
 	@Override

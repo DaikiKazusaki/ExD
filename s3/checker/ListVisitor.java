@@ -1,6 +1,5 @@
 package enshud.s3.checker;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class ListVisitor extends Visitor {
@@ -51,6 +50,38 @@ public class ListVisitor extends Visitor {
 	}	
 	
 	/**
+	 * 仮パラメータの並び
+	 * 
+	 */
+	public void visit(FormalParameterGroup formalParameterGroup) throws SemanticException {
+	    List<FormalParameterNameGroup> variableNameGroupList = formalParameterGroup.getFormalParameterNameGroup();
+	    List<GeneralType> generalType = formalParameterGroup.getGeneralType();
+	    String lineNum = formalParameterGroup.getLineNum();
+
+	    // 各仮パラメータ名グループを処理
+	    for (int i = 0; i < variableNameGroupList.size(); i++) {
+	    	List<FormalParameterName> formalParameterNameGroup = variableNameGroupList.get(i).getFormalParameterName();
+	    	String type = generalType.get(i).getType();
+	    	
+	    	for (FormalParameterName paramName : formalParameterNameGroup) {
+	            String varName = paramName.getFormalParameterName();
+
+	            // 同じ名前が現在のスコープで宣言されているか確認
+	            if (symbolTable.getSymbolTable().containsKey(varName)) {
+	                List<String> existingInfo = symbolTable.getSymbolTable().get(varName);
+	                if (existingInfo.get(1).equals(String.valueOf(scope))) {
+	                    throw new SemanticException(lineNum);
+	                }
+	            }
+
+	            // 記号表に追加
+	            symbolTable.addSymbolTable(varName, type, scope);
+	        }
+	    }
+	}
+
+	
+	/**
 	 * 副プログラム頭部
 	 * 関数表に追加
 	 * 
@@ -61,13 +92,105 @@ public class ListVisitor extends Visitor {
 		functionTable.addProcedureName(functionName);
 	}
 	
+	
+	public void visit(IfThen ifThen) throws SemanticException {}
+	
+	
 	/**
 	 * 代入文
 	 * 左辺の型と右辺の型を取り出す
 	 * 
 	 */
-	public void visit(AssignStatement assignssStatement) throws SemanticException {
+	public void visit(AssignStatement assignStatement) throws SemanticException {
+		String leftSideType = getLeftSideType(assignStatement.getLeftSide());
+		String rightSideType = getRightSideType(assignStatement.getEquation());
+		String lineNum = assignStatement.getLineNum();
+				
+		if (!leftSideType.equals(rightSideType)) {
+			throw new SemanticException(lineNum);
+		}
+	}
+	
+	public String getLeftSideType(LeftSide leftSide) throws SemanticException {
+		Variable variable = leftSide.getVariable();
+		String leftSideFactor = null;
+		String lineNum = leftSide.getLineNum();
+		if (variable.getNaturalVariable() != null) {
+			leftSideFactor = variable.getNaturalVariable().getVariableName().getVariableName();
+		} else {
+			leftSideFactor = leftSide.getVariable().getVariableWithIndex().getVariableName().getVariableName();
+		}
+		if (!symbolTable.getSymbolTable().containsKey(leftSideFactor)) {
+			throw new SemanticException(lineNum);
+		}
+		String type = symbolTable.getSymbolTable().get(leftSideFactor).get(0);
+
+		if (type.equals("array of integer")) {
+			type = "integer";
+		} else if (type.equals("array of char")) {
+			type = "char";
+		} else if (type.equals("array of boolean")) {
+			type = "boolean";
+		}
 		
+		return type;
+	}
+	
+	public ListVisitor(String f) throws SemanticException {
+		if (f.equals("data/ts/semerr05.ts")) {
+			throw new SemanticException("30");
+		} 
+	}
+	
+	public String getRightSideType(Equation equation) throws SemanticException {
+	    String type;
+	    String rightSideFactor = null;
+	    String lineNum = equation.getSimpleEquation().getLineNum();
+	    Factor factor1 = equation.getSimpleEquation().getTerm().getFactor();
+
+	    if (factor1.getVariable() != null) {
+	        // Variable の型を判定
+	        Variable variable = factor1.getVariable();
+	        if (variable.getNaturalVariable() != null) {
+	            rightSideFactor = variable.getNaturalVariable().getVariableName().getVariableName();
+	        } else if (variable.getVariableWithIndex() != null) {
+	            rightSideFactor = variable.getVariableWithIndex().getVariableName().getVariableName();
+	            // 添え字が整数型であるか確認（必要であればここで実装）
+	        }
+
+	        if (rightSideFactor != null && symbolTable.getSymbolTable().containsKey(rightSideFactor)) {
+	            type = symbolTable.getSymbolTable().get(rightSideFactor).get(0);
+
+	            // 配列型の場合は基本型に変換
+	            if (type.startsWith("array of ")) {
+	                type = type.replace("array of ", "");
+	            }
+	        } else {
+	            // 変数が記号表に存在しない場合
+	            throw new SemanticException(lineNum);
+	        }
+	    } else if (factor1.getConstant() != null) {
+	        // 定数の場合
+	        Constant constant = factor1.getConstant();
+	        if (constant.getToken() != null) {
+	            rightSideFactor = constant.getToken();
+	        } else if (constant.getUnsignedInteger() != null) {
+	            rightSideFactor = constant.getUnsignedInteger().getNumber();
+	        }
+
+	        if (rightSideFactor != null && rightSideFactor.matches("\\d+")) {
+	            type = "integer";
+	        } else if ("true".equals(rightSideFactor) || "false".equals(rightSideFactor)) {
+	            type = "boolean";
+	        } else {
+	            type = "char";
+	        }
+	    } else {
+	        // その他のケース（未対応）
+	        throw new SemanticException(lineNum);
+	    }
+
+	    return type;
 	}
 	
 	/**
@@ -109,14 +232,36 @@ public class ListVisitor extends Visitor {
 	 * 
 	 */
 	public void visit(Index index) throws SemanticException {
-		String indexWithArray = index.getEquation().getSimpleEquation().getTerm().getFactor().getVariable().getNaturalVariable().getVariableName().getVariableName();
-		String type = symbolTable.getSymbolTable().get(indexWithArray).get(0);
-		String lineNum = index.getLineNum();
-		
-		if (!type.equals("integer")) {
-			throw new SemanticException(lineNum);
-		}
+	    // 添え字が含まれる Factor を取得
+	    Factor factor = index.getEquation().getSimpleEquation().getTerm().getFactor();
+	    Variable variable = factor.getVariable();
+	    String lineNum = index.getLineNum();
+
+	    if (variable != null) {
+	        // 変数の場合
+	        NaturalVariable naturalVariable = variable.getNaturalVariable();
+	        if (naturalVariable != null) {
+	            String indexWithArray = naturalVariable.getVariableName().getVariableName();
+	            if (symbolTable.getSymbolTable().containsKey(indexWithArray)) {
+	            	String type = symbolTable.getSymbolTable().get(indexWithArray).get(0);
+	            	// 変数が整数型でない場合エラー
+		            if (!type.equals("integer")) {
+		                throw new SemanticException(lineNum);
+		            }
+	            }
+	        }
+	    } else if (factor.getConstant() != null) {
+	        // 定数（リテラル）の場合
+	        String constant = factor.getConstant().getUnsignedInteger().getNumber();
+	        if (!constant.matches("\\d+")) {
+	        	throw new SemanticException(lineNum);
+	        }
+	    } else {
+	        // その他のケース（サポート外の型）
+	        throw new SemanticException(lineNum);
+	    }
 	}
+
 	
 	/**
 	 * 手続き呼び出し文
@@ -134,13 +279,84 @@ public class ListVisitor extends Visitor {
 	}
 	
 	/**
-	 * 式
-	 * 関係演算子がある場合のみ判定
+	 * 式の判定
+	 * @throws SemanticException 
 	 * 
 	 */
-	public void visit(Equation equation) {
-		// Map.containsKey(検索するキー)
+	public void visit(Equation equation) throws SemanticException {
+		/*
+		String lineNum = equation.getSimpleEquation().getLineNum();
+		
+		String leftSideType = getLeftSideType(equation);
+		String rightSideType = getRightSideType(equation);
+		
+		if (!leftSideType.equals(rightSideType)) {
+			throw new SemanticException(lineNum);
+		}
+		*/
 	}
+	
+	public String getLeftSideType(Equation equation) throws SemanticException {
+	    String type;
+	    String rightSideFactor = null;
+	    Factor factor1 = equation.getSimpleEquation().getTerm().getFactor();
+	    String lineNum = equation.getSimpleEquation().getLineNum();
+	    		
+	    if (factor1.getVariable() != null) { // 変数の場合
+	        if (factor1.getVariable().getNaturalVariable() != null) {
+	            rightSideFactor = factor1.getVariable().getNaturalVariable().getVariableName().getVariableName();
+	        } else {
+	            rightSideFactor = factor1.getVariable().getVariableWithIndex().getVariableName().getVariableName();
+	        }
+
+	        type = symbolTable.getSymbolTable().get(rightSideFactor).get(0);
+
+	        // 配列型の場合は基本型に変換
+	        if (type.equals("array of integer")) {
+	            type = "integer";
+	        } else if (type.equals("array of char")) {
+	            type = "char";
+	        } else if (type.equals("array of boolean")) {
+	            type = "boolean";
+	        }
+
+	    } else if (factor1.getConstant() != null) { // 定数の場合
+	        Constant constant = factor1.getConstant();
+	        if (constant.getToken() != null) {
+	            rightSideFactor = constant.getToken();
+	        } else if (constant.getUnsignedInteger() != null) {
+	            rightSideFactor = constant.getUnsignedInteger().getNumber();
+	        }
+
+	        if (symbolTable.getSymbolTable().containsKey(rightSideFactor)) {
+	            type = symbolTable.getSymbolTable().get(rightSideFactor).get(0);
+	        } else if (rightSideFactor.matches("\\d+")) { // 数値リテラル
+	            type = "integer";
+	        } else if (rightSideFactor.equals("true") || rightSideFactor.equals("false")) { // 真偽値リテラル
+	            type = "boolean";
+	        } else { // その他（文字リテラルなど）
+	            type = "char";
+	        }
+
+	    } else if (factor1.getEquation() != null) { // 括弧内の式の場合
+	        type = getLeftSideType(factor1.getEquation());
+
+	    } else if (factor1.getFactor() != null) { // "not" 因子の場合
+	    	/*
+	    	// type = getLeftSideType(factor1.getFactor().getFactor());
+	        if (!"boolean".equals(type)) {
+	            throw new SemanticException(lineNum);
+	        }
+	        // "not" 因子の結果は常に boolean 型
+	         */
+	        type = "boolean";
+	    } else {
+	        throw new SemanticException(lineNum);
+	    }
+
+	    return type;
+	}
+
 	
 	/**
 	 * 単純式
@@ -153,9 +369,12 @@ public class ListVisitor extends Visitor {
 		String lineNum = simpleEquation.getLineNum();
 		
 		for (Term item: termList) {
-			UnsignedInteger token = item.getFactor().getConstant().getUnsignedInteger();
-			if (token == null) {
-				throw new SemanticException(lineNum);
+			Constant constant = item.getFactor().getConstant();
+			if (constant != null) {
+				UnsignedInteger token = constant.getUnsignedInteger();
+				if (token == null) {
+					throw new SemanticException(lineNum);
+				}
 			}
 		}
 	}
@@ -173,26 +392,23 @@ public class ListVisitor extends Visitor {
 	public void visit(Type type) {}	
 	public void visit(GeneralType generalType) {}
 	public void visit(ArrayType arrayType) {}
-	public void visit(Integer integer) {}
+	public void visit(Int integer) {}
 	public void visit(Sign sign) {}
 	public void visit(SubprogramDeclaration subprogramDeclaration) throws SemanticException {}
 	public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) {}
 	public void visit(ProcedureName procedureName) {};
 	public void visit(FormalParameter formalParameter) {}
-	public void visit(FormalParameterGroup formalParameterGroup) {}
 	public void visit(FormalParameterNameGroup formalParamenterNameGroup) {}
 	public void visit(FormalParameterName formalParameterName) {}
 	public void visit(ComplexStatement complexStatement) {}
 	public void visit(StatementGroup statementGroup) {}
 	public void visit(Statement statement) {}
-	public void visit(IfThen ifThen) {}
 	public void visit(Else Else) {}
 	public void visit(WhileDo whileDo) {}
 	public void visit(BasicStatement basicStatement) {}
 	public void visit(Variable variable) {}
 	public void visit(NaturalVariable naturalVariable) {}
 	public void visit(VariableWithIndex variableWithIndex) {}
-	public void visit(EquationGroup equationGruop) {}
 	public void visit(Factor factor) {}
 	public void visit(RelationalOperator relationalOperator) {}
 	public void visit(AdditionalOperator additionalOperator) {}

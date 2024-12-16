@@ -1,22 +1,22 @@
 package enshud.s3.checker;
 
 public class ArrayType implements Element {
-	private Integer minimumIndex;
-	private Integer maximumIndex;
+	private Int minimumIndex;
+	private Int maximumIndex;
 	private GeneralType generalType;
 	private String lineNum;
 	
-	public ArrayType(Integer minimumIndex, Integer maximumIndex, GeneralType generalType, String lineNum) {
+	public ArrayType(Int minimumIndex, Int maximumIndex, GeneralType generalType, String lineNum) {
 		this.minimumIndex = minimumIndex;
 		this.maximumIndex = maximumIndex;
 		this.generalType = generalType;
 	}
 	
-	public Integer getMinimumIndex() {
+	public Int getMinimumIndex() {
 		return minimumIndex;
 	}
 	
-	public Integer getMaximumIndex() {
+	public Int getMaximumIndex() {
 		return maximumIndex;
 	}
 	

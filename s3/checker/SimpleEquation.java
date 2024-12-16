@@ -30,6 +30,10 @@ public class SimpleEquation implements Element {
 		return termList;
 	}
 	
+	public Term getTerm1() {
+		return termList.get(0);
+	}
+	
 	@Override
 	public void accept(Visitor visitor) throws SemanticException {	
 		visitor.visit(this);	

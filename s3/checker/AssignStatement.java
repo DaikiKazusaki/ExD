@@ -15,6 +15,14 @@ public class AssignStatement implements Element {
 		return lineNum;
 	}
 	
+	public LeftSide getLeftSide() {
+		return leftSide;
+	}
+	
+	public Equation getEquation() {
+		return equation;
+	}
+	
 	@Override
 	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
