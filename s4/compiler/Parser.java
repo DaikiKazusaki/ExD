@@ -1,6 +1,7 @@
 package enshud.s4.compiler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Parser {
@@ -494,24 +495,26 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public StatementGroup statementGroup() throws SyntaxException {
-		List<Statement> statementList = new ArrayList<>();
-		
-		// 文の判定
-		statementList.add(statement());
-		
-		// ";"の判定
-		checkToken("SSEMICOLON");
-		
-		while (getToken(tokenIndex).equals("SIDENTIFIER") || getToken(tokenIndex).equals("SREADLN") || getToken(tokenIndex).equals("SWRITELN") || getToken(tokenIndex).equals("SBEGIN") || getToken(tokenIndex).equals("SIF") || getToken(tokenIndex).equals("SWHILE")) {
-			// 文の判定
-			statementList.add(statement());
-			
-			// ";"の判定
-			checkToken("SSEMICOLON");
-		}
-		
-		return new StatementGroup(statementList);
+	    List<String> firstOfStatementGroup = Arrays.asList("SIDENTIFIER", "SREADLN", "SWRITELN", "SBEGIN", "SIF", "SWHILE");
+	    List<Statement> statementList = new ArrayList<>();
+	    
+	    // 文の判定
+	    statementList.add(statement());
+	    
+	    // ";"の判定
+	    checkToken("SSEMICOLON");
+	    
+	    while (firstOfStatementGroup.contains(getToken(tokenIndex))) {
+	        // 文の判定
+	        statementList.add(statement());
+	        
+	        // ";"の判定
+	        checkToken("SSEMICOLON");
+	    }
+	    
+	    return new StatementGroup(statementList);
 	}
+
 	
 	/**
 	 * 文を判定するメソッド
@@ -520,12 +523,13 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Statement statement() throws SyntaxException {
+		List<String> firstOfStatement = Arrays.asList("SIDENTIFIER", "SREADLN", "SWRITELN", "SBEGIN");
 		BasicStatement basicStatement = null;
 		IfThen ifThen = null;
 		WhileDo whileDo = null;
 		
-		if (getToken(tokenIndex).equals("SIDENTIFIER") || getToken(tokenIndex).equals("SWRITELN") || getToken(tokenIndex).equals("SREADLN") || getToken(tokenIndex).equals("SBEGIN")) {
-			basicStatement = basicStatament();
+		if (firstOfStatement.contains(getToken(tokenIndex))) {
+			basicStatement = basicStatement();
 		} else if (getToken(tokenIndex).equals("SIF")) {
 			ifThen = ifThen();
 		} else if (getToken(tokenIndex).equals("SWHILE")) {
@@ -639,7 +643,7 @@ public class Parser {
 	 */
 	public AssignStatement assignStatement() throws SyntaxException {
 		// 左辺の判定
-		LeftSide leftSide = letSide();
+		LeftSide leftSide = leftSide();
 		
 		// ":="の判定
 		checkToken("SASSIGN");
@@ -677,7 +681,7 @@ public class Parser {
 			naturalVariable = naturalVariable();
 		} else {
 			variableWithIndex = variableWithIndex();
-		}
+		} 
 		
 		return new Variable(naturalVariable, variableWithIndex);
 	}
@@ -761,7 +765,7 @@ public class Parser {
 	 * @return
 	 * @throws SytnaxException
 	 */
-	public EquationGroup equationGroup() throws SytnaxException {
+	public EquationGroup equationGroup() throws SyntaxException {
 		List<Equation> equationList = new ArrayList<>();
 		
 		equationList.add(equation());
@@ -776,12 +780,204 @@ public class Parser {
 		return new EquationGroup(equationList);
 	}
 	
+	/**
+	 * 式を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
 	public Equation equation() throws SyntaxException {
+		// 関係演算子のfirst集合，要修正
+		List<String> setOfRelationalOperator = Arrays.asList("SEQUAL", "SNOTEQUAL", "SLESS", "SLESSEQUAL", "SGREAT", "SGREATEQUAL");
 		List<SimpleEquation> simpleEquationList = new ArrayList<>();
 		List<RelationalOperator> relationalOperatorList = new ArrayList<>();
 		
+		// 単純式の判定
 		simpleEquationList.add(simpleEquation());
 		
-		// while (getToken(tokenIndex).equals(""))
+		while (setOfRelationalOperator.contains(getToken(tokenIndex))) {
+			// 関係演算子の判定
+			relationalOperatorList.add(relationalOperator());
+			
+			// 単純式の判定
+			simpleEquationList.add(simpleEquation());
+		}
+		
+		return new Equation(simpleEquationList, relationalOperatorList);
+	}
+	
+	/**
+	 * 単純式の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public SimpleEquation simpleEquation() throws SyntaxException {
+		Sign sign = null;
+		List<Term> termList = new ArrayList<>();
+		List<AdditionalOperator> additionalOperatorList = new ArrayList<>();
+		List<String> setOfAdditionalOperator = Arrays.asList("SPLUS", "SMINUS", "SOR");
+		
+		// 符号の判定
+		if (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS")) {
+			sign = sign();
+		}
+		
+		// 項の判定
+		termList.add(term());
+		
+		while (setOfAdditionalOperator.contains(getToken(tokenIndex))) {
+			//　加法演算子の判定
+			additionalOperatorList.add(additionalOperator());
+			
+			// 項の判定
+			termList.add(term());
+		}
+		
+		return new SimpleEquation(sign, termList, additionalOperatorList);
+	}
+	
+	/**
+	 * 項を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Term term() throws SyntaxException {
+		List<Factor> factorList = new ArrayList<>();
+		List<MultipleOperator> multipleOperatorList = new ArrayList<>();
+		List<String> setOfMultipleOperator = Arrays.asList("S");
+		
+		// 因子の判定
+		factorList.add(factor());
+		
+		while (setOfMultipleOperator.contains(getToken(tokenIndex))) {
+			// 乗法演算子の判定
+			multipleOperatorList.add(multipleOperator());
+			
+			// 因子の判定
+			factorList.add(factor());
+		}
+		
+		return new Term(factorList, multipleOperatorList);
+	}
+	
+	public Factor factor() throws SyntaxException {
+		Variable variable = null;
+		Constant constant = null;
+		Equation equation = null;
+		Factor factor = null;
+		List<String> setOfConstant = Arrays.asList("SCONSTANT", "SSTRING", "SFALSE", "STRUE");
+		
+		if (getToken(tokenIndex).equals("SIDENTIFIER")) {
+			variable = variable();
+		} else if (getToken(tokenIndex).equals("S")) {
+			constant = constant();
+		} else if (getToken(tokenIndex).equals("SLPAREN")) {
+			// "("の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 式の判定
+			equation = equation();
+			
+			// ")"の判定
+			checkToken("SRPAREN");
+		} else if (getToken(tokenIndex).equals("SNOT")) {
+			// "not"の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 因子の判定
+			factor = factor();
+		} else {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+		
+		return new Factor(variable, constant, equation, factor);
+	}
+	
+	/**
+	 * 関係演算子を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public RelationalOperator relationalOperator() throws SyntaxException {
+		String relationalOperator = getLexicality(tokenIndex);
+		tokenIndex++;
+		
+		return new RelationalOperator(relationalOperator);
+	}
+	
+	/**
+	 * 加法演算子の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public AdditionalOperator additionalOperator() throws SyntaxException {
+		String additionalOperator = getLexicality(tokenIndex);
+		tokenIndex++;
+		
+		return new AdditionalOperator(additionalOperator);
+	}
+	
+	/**
+	 * 乗法演算子を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public MultipleOperator multipleOperator() throws SyntaxException {
+		String multipleOperator = getLexicality(tokenIndex);
+		tokenIndex++;
+		
+		return new MultipleOperator(multipleOperator);
+	}
+	
+	/**
+	 * 入出力文の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public InputOutputStatement inputOutputStatement() throws SyntaxException {
+		VariableGroup variableGroup = null;
+		EquationGroup equationGroup = null;
+		
+		if (getToken(tokenIndex).equals("SREADLN")) {
+			// "readln"の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			if (getToken(tokenIndex).equals("SLPAREN")) {
+				// "("の判定はすでに行われているので，インクリメントのみを行う
+				tokenIndex++;
+				
+				// 変数の並びの判定
+				variableGroup = variableGroup();
+				
+				// ")"の判定
+				checkToken("SRPAREN");
+			}
+		} else if (getToken(tokenIndex).equals("SWRITELN")) {
+			// "writeln"の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			if (getToken(tokenIndex).equals("SLPAREN")) {
+				// "("の判定はすでに行われているので，インクリメントのみを行う
+				tokenIndex++;
+				
+				// 変数の並びの判定
+				equationGroup = equationGroup();
+				
+				// ")"の判定
+				checkToken("SRPAREN");
+			}
+		} else {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+		
+		return new InputOutputStatement(variableGroup, equationGroup);
 	}
 }
