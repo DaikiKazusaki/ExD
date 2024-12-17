@@ -16,11 +16,24 @@ public class Compiler {
 	 * 単体テストの対象ではないので自由に改変しても良い．
 	 */
 	public static void main(final String[] args) {
+		// normalの確認
+		for (int i = 1; i <= 9; i++) {
+			System.out.println("0" + i + ": " + new Compiler().run("data/ts/normal0" + i + ".ts", null));
+		}
+		for (int i = 10; i <= 20; i++) {
+			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", null));
+		}
+
+		// synerrの確認
+		for (int i = 1; i <= 8; i++) {
+			System.out.println("0" + i + ": " + new Compiler().run("data/ts/synerr0" + i + ".ts", null));
+		}
+		
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
+		// System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
-		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
+		// CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
 	}
 
 	/**
@@ -57,16 +70,12 @@ public class Compiler {
             // Program program = parser.getProgram();
             // program.accept(new ListVisitor());
             
+            // casファイルを作成するメソッド
+            
             // 構文解析，意味解析が終了したら"OK"を返す
             return "OK"; 
         } catch (final IOException e) {
             return "File not found";
-        } catch (final SyntaxException e) {
-            // Syntax error発生時の処理
-            return e.getMessage();
-        } catch (final SemanticException e) {
-        	// Semantic error発生時の処理
-        	return e.getMessage();
-        }
+        } 
 	}
 }

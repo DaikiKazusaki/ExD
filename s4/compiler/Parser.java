@@ -862,6 +862,12 @@ public class Parser {
 		return new Term(factorList, multipleOperatorList);
 	}
 	
+	/**
+	 * 因子の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
 	public Factor factor() throws SyntaxException {
 		Variable variable = null;
 		Constant constant = null;
@@ -871,7 +877,7 @@ public class Parser {
 		
 		if (getToken(tokenIndex).equals("SIDENTIFIER")) {
 			variable = variable();
-		} else if (getToken(tokenIndex).equals("S")) {
+		} else if (setOfConstant.contains(getToken(tokenIndex))) {
 			constant = constant();
 		} else if (getToken(tokenIndex).equals("SLPAREN")) {
 			// "("の判定はすでに行われているので，インクリメントのみを行う
@@ -987,7 +993,7 @@ public class Parser {
 	 * @return
 	 * @throws SyntaxEception
 	 */
-	public VariableGroup variableGroup() throws SyntaxEception {
+	public VariableGroup variableGroup() throws SyntaxException {
 		List<Variable> variableList = new ArrayList<>();
 		
 		// 変数の判定
@@ -1004,7 +1010,33 @@ public class Parser {
 		return new VariableGroup(variableList);
 	}
 	
+	/**
+	 * 定数を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
 	public Constant constant() throws SyntaxException {
+		List<String> setOfConstant = Arrays.asList("SCONSTANT", "SSTRONG", "SFALSE", "STRUE");
 		
+		if (setOfConstant.contains(getToken(tokenIndex))) {
+			return new Constant(getLexicality(tokenIndex));
+		} else {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+	}
+	
+	/**
+	 * 符号なし整数の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public UnsignedInteger unsignedInteger() throws SyntaxException {
+		// 数字の判定
+		checkToken("SCONSTANT");
+		
+		return new UnsignedInteger(getLexicality(tokenIndex - 1));
 	}
 }
