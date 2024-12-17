@@ -649,4 +649,49 @@ public class Parser {
 		
 		return new AssignStatement(leftSide, equation);
 	}
+	
+	/**
+	 * 左辺を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public LeftSide leftSide() throws SyntaxException {
+		// 変数の判定
+		Variable variable = variable();
+		
+		return new LeftSide(variable);
+	}
+	
+	/**
+	 * 変数の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Variable variable() throws SyntaxException {
+		NaturalVariable naturalVariable = null;
+		VariableWithIndex variableWithIndex = null;
+		
+		if (!getToken(tokenIndex + 1).equals("SLBRACKET")) {
+			naturalVariable = naturalVariable();
+		} else {
+			variableWithIndex = variableWithIndex();
+		}
+		
+		return new Variable(naturalVariable, variableWithIndex);
+	}
+	
+	/**
+	 * 純変数の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public NaturalVariable naturalVariable() throws SyntaxException {
+		// 変数名の判定
+		VariableName variableName = variableName();
+		
+		return new NaturalVariable(variableName);
+	}
 }
