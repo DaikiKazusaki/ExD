@@ -2,11 +2,18 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class VariableDeclarationGroup {
-	private VariableNameGroup variableNameGroup;
+public class VariableDeclarationGroup implements Element {
+	private List<VariableNameGroup> variableNameGroupList;
+	private List<Type> typeList;
 
 	public VariableDeclarationGroup(List<VariableNameGroup> variableNameGroupList, List<Type> typeList) {
-		// TODO Auto-generated constructor stub
+		this.variableNameGroupList = variableNameGroupList;
+		this.typeList = typeList;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

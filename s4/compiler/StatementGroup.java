@@ -2,10 +2,16 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class StatementGroup {
+public class StatementGroup implements Element {
+	private List<Statement> statementList;
 
 	public StatementGroup(List<Statement> statementList) {
-		// TODO Auto-generated constructor stub
+		this.statementList = statementList;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

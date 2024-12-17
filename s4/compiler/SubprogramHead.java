@@ -1,9 +1,17 @@
 package enshud.s4.compiler;
 
-public class SubprogramHead {
+public class SubprogramHead implements Element {
+	private ProcedureName procedureName;
+	private FormalParameter formalParameter;
 
 	public SubprogramHead(ProcedureName procedureName, FormalParameter formalParameter) {
-		// TODO Auto-generated constructor stub
+		this.procedureName = procedureName;
+		this.formalParameter = formalParameter;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

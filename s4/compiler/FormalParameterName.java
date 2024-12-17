@@ -1,9 +1,15 @@
 package enshud.s4.compiler;
 
-public class FormalParameterName {
+public class FormalParameterName implements Element {
+	private String formalParameterName;
+	
+	public FormalParameterName(String formalParameterName) {
+		this.formalParameterName = formalParameterName;
+	}
 
-	public FormalParameterName(String lexicality) {
-		// TODO Auto-generated constructor stub
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

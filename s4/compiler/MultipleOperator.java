@@ -1,9 +1,15 @@
 package enshud.s4.compiler;
 
-public class MultipleOperator {
+public class MultipleOperator implements Element {
+	private String mulitipleOperator;
 
 	public MultipleOperator(String multipleOperator) {
-		// TODO Auto-generated constructor stub
+		this.mulitipleOperator = multipleOperator;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

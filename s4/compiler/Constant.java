@@ -1,9 +1,15 @@
 package enshud.s4.compiler;
 
-public class Constant {
+public class Constant implements Element {
+	private String constant;
+	
+	public Constant(String constant) {
+		this.constant = constant;
+	}
 
-	public Constant(String lexicality) {
-		// TODO Auto-generated constructor stub
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

@@ -12,7 +12,7 @@ public class Program implements Element {
 	}
 	
 	@Override
-	public void accept(Visitor v) throws SemanticException {
-		v.visit(this);
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 }

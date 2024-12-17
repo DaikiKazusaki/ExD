@@ -556,7 +556,7 @@ public class Parser {
 		checkToken("STHEN");
 		
 		// 複合文の判定
-		ComplexStatement complexStetement = complexStatement();
+		ComplexStatement complexStatement = complexStatement();
 		
 		ElseStatement elseStatement = null;
 		// "else"の判定
@@ -564,7 +564,7 @@ public class Parser {
 			elseStatement = elseStatement();
 		}
 		
-		return new IfThen(equation, complexStetement, elseStatement);
+		return new IfThen(equation, complexStatement, elseStatement);
 	}
 	
 	/**

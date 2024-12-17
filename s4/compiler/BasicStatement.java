@@ -1,9 +1,21 @@
 package enshud.s4.compiler;
 
-public class BasicStatement {
-
+public class BasicStatement implements Element {
+	private AssignStatement assignStatement;
+	private ProcedureCallStatement procedureCallStatement;
+	private InputOutputStatement inputOutputStatement;
+	private ComplexStatement complexStatement;
+	
 	public BasicStatement(AssignStatement assignStatement, ProcedureCallStatement procedureCallStatement, InputOutputStatement inputOutputStatement, ComplexStatement complexStatement) {
-		// TODO Auto-generated constructor stub
+		this.assignStatement = assignStatement;
+		this.procedureCallStatement = procedureCallStatement;
+		this.inputOutputStatement = inputOutputStatement;
+		this.complexStatement = complexStatement;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

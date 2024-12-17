@@ -1,10 +1,19 @@
 package enshud.s4.compiler;
 
-public class SubprogramDeclaration {
-
+public class SubprogramDeclaration implements Element {
+	private SubprogramHead subprogramHead;
+	private VariableDeclaration variableDeclaration;
+	private ComplexStatement complexStatement;
 
 	public SubprogramDeclaration(SubprogramHead subprogramHead, VariableDeclaration variableDeclaration, ComplexStatement complexStatement) {
-		// TODO Auto-generated constructor stub
+		this.subprogramHead = subprogramHead;
+		this.variableDeclaration = variableDeclaration;
+		this.complexStatement = complexStatement;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

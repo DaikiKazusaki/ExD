@@ -1,9 +1,15 @@
 package enshud.s4.compiler;
 
-public class Index {
+public class Index implements Element {
+	private Equation equation;
 
 	public Index(Equation equation) {
-		// TODO Auto-generated constructor stub
+		this.equation = equation;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }
