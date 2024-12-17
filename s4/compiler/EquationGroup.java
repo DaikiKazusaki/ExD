@@ -2,10 +2,16 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class EquationGroup {
-
+public class EquationGroup implements Element  {
+	private List<Equation> equationList;
+		
 	public EquationGroup(List<Equation> equationList) {
-		// TODO Auto-generated constructor stub
+		this.equationList = equationList;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

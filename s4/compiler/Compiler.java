@@ -29,11 +29,24 @@ public class Compiler {
 			System.out.println("0" + i + ": " + new Compiler().run("data/ts/synerr0" + i + ".ts", null));
 		}
 		
+		// semerrの確認
+		for (int i = 1; i < 8; i++) {
+			System.out.println("0" + i + ": " + new Compiler().run("data/ts/semerr0" + i + ".ts", null));
+		}
+		
 		// Compilerを実行してcasを生成する
-		// System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
+		/*
+		for (int i = 1; i <= 9; i++) {
+			System.out.println("0" + i + ": " + new Compiler().run("data/ts/normal0" + i + ".ts", "tmp/out0" + i + ".cas"));
+		}
+		for (int i = 10; i <= 20; i++) {
+			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", "tmp/out" + i + ".cas"));
+		}
+		*/
+		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
-		// CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
+		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
 	}
 
 	/**

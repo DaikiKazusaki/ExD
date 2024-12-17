@@ -1,9 +1,15 @@
 package enshud.s4.compiler;
 
-public class StandardType {
+public class StandardType implements Element {
+	private String standardType;
 
-	public StandardType(String lexicality) {
-		// TODO Auto-generated constructor stub
+	public StandardType(String standardType) {
+		this.standardType = standardType;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

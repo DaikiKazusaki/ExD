@@ -30,6 +30,7 @@ public abstract class Visitor {
 	public void visit(BasicStatement basicStatement) {}
 	public void visit(AssignStatement assignStatement) {}
 	public void visit(LeftSide leftSide) {}
+	public void visit(Variable variable) {}
 	public void visit(NaturalVariable naturalVariable) {}
 	public void visit(VariableWithIndex variableWithIndex) {}
 	public void visit(Index index) {}
@@ -45,4 +46,5 @@ public abstract class Visitor {
 	public void visit(InputOutputStatement inputOutputStatement) {}
 	public void visit(VariableGroup variableGroup) {}
 	public void visit(Constant constant) {}
+	public void visit(UnsignedInteger unsignedInteger) {}
 }

@@ -2,10 +2,16 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class FormalParameterNameGroup {
+public class FormalParameterNameGroup implements Element {
+	private List<FormalParameterName> formalParameterNameList;
 
 	public FormalParameterNameGroup(List<FormalParameterName> formalParameterNameList) {
-		// TODO Auto-generated constructor stub
+		this.formalParameterNameList = formalParameterNameList;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

@@ -1,9 +1,17 @@
 package enshud.s4.compiler;
 
-public class InputOutputStatement {
+public class InputOutputStatement implements Element {
+	private VariableGroup variableGroup;
+	private EquationGroup equationGroup;	
 
 	public InputOutputStatement(VariableGroup variableGroup, EquationGroup equationGroup) {
-		// TODO Auto-generated constructor stub
+		this.variableGroup = variableGroup;
+		this.equationGroup = equationGroup;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

@@ -1,9 +1,15 @@
 package enshud.s4.compiler;
 
-public class ElseStatement {
-
+public class ElseStatement implements Element {
+	private ComplexStatement complexStatement;
+	
 	public ElseStatement(ComplexStatement complexStatement) {
-		// TODO Auto-generated constructor stub
+		this.complexStatement = complexStatement;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }

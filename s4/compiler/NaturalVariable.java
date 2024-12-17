@@ -1,9 +1,15 @@
 package enshud.s4.compiler;
 
-public class NaturalVariable {
+public class NaturalVariable implements Element {
+	private VariableName variableName;
 
 	public NaturalVariable(VariableName variableName) {
-		// TODO Auto-generated constructor stub
+		this.variableName = variableName;
+	}
+
+	@Override
+	public void accept(Visitor visitor) throws SemanticException {
+		visitor.visit(this);
 	}
 
 }
