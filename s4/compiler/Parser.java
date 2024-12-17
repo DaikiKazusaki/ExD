@@ -694,4 +694,94 @@ public class Parser {
 		
 		return new NaturalVariable(variableName);
 	}
+	
+	/**
+	 * 添え字付き変数の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public VariableWithIndex variableWithIndex() throws SyntaxException {
+		// 変数名の判定
+		VariableName variableName = variableName();
+		
+		// "["の判定
+		checkToken("SLBRACKET");
+		
+		// 添え字の判定
+		Index index = index();
+		
+		// "]"の判定
+		checkToken("SRBRACKET");
+		
+		return new VariableWithIndex(variableName, index);
+	}
+	
+	/**
+	 * 添え字を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Index index() throws SyntaxException {
+		// 式の判定
+		Equation equation = equation();
+		
+		return new Index(equation);
+	}
+	
+	/**
+	 * 手続き呼び出し文の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public ProcedureCallStatement procedureCallStatement() throws SyntaxException {
+		// 手続き名の判定
+		ProcedureName procedureName = procedureName();
+		
+		EquationGroup equationGroup = null;
+		// "("の判定
+		if (getToken(tokenIndex).equals("SLPAREN")) {
+			tokenIndex++;
+			
+			// 式の並びの判定
+			equationGroup = equationGroup();
+			
+			// ")"の判定
+			checkToken("SRPAREN");
+		}
+		
+		return new ProcedureCallStatement(procedureName, equationGroup);
+	}
+	
+	/**
+	 * 式の並びの判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SytnaxException
+	 */
+	public EquationGroup equationGroup() throws SytnaxException {
+		List<Equation> equationList = new ArrayList<>();
+		
+		equationList.add(equation());
+		
+		while (getToken(tokenIndex).equals("SCOMMA")) {
+			tokenIndex++;
+			
+			// 式の判定
+			equationList.add(equation());
+		}
+		
+		return new EquationGroup(equationList);
+	}
+	
+	public Equation equation() throws SyntaxException {
+		List<SimpleEquation> simpleEquationList = new ArrayList<>();
+		List<RelationalOperator> relationalOperatorList = new ArrayList<>();
+		
+		simpleEquationList.add(simpleEquation());
+		
+		// while (getToken(tokenIndex).equals(""))
+	}
 }

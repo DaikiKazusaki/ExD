@@ -39,7 +39,7 @@ public abstract class Visitor {
 	public void visit(SimpleEquation simpleEquation) {}
 	public void visit(Term term) {}
 	public void visit(Factor factor) {}
-	public void visit(RealationalOperator relationalOperator) {}
+	public void visit(RelationalOperator relationalOperator) {}
 	public void visit(AdditionalOperator additionalOperator) {}
 	public void visit(MultipleOperator multipleOperator) {}
 	public void visit(InputOutputStatement inputOutputStatement) {}
