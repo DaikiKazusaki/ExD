@@ -980,4 +980,31 @@ public class Parser {
 		
 		return new InputOutputStatement(variableGroup, equationGroup);
 	}
+	
+	/**
+	 * 変数の並びの判定
+	 * 
+	 * @return
+	 * @throws SyntaxEception
+	 */
+	public VariableGroup variableGroup() throws SyntaxEception {
+		List<Variable> variableList = new ArrayList<>();
+		
+		// 変数の判定
+		variableList.add(variable());
+		
+		while (getToken(tokenIndex).equals("SCOMMA")) {
+			// ","の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 変数の判定
+			variableList.add(variable());
+		}
+		
+		return new VariableGroup(variableList);
+	}
+	
+	public Constant constant() throws SyntaxException {
+		
+	}
 }
