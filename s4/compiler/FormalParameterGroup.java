@@ -11,6 +11,14 @@ public class FormalParameterGroup implements Element {
 		this.standardTypeList = standardTypeList;
 	}
 
+	public List<FormalParameterNameGroup> getFormalParameterNameGroupList() {
+        return formalParameterNameGroupList;
+    }
+
+    public List<StandardType> getStandardTypeList() {
+        return standardTypeList;
+    }
+    
 	@Override
 	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);

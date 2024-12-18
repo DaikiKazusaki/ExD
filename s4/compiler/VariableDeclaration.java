@@ -1,14 +1,18 @@
 package enshud.s4.compiler;
 
 public class VariableDeclaration implements Element {
-	private VariableDeclarationGroup variableDeclarationGroup;
+    private VariableDeclarationGroup variableDeclarationGroup;
 
-	public VariableDeclaration(VariableDeclarationGroup variableDeclarationGroup) {
-		this.variableDeclarationGroup = variableDeclarationGroup;
-	}
+    public VariableDeclaration(VariableDeclarationGroup variableDeclarationGroup) {
+        this.variableDeclarationGroup = variableDeclarationGroup;
+    }
 
-	@Override
-	public void accept(Visitor visitor) {
-		visitor.visit(this);
-	}
+    public VariableDeclarationGroup getVariableDeclarationGroup() {
+        return variableDeclarationGroup;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 }

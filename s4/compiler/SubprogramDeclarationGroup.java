@@ -1,15 +1,18 @@
 package enshud.s4.compiler;
 
 public class SubprogramDeclarationGroup implements Element {
-	private SubprogramDeclaration subprogramDeclaration;
+    private SubprogramDeclaration subprogramDeclaration;
 
-	public SubprogramDeclarationGroup(SubprogramDeclaration subprogramDeclaration) {
-		this.subprogramDeclaration = subprogramDeclaration;
-	}
+    public SubprogramDeclarationGroup(SubprogramDeclaration subprogramDeclaration) {
+        this.subprogramDeclaration = subprogramDeclaration;
+    }
 
-	@Override
-	public void accept(Visitor visitor) throws SemanticException {
-		visitor.visit(this);
-	}
+    public SubprogramDeclaration getSubprogramDeclaration() {
+        return subprogramDeclaration;
+    }
 
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }
