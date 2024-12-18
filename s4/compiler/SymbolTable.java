@@ -18,11 +18,12 @@ public class SymbolTable {
 	 * @param type
 	 * @param isArray
 	 */
-	public void addSymbol(String name, String type, String isArray) {
+	public void addSymbol(String name, String type, String isArray, String size) {
 		List<String> newSymbolInformation = new ArrayList<>();
 		newSymbolInformation.add(name);
 		newSymbolInformation.add(type);
 		newSymbolInformation.add(isArray);
+		newSymbolInformation.add(size);
 		
 		SymbolTable.add(newSymbolInformation);
 	}
