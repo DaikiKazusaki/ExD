@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class SemanticValidationVisitor extends Visitor {
+public class CompilationVisitor extends Visitor {
     public void visit(Program program) {}
     public void visit(ProgramName programName) {}
     public void visit(Block block) {}
