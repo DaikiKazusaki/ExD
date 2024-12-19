@@ -8,7 +8,7 @@ public class Parser {
 	private List<List<String>> tokenList = new ArrayList<>();
 	private int tokenIndex = 0;
 	private int LEXICALITYCOLS = 0;
-	private int TOKNECOLS = 1;
+	private int TOKENCOLS = 1;
 	private int LINENUMBERCOLS = 3;
 	
 	public Parser(List<List<String>> tokenList) {
@@ -22,9 +22,9 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public void checkToken(String input) throws SyntaxException {
-		String token = tokenList.get(tokenIndex).get(TOKNECOLS);
+		String token = tokenList.get(tokenIndex).get(TOKENCOLS);
 		
-		if (token.equals(input)) {
+		if (!token.equals(input)) {
 			String lineNum = getLineNum();
 			throw new SyntaxException(lineNum);
 		}
@@ -48,13 +48,14 @@ public class Parser {
 	 * @return token
 	 */
 	public String getToken(int input) {
-		String token = tokenList.get(input).get(TOKNECOLS);
+		String token = tokenList.get(input).get(TOKENCOLS);
 		return token;
 	}
 	
 	/**
+	 * 行数を取得するメソッド
 	 * 
-	 * 
+	 * @return 
 	 */
 	public String getLineNum() {
 		return tokenList.get(tokenIndex).get(LINENUMBERCOLS);
@@ -124,13 +125,14 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public VariableDeclaration variableDeclaration() throws SyntaxException {
+		VariableDeclarationGroup variableDeclarationGroup = null;
+		
 		// "var"の判定
 		if (getToken(tokenIndex).equals("SVAR")) {
-			return null;
-		}
-		
-		// 変数宣言の並びの判定
-		VariableDeclarationGroup variableDeclarationGroup = variableDeclarationGroup();
+			tokenIndex++;
+			
+			variableDeclarationGroup = variableDeclarationGroup();
+		} 
 		
 		return new VariableDeclaration(variableDeclarationGroup);
 	}
@@ -188,6 +190,8 @@ public class Parser {
 		
 		// 繰り返しの判定
 		while (getToken(tokenIndex).equals("SCOMMA")) {
+			tokenIndex++;
+			
 			variableNameList.add(variableName()); 
 		}
 		
@@ -285,9 +289,11 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Int integer() throws SyntaxException {
-		// 符号の判定
 		Sign sign = null;
-		if (getToken(tokenIndex).equals("ASIGN")) {
+		List<String> signList = Arrays.asList("SPLUS", "SMINUS");
+		
+		// 符号の判定
+		if (signList.contains(getToken(tokenIndex))) {
 			sign = sign();
 		}
 		
@@ -315,13 +321,17 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public SubprogramDeclarationGroup subprogramDeclarationGroup() throws SyntaxException {
-		// 副プログラム宣言の判定
-		SubprogramDeclaration subprogramDeclaration = subprogramDeclaration();
+		List<SubprogramDeclaration> subprogramDeclarationList = new ArrayList<>();
 		
-		// ";"の判定
-		checkToken("");
+		while (getToken(tokenIndex).equals("SPROCEDURE")) {
+			// 副プログラム宣言の判定
+			subprogramDeclarationList.add(subprogramDeclaration());
+			
+			// ";"の判定
+			checkToken("SSEMICOLON");
+		}
 		
-		return new SubprogramDeclarationGroup(subprogramDeclaration);
+		return new SubprogramDeclarationGroup(subprogramDeclarationList);
 	}
 	
 	/**
@@ -373,7 +383,7 @@ public class Parser {
 	 */
 	public ProcedureName procedureName() throws SyntaxException {
 		// 識別子の確認
-		checkToken("SSTRING");
+		checkToken("SIDENTIFIER");
 		
 		return new ProcedureName(getLexicality(tokenIndex));
 	}
@@ -385,16 +395,19 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public FormalParameter formalParameter() throws SyntaxException {
+		FormalParameterGroup formalParameterGroup = null;
+		
 		// "("の判定
 		if (getToken(tokenIndex).equals("SLPAREN")) {
-			return null;
+			// "("の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 仮パラメータの並びの判定
+			formalParameterGroup = formalParameterGroup();
+			
+			// ")"の判定
+			checkToken("SRPAREN");
 		}
-		
-		// 仮パラメータの並びの判定
-		FormalParameterGroup formalParameterGroup = formalParameterGroup();
-		
-		// ")"の判定
-		checkToken("SRPAREN");
 		
 		return new FormalParameter(formalParameterGroup);
 	}
@@ -771,6 +784,7 @@ public class Parser {
 		equationList.add(equation());
 		
 		while (getToken(tokenIndex).equals("SCOMMA")) {
+			// ","の判定はすでに行われているので，インクリメントのみを行う
 			tokenIndex++;
 			
 			// 式の判定
@@ -795,7 +809,7 @@ public class Parser {
 		// 単純式の判定
 		simpleEquationList.add(simpleEquation());
 		
-		while (setOfRelationalOperator.contains(getToken(tokenIndex))) {
+		if (setOfRelationalOperator.contains(getToken(tokenIndex))) {
 			// 関係演算子の判定
 			relationalOperatorList.add(relationalOperator());
 			
@@ -846,7 +860,7 @@ public class Parser {
 	public Term term() throws SyntaxException {
 		List<Factor> factorList = new ArrayList<>();
 		List<MultipleOperator> multipleOperatorList = new ArrayList<>();
-		List<String> setOfMultipleOperator = Arrays.asList("S");
+		List<String> setOfMultipleOperator = Arrays.asList("SSTAR", "SDIVD", "SMOD", "SAND");
 		
 		// 因子の判定
 		factorList.add(factor());
@@ -1017,10 +1031,12 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Constant constant() throws SyntaxException {
-		List<String> setOfConstant = Arrays.asList("SCONSTANT", "SSTRONG", "SFALSE", "STRUE");
+		List<String> setOfConstant = Arrays.asList("SCONSTANT", "SSTRING", "SFALSE", "STRUE");
 		
 		if (setOfConstant.contains(getToken(tokenIndex))) {
-			return new Constant(getLexicality(tokenIndex));
+			tokenIndex++;
+			
+			return new Constant(getLexicality(tokenIndex - 1));
 		} else {
 			String lineNum = getLineNum();
 			throw new SyntaxException(lineNum);

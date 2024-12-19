@@ -1,13 +1,15 @@
 package enshud.s4.compiler;
 
-public class SubprogramDeclarationGroup implements Element {
-    private SubprogramDeclaration subprogramDeclaration;
+import java.util.List;
 
-    public SubprogramDeclarationGroup(SubprogramDeclaration subprogramDeclaration) {
-        this.subprogramDeclaration = subprogramDeclaration;
+public class SubprogramDeclarationGroup implements Element {
+    private List<SubprogramDeclaration> subprogramDeclaration;
+
+    public SubprogramDeclarationGroup(List<SubprogramDeclaration> subprogramDeclarationList) {
+        this.subprogramDeclaration = subprogramDeclarationList;
     }
 
-    public SubprogramDeclaration getSubprogramDeclaration() {
+    public List<SubprogramDeclaration> getSubprogramDeclaration() {
         return subprogramDeclaration;
     }
 

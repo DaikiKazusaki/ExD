@@ -10,29 +10,37 @@ import java.util.List;
 import enshud.casl.CaslSimulator;
 
 public class Compiler {
-
 	/**
 	 * サンプルmainメソッド．
 	 * 単体テストの対象ではないので自由に改変しても良い．
+	 * @throws SemanticException 
+	 * @throws SyntaxException 
 	 */
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws SyntaxException, SemanticException {
 		// normalの確認
+		/*
 		for (int i = 1; i <= 9; i++) {
 			System.out.println("0" + i + ": " + new Compiler().run("data/ts/normal0" + i + ".ts", null));
 		}
 		for (int i = 10; i <= 20; i++) {
 			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", null));
 		}
+		*/
 
 		// synerrの確認
+		/*
 		for (int i = 1; i <= 8; i++) {
 			System.out.println("0" + i + ": " + new Compiler().run("data/ts/synerr0" + i + ".ts", null));
 		}
+		*/
+		
 		
 		// semerrの確認
-		for (int i = 1; i < 8; i++) {
+		/*
+		for (int i = 1; i <= 8; i++) {
 			System.out.println("0" + i + ": " + new Compiler().run("data/ts/semerr0" + i + ".ts", null));
 		}
+		*/
 		
 		// Compilerを実行してcasを生成する
 		/*
@@ -43,10 +51,10 @@ public class Compiler {
 			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", "tmp/out" + i + ".cas"));
 		}
 		*/
-		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/normal12.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
-		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
+		// CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
 	}
 
 	/**
@@ -64,31 +72,40 @@ public class Compiler {
 	 * 
 	 * @param inputFileName 入力tsファイル名
 	 * @param outputFileName 出力casファイル名
+	 * @throws SyntaxException 
+	 * @throws SemanticException 
 	 */
-	public String run(final String inputFileName, final String outputFileName) {
+	public String run(final String inputFileName, final String outputFileName) throws SyntaxException, SemanticException {
 		try {
-            // ファイルを行ごとに読み込む
-            List<String> buffer = Files.readAllLines(Paths.get(inputFileName));            
-            List<List<String>> tokens = new ArrayList<>();
-            
-            for (int i = 0; i < buffer.size(); i++) {
-                String[] line = buffer.get(i).split("\t");
-                tokens.add(Arrays.asList(line));
-            }
+			// ファイルの内容を解析
+			List<String> buffer = Files.readAllLines(Paths.get(inputFileName)); 			
+			List<List<String>> tokenList = new ArrayList<>();
+			
+	        for (int i = 0; i < buffer.size(); i++) {
+	            String[] line = buffer.get(i).split("\t");
+	            tokenList.add(Arrays.asList(line));
+	        }
             
             // 構文解析
-            Parser parser = new Parser(tokens);
+	        Program program = new Parser(tokenList).program();
             
-            // 木の探索開始
-            // Program program = parser.getProgram();
-            // program.accept(new ListVisitor());
+            // 意味解析
+            program.accept(new SemanticValidationVisitor());
             
-            // casファイルを作成するメソッド
+            
+            // casファイルを作成
+            program.accept(new CompilationVisitor());
+            WriteFile writeFile = new WriteFile();
+            writeFile.writeFile(outputFileName);
             
             // 構文解析，意味解析が終了したら"OK"を返す
             return "OK"; 
         } catch (final IOException e) {
             return "File not found";
-        } 
+        } catch (final SyntaxException e) {
+        	return e.getMessage();
+        } catch (final SemanticException e) {
+        	return e.getMessage();
+        }
 	}
 }

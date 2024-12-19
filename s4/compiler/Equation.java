@@ -8,7 +8,7 @@ public class Equation implements Element {
 
     public Equation(List<SimpleEquation> simpleEquationList, List<RelationalOperator> relationalOperatorList) {
         this.simpleEquationList = simpleEquationList;
-        this.relatioinalOperatorList = relationalOperatorList;
+        this.relationalOperatorList = relationalOperatorList;
     }
 
     public List<SimpleEquation> getSimpleEquationList() {
