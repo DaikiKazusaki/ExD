@@ -3,15 +3,18 @@ package enshud.s4.compiler;
 import java.util.List;
 
 public class FormalParameterNameGroup implements Element {
-	private List<FormalParameterName> formalParameterNameList;
+    private List<FormalParameterName> formalParameterNameList;
 
-	public FormalParameterNameGroup(List<FormalParameterName> formalParameterNameList) {
-		this.formalParameterNameList = formalParameterNameList;
-	}
+    public FormalParameterNameGroup(List<FormalParameterName> formalParameterNameList) {
+        this.formalParameterNameList = formalParameterNameList;
+    }
 
-	@Override
-	public void accept(Visitor visitor) throws SemanticException {
-		visitor.visit(this);
-	}
+    public List<FormalParameterName> getFormalParameterNameList() {
+        return formalParameterNameList;
+    }
 
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }

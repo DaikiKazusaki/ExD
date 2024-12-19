@@ -1,15 +1,18 @@
 package enshud.s4.compiler;
 
 public class ElseStatement implements Element {
-	private ComplexStatement complexStatement;
-	
-	public ElseStatement(ComplexStatement complexStatement) {
-		this.complexStatement = complexStatement;
-	}
+    private ComplexStatement complexStatement;
 
-	@Override
-	public void accept(Visitor visitor) throws SemanticException {
-		visitor.visit(this);
-	}
+    public ElseStatement(ComplexStatement complexStatement) {
+        this.complexStatement = complexStatement;
+    }
 
+    public ComplexStatement getComplexStatement() {
+        return complexStatement;
+    }
+
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }

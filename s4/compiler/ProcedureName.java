@@ -1,15 +1,18 @@
 package enshud.s4.compiler;
 
 public class ProcedureName implements Element {
-	private String procedureName;
+    private String procedureName;
 
-	public ProcedureName(String procedureName) {
-		this.procedureName = procedureName;
-	}
+    public ProcedureName(String procedureName) {
+        this.procedureName = procedureName;
+    }
 
-	@Override
-	public void accept(Visitor visitor) throws SemanticException {
-		visitor.visit(this);
-	}
+    public String getProcedureName() {
+        return procedureName;
+    }
 
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }

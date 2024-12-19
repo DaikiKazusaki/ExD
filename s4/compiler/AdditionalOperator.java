@@ -7,6 +7,10 @@ public class AdditionalOperator implements Element {
 		this.additionalOperator = additionalOperator;
 	}
 
+	public String getAdditionalOperator() {
+        return additionalOperator;
+    }
+	
 	@Override
 	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);		

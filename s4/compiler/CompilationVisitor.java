@@ -1,6 +1,8 @@
 package enshud.s4.compiler;
 
-public class SemanticValidationVisitor extends Visitor {
+public class CompilationVisitor extends Visitor {
+	private WriteFile writeFile = new WriteFile();
+	
     @Override
     public void visit(Program program) {}
     @Override
@@ -85,8 +87,30 @@ public class SemanticValidationVisitor extends Visitor {
     public void visit(AdditionalOperator additionalOperator) {}
     @Override
     public void visit(MultipleOperator multipleOperator) {}
+    
     @Override
-    public void visit(InputOutputStatement inputOutputStatement) {}
+    public void visit(InputOutputStatement inputOutputStatement) {
+    	if (inputOutputStatement.getVariableGroup() != null) {
+    		// "readln"の場合
+    	} else if (inputOutputStatement.getEquationGroup() != null) {
+    		// "writeln"の場合
+    		writeln();
+    	}
+    }
+    
+    /**
+     * "writeln"の処理
+     * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
+     * 
+     */
+    public void writeln() {
+    	String line;
+    	
+    	// 文字列の長さを取得する
+    	line = "LAD" + '\t' + "GR1" + '\t' + "4";
+    	writeFile.addOutputList(line);
+    }
+    
     @Override
     public void visit(VariableGroup variableGroup) {}
     @Override
