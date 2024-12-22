@@ -18,12 +18,14 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) throws SyntaxException, SemanticException {
 		// normalの確認
+		/*
 		for (int i = 1; i <= 9; i++) {
 			System.out.println("0" + i + ": " + new Compiler().run("data/ts/normal0" + i + ".ts", null));
 		}
 		for (int i = 10; i <= 20; i++) {
 			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", null));
 		}
+		*/
 
 		// synerrの確認
 		/*

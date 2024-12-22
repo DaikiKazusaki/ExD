@@ -4,7 +4,6 @@ import java.util.List;
 
 public class SemanticValidationVisitor extends Visitor {
 	private SymbolTable symbolTable = new SymbolTable();
-	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
