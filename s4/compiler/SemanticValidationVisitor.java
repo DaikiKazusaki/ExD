@@ -4,6 +4,8 @@ import java.util.List;
 
 public class SemanticValidationVisitor extends Visitor {
 	private SymbolTable symbolTable = new SymbolTable();
+	private FunctionTable functionTable = new FunctionTable();
+	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
@@ -131,11 +133,23 @@ public class SemanticValidationVisitor extends Visitor {
     
     @Override
     public void visit(SubprogramHead subprogramHead) throws SemanticException {
+    	String lineNum = "1"; 
+    	
     	ProcedureName procedureName = subprogramHead.getProcedureName();
     	FormalParameter formalParameter = subprogramHead.getFormalParameter();
     	
+    	addFunctionTable(procedureName.getProcedureName(), lineNum);
+    	
     	procedureName.accept(this);
     	formalParameter.accept(this);
+    }
+    
+    public void addFunctionTable(String functionName, String lineNum) throws SemanticException {
+    	if (functionTable.isAbleToAddFunctionTable(functionName)) {
+    		functionTable.addFunctionTable(functionName);
+    	} else {
+    		throw new SemanticException(lineNum);
+    	}
     }
     
     @Override

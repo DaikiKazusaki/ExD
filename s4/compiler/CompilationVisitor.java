@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class CompilationVisitor extends Visitor {
+public class CompilationVisitor extends SemanticValidationVisitor {
 	private WriteFile writeFile = new WriteFile();
 	
     @Override
