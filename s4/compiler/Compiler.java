@@ -90,8 +90,7 @@ public class Compiler {
 	        Program program = new Parser(tokenList).program();
             
             // 意味解析
-            program.accept(new SemanticValidationVisitor());
-            
+            program.accept(new SemanticValidationVisitor());           
             
             // casファイルを作成
             program.accept(new CompilationVisitor());
