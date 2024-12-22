@@ -15,9 +15,7 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(ProgramName programName) {
-    	String name = programName.getProgramName();
-    }
+    public void visit(ProgramName programName) {}
     
     @Override
     public void visit(Block block) throws SemanticException {
@@ -54,9 +52,7 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(VariableName variableName) {
-    	String name = variableName.getVariableName();
-    }
+    public void visit(VariableName variableName) {}
     
     @Override
     public void visit(Type type) throws SemanticException {
@@ -71,9 +67,7 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(StandardType standardType) {
-    	String type = standardType.getStandardType();
-    }
+    public void visit(StandardType standardType) {}
     
     @Override
     public void visit(ArrayType arrayType) throws SemanticException {
@@ -98,9 +92,7 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(Sign sign) {
-    	String name = sign.getSign();
-    }
+    public void visit(Sign sign) {}
     
     @Override
     public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) throws SemanticException {
@@ -132,9 +124,7 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(ProcedureName procedureName) {
-    	String name = procedureName.getProcedureName();
-    }
+    public void visit(ProcedureName procedureName) {}
     
     @Override
     public void visit(FormalParameter formalParameter) throws SemanticException {
@@ -167,9 +157,7 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(FormalParameterName formalParameterName) {
-    	String name = formalParameterName.getFormalParameterName();
-    }
+    public void visit(FormalParameterName formalParameterName) {}
     
     @Override
     public void visit(ComplexStatement complexStatement) throws SemanticException {
@@ -375,19 +363,13 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(RelationalOperator relationalOperator) {
-    	String operator = relationalOperator.getRelationalOperator();
-    }
+    public void visit(RelationalOperator relationalOperator) {}
     
     @Override
-    public void visit(AdditionalOperator additionalOperator) {
-    	String operator = additionalOperator.getAdditionalOperator();
-    }
+    public void visit(AdditionalOperator additionalOperator) {}
     
     @Override
-    public void visit(MultipleOperator multipleOperator) {
-    	String operator = multipleOperator.getMultipleOperator();
-    }
+    public void visit(MultipleOperator multipleOperator) {}
     
     @Override
     public void visit(InputOutputStatement inputOutputStatement) throws SemanticException {
@@ -411,12 +393,8 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(Constant constant) {
-    	String constantName = constant.getConstant();
-    }
+    public void visit(Constant constant) {}
     
     @Override
-    public void visit(UnsignedInteger unsignedInteger) {
-    	String number = unsignedInteger.getUnsignedInteger();
-    }
+    public void visit(UnsignedInteger unsignedInteger) {}
 }
