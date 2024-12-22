@@ -1,16 +1,45 @@
 package enshud.s4.compiler;
 
+import java.util.List;
+
 public class SemanticValidationVisitor extends Visitor {
     @Override
-    public void visit(Program program) {}
+    public void visit(Program program) throws SemanticException {
+    	ProgramName programName = program.getProgramName();
+    	Block block = program.getBlock();
+    	ComplexStatement complexStatement = program.getComplexStatement();
+    	
+    	programName.accept(this);
+    	block.accept(this);
+    	complexStatement.accept(this);
+    }
+    
     @Override
     public void visit(ProgramName programName) {}
+    
     @Override
-    public void visit(Block block) {}
+    public void visit(Block block) throws SemanticException {
+    	VariableDeclaration variableDeclaration = block.getVariableDeclaration();
+    	SubprogramDeclarationGroup subprogramDeclarationGroup = block.getSubprogramDeclarationGroup();
+    	
+    	variableDeclaration.accept(this);
+    	subprogramDeclarationGroup.accept(this);
+    }
+    
     @Override
-    public void visit(VariableDeclaration variableDeclaration) {}
+    public void visit(VariableDeclaration variableDeclaration) throws SemanticException {
+    	VariableDeclarationGroup variableDeclarationGroup = variableDeclaration.getVariableDeclarationGroup();
+    	
+    	variableDeclarationGroup.accept(this);
+    }
+    
     @Override
-    public void visit(VariableDeclarationGroup variableDeclarationGroup) {}
+    public void visit(VariableDeclarationGroup variableDeclarationGroup) {
+    	List<VariableNameGroup> variableNameGroupList = variableDeclarationGroup.getVariableNameGroupList();
+    	
+    	// variableNameGroupList.accept(this);
+    }
+    
     @Override
     public void visit(VariableNameGroup variableNameGroup) {}
     @Override
