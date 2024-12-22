@@ -4,7 +4,16 @@ public class CompilationVisitor extends Visitor {
 	private WriteFile writeFile = new WriteFile();
 	
     @Override
-    public void visit(Program program) {}
+    public void visit(Program program) throws SemanticException {
+    	ProgramName programName = program.getProgramName();
+    	Block block = program.getBlock();
+    	ComplexStatement complexStatement = program.getComplexStatement();
+    	
+    	programName.accept(this);
+    	block.accept(this);
+    	complexStatement.accept(this);
+    }
+    
     @Override
     public void visit(ProgramName programName) {}
     @Override
@@ -107,8 +116,31 @@ public class CompilationVisitor extends Visitor {
     	String line;
     	
     	// 文字列の長さを取得する
-    	line = "LAD" + '\t' + "GR1" + '\t' + "4";
+    	line = '\t' + "LAD" + '\t' + "GR1, 4";
     	writeFile.addOutputList(line);
+    	line = null;
+    	
+    	// GR1にPUSH
+    	line = '\t' + "PUSH" + '\t' + "0, GR1" ;
+    	writeFile.addOutputList(line);
+    	line = null;
+    	
+    	// PUSHするアドレスを取得する
+    	line = '\t' + "LAD" + '\t' + "GR2, CHAR0";
+    	writeFile.addOutputList(line);
+    	line = null;
+    	
+    	// GR2をPOPする
+    	line = '\t' + "POP" + '\t' + "GR2";
+    	writeFile.addOutputList(line);
+    	line = null;
+    	
+    	// GR1をPOPする
+    	line = '\t' + "POP" + '\t' + "GR2";
+    	writeFile.addOutputList(line);
+    	line = null;
+    	
+    	
     }
     
     @Override

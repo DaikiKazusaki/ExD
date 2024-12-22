@@ -6,7 +6,7 @@ import java.util.List;
 public class SymbolTable {
 	/**
 	 * 記号表の情報
-	 * [変数名，標準型，配列の判定，サイズ]
+	 * [変数名，標準型，配列の判定，スコープ，サイズ]
 	 * 
 	 */
 	public List<List<String>> symbolTable = new ArrayList<>();

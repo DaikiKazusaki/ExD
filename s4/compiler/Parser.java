@@ -96,10 +96,11 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public ProgramName programName() throws SyntaxException {
+		String lineNum = getLineNum();
 		// 識別子の判定
 		checkToken("SIDENTIFIER");
 		
-		return new ProgramName(getLexicality(tokenIndex - 1));
+		return new ProgramName(getLexicality(tokenIndex - 1), lineNum);
 	}
 	
 	/**
@@ -205,10 +206,11 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public VariableName variableName() throws SyntaxException {
+		String lineNum = getLineNum();
 		// 識別子の判定
 		checkToken("SIDENTIFIER");
 		
-		return new VariableName(getLexicality(tokenIndex - 1));
+		return new VariableName(getLexicality(tokenIndex - 1), lineNum);
 	}
 	
 	/**
@@ -244,8 +246,9 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public StandardType standardType() throws SyntaxException {
+		String lineNum = getLineNum();
 		tokenIndex++;		
-		return new StandardType(getLexicality(tokenIndex - 1));
+		return new StandardType(getLexicality(tokenIndex - 1), lineNum);
 	}
 	
 	/**
@@ -289,6 +292,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Int integer() throws SyntaxException {
+		String lineNum = getLineNum();
 		Sign sign = null;
 		List<String> signList = Arrays.asList("SPLUS", "SMINUS");
 		
@@ -300,7 +304,7 @@ public class Parser {
 		// 符号なし整数の判定
 		UnsignedInteger unsignedInteger = unsignedInteger();
 		
-		return new Int(sign, unsignedInteger);
+		return new Int(sign, unsignedInteger, lineNum);
 	}
 	
 	/**

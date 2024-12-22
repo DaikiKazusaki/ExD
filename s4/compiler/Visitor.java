@@ -1,10 +1,10 @@
 package enshud.s4.compiler;
 
 public abstract class Visitor {
-	public void visit(Program program) {}
+	public void visit(Program program) throws SemanticException {}
 	public void visit(ProgramName programName) {}
-	public void visit(Block block) {}
-	public void visit(VariableDeclaration variableDeclaration) {}
+	public void visit(Block block) throws SemanticException {}
+	public void visit(VariableDeclaration variableDeclaration) throws SemanticException {}
 	public void visit(VariableDeclarationGroup variableDeclarationGroup) {}
 	public void visit(VariableNameGroup variableNameGroup) {}
 	public void visit(VariableName variableName) {}
