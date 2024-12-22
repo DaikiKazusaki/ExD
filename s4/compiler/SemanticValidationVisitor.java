@@ -3,6 +3,7 @@ package enshud.s4.compiler;
 import java.util.List;
 
 public class SemanticValidationVisitor extends Visitor {
+	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
@@ -30,15 +31,20 @@ public class SemanticValidationVisitor extends Visitor {
     public void visit(VariableDeclaration variableDeclaration) throws SemanticException {
     	VariableDeclarationGroup variableDeclarationGroup = variableDeclaration.getVariableDeclarationGroup();
     	
-    	variableDeclarationGroup.accept(this);
+    	if (variableDeclarationGroup != null) {
+    		variableDeclarationGroup.accept(this);
+    	}
     }
     
     @Override
     public void visit(VariableDeclarationGroup variableDeclarationGroup) throws SemanticException {
     	List<VariableNameGroup> variableNameGroupList = variableDeclarationGroup.getVariableNameGroupList();
+    	List<Type> typeList = variableDeclarationGroup.getTypeList();
     	
-    	for (VariableNameGroup variableNameGroup : variableNameGroupList) {
-            variableNameGroup.accept(this);
+    	for (int i = 0; i < variableNameGroupList.size(); i++) {
+            variableNameGroupList.get(i).accept(this);
+            typeList.get(i).accept(this);
+            
         }
     }
     
@@ -130,7 +136,9 @@ public class SemanticValidationVisitor extends Visitor {
     public void visit(FormalParameter formalParameter) throws SemanticException {
     	FormalParameterGroup formalParameterGroup = formalParameter.getFormalParameterGroup();
     	
-    	formalParameterGroup.accept(this);
+    	if (formalParameterGroup != null) {
+    		formalParameterGroup.accept(this);
+    	}
     }
     
     @Override
