@@ -2,8 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class SemanticValidationVisitor extends Visitor {
-	
+public class SemanticValidationVisitor extends Visitor {	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
