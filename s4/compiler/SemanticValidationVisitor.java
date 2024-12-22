@@ -3,6 +3,7 @@ package enshud.s4.compiler;
 import java.util.List;
 
 public class SemanticValidationVisitor extends Visitor {
+	private SymbolTable symbolTable = new SymbolTable();
 	
     @Override
     public void visit(Program program) throws SemanticException {
@@ -44,8 +45,17 @@ public class SemanticValidationVisitor extends Visitor {
     	for (int i = 0; i < variableNameGroupList.size(); i++) {
             variableNameGroupList.get(i).accept(this);
             typeList.get(i).accept(this);
-            
         }
+    }
+    
+    public void addSymbolTable() throws SemanticException {
+    	boolean isAbleToAdd = symbolTable.isAbleToAddSymbolTable(null, null);
+    	
+    	if (isAbleToAdd) {
+    		symbolTable.addSymbol(null, null, null, null, null);
+    	} else {
+    		throw new SemanticException(null);
+    	}
     }
     
     @Override
