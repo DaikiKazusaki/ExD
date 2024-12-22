@@ -18,14 +18,12 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) throws SyntaxException, SemanticException {
 		// normalの確認
-		/*
 		for (int i = 1; i <= 9; i++) {
 			System.out.println("0" + i + ": " + new Compiler().run("data/ts/normal0" + i + ".ts", null));
 		}
 		for (int i = 10; i <= 20; i++) {
 			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", null));
 		}
-		*/
 
 		// synerrの確認
 		/*
@@ -94,8 +92,8 @@ public class Compiler {
             
             // casファイルを作成
             program.accept(new CompilationVisitor());
-            WriteFile writeFile = new WriteFile();
-            writeFile.writeFile(outputFileName);
+            // WriteFile writeFile = new WriteFile();
+            // writeFile.writeFile(outputFileName);
             
             // 構文解析，意味解析が終了したら"OK"を返す
             return "OK"; 
