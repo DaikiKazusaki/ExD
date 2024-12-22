@@ -1,5 +1,7 @@
 package enshud.s4.compiler;
 
+import java.util.List;
+
 public class CompilationVisitor extends SemanticValidationVisitor {
 	private WriteFile writeFile = new WriteFile();
 	
@@ -16,40 +18,144 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     
     @Override
     public void visit(ProgramName programName) {}
+    
     @Override
-    public void visit(Block block) {}
+    public void visit(Block block) throws SemanticException {
+    	VariableDeclaration variableDeclaration = block.getVariableDeclaration();
+    	SubprogramDeclarationGroup subprogramDeclarationGroup = block.getSubprogramDeclarationGroup();
+    	
+    	variableDeclaration.accept(this);
+    	subprogramDeclarationGroup.accept(this);
+    }
+    
     @Override
-    public void visit(VariableDeclaration variableDeclaration) {}
+    public void visit(VariableDeclaration variableDeclaration) throws SemanticException {
+    	VariableDeclarationGroup variableDeclarationGroup = variableDeclaration.getVariableDeclarationGroup();
+    	
+    	if (variableDeclarationGroup != null) {
+    		variableDeclarationGroup.accept(this);
+    	}
+    }
+    
     @Override
-    public void visit(VariableDeclarationGroup variableDeclarationGroup) {}
+    public void visit(VariableDeclarationGroup variableDeclarationGroup) throws SemanticException {
+    	List<VariableNameGroup> variableNameGroupList = variableDeclarationGroup.getVariableNameGroupList();
+    	List<Type> typeList = variableDeclarationGroup.getTypeList();
+    	
+    	for (int i = 0; i < variableNameGroupList.size(); i++) {
+            variableNameGroupList.get(i).accept(this);
+            typeList.get(i).accept(this);
+        }
+    }
+    
     @Override
-    public void visit(VariableNameGroup variableNameGroup) {}
+    public void visit(VariableNameGroup variableNameGroup) throws SemanticException {
+    	List<VariableName> variableNameList = variableNameGroup.getVariableNameList();
+    	
+    	for (VariableName variableName: variableNameList) {
+    		variableName.accept(this);
+    	}
+    }
+    
     @Override
     public void visit(VariableName variableName) {}
+    
     @Override
-    public void visit(Type type) {}
+    public void visit(Type type) throws SemanticException {
+    	StandardType standardType = type.getStandardType();
+    	ArrayType arrayType = type.getArrayType();
+    	
+    	if (standardType != null) {
+    		standardType.accept(this);
+    	} else if (arrayType != null) {
+    		arrayType.accept(this);
+    	}
+    }
+    
     @Override
     public void visit(StandardType standardType) {}
+    
     @Override
-    public void visit(ArrayType arrayType) {}
+    public void visit(ArrayType arrayType) throws SemanticException {
+    	Int minimumInteger = arrayType.getMinimumInteger();
+    	Int maximumInteger = arrayType.getMinimumInteger();
+    	StandardType standardType = arrayType.getStandardType();
+    	
+    	minimumInteger.accept(this);
+    	maximumInteger.accept(this);
+    	standardType.accept(this);
+    }
+    
     @Override
-    public void visit(Int integer) {}
+    public void visit(Int integer) throws SemanticException {
+    	Sign sign = integer.getSign();
+    	UnsignedInteger unsignedInteger = integer.getUnsignedInteger();
+    	
+    	if (sign != null) {
+    		sign.accept(this);
+    	}
+    	unsignedInteger.accept(this);
+    }
+    
     @Override
     public void visit(Sign sign) {}
+    
     @Override
-    public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) {}
+    public void visit(SubprogramDeclarationGroup subprogramDeclarationGroup) throws SemanticException {
+    	List<SubprogramDeclaration> subprogramDeclarationList = subprogramDeclarationGroup.getSubprogramDeclaration();
+    	
+    	for (SubprogramDeclaration subprogramDeclaration: subprogramDeclarationList) {
+    		subprogramDeclaration.accept(this);
+    	}
+    }
+    
     @Override
     public void visit(SubprogramDeclaration subprogramDeclaration) {}
+    
     @Override
-    public void visit(SubprogramHead subprogramHead) {}
+    public void visit(SubprogramHead subprogramHead) throws SemanticException {    	
+    	ProcedureName procedureName = subprogramHead.getProcedureName();
+    	FormalParameter formalParameter = subprogramHead.getFormalParameter();
+    	
+    	procedureName.accept(this);
+    	formalParameter.accept(this);
+    }
+    
     @Override
     public void visit(ProcedureName procedureName) {}
+    
     @Override
-    public void visit(FormalParameter formalParameter) {}
+    public void visit(FormalParameter formalParameter) throws SemanticException {
+    	FormalParameterGroup formalParameterGroup = formalParameter.getFormalParameterGroup();
+    	
+    	if (formalParameterGroup != null) {
+    		formalParameterGroup.accept(this);
+    	}
+    }
+    
     @Override
-    public void visit(FormalParameterGroup formalParameterGroup) {}
+    public void visit(FormalParameterGroup formalParameterGroup) throws SemanticException {
+    	List<FormalParameterNameGroup> formalParameterNameGroupList = formalParameterGroup.getFormalParameterNameGroupList();
+    	List<StandardType> standardTypeList = formalParameterGroup.getStandardTypeList();
+    	
+    	for (int i = 0; i < formalParameterNameGroupList.size(); i++) {
+    		FormalParameterNameGroup formalParameterNameGroup = formalParameterNameGroupList.get(i);
+    		StandardType standardType = standardTypeList.get(i);
+    		
+    		formalParameterNameGroup.accept(this);
+    		standardType.accept(this);
+    	}
+    }
+    
     @Override
-    public void visit(FormalParameterNameGroup formalParameterNameGroup) {}
+    public void visit(FormalParameterNameGroup formalParameterNameGroup) throws SemanticException {
+    	List<FormalParameterName> formalParameterNameList = formalParameterNameGroup.getFormalParameterNameList();
+    	
+    	for (FormalParameterName formalParameterName: formalParameterNameList) {
+    		formalParameterName.accept(this);
+    	}
+    }
+    
     @Override
     public void visit(FormalParameterName formalParameterName) {}
     @Override
