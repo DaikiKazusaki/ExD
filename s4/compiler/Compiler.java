@@ -51,10 +51,10 @@ public class Compiler {
 			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", "tmp/out" + i + ".cas"));
 		}
 		*/
-		System.out.println(new Compiler().run("data/ts/normal12.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
-		// CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
+		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
 	}
 
 	/**
@@ -93,9 +93,10 @@ public class Compiler {
             program.accept(new SemanticValidationVisitor());           
             
             // casファイルを作成
-            program.accept(new CompilationVisitor());
-            // WriteFile writeFile = new WriteFile();
-            // writeFile.writeFile(outputFileName);
+            CompilationVisitor compilationVisitor = new CompilationVisitor();
+            program.accept(compilationVisitor);
+            List<String> statementList = compilationVisitor.getOutputStatementList();
+            writeFile(statementList, outputFileName);
             
             // 構文解析，意味解析が終了したら"OK"を返す
             return "OK"; 
@@ -106,5 +107,32 @@ public class Compiler {
         } catch (final SemanticException e) {
         	return e.getMessage();
         }
+	}
+	
+	/**
+	 * ファイルに書き込むメソッド
+	 * 
+	 * @param statementList
+	 * @param outputFileName
+	 */
+	public void writeFile(List<String> statementList, final String outputFileName) {
+		// CASLの最後に必要な要素を追加
+		statementList.add("LIBBUF" + '\t' + "DS" + '\t' + "256");
+		statementList.add('\t' + "END");
+		// lib.casを記載
+		List<String> libStatementList = new Lib().getLibStatementList();
+		statementList.addAll(libStatementList);
+		
+		try{
+			// ファイルが存在しない場合は新規作成
+            if (Files.notExists(Paths.get(outputFileName))) {
+                Files.createFile(Paths.get(outputFileName));
+            }
+            
+            // ファイル書き込み
+            Files.write(Paths.get(outputFileName), statementList);
+		} catch (IOException e) {
+			System.out.println(e);
+		}
 	}
 }
