@@ -1,9 +1,33 @@
 package enshud.s4.compiler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CompilationVisitor extends SemanticValidationVisitor {
-	private WriteFile writeFile = new WriteFile();
+	private List<String> outputStatementList = new ArrayList<>();
+	
+	public CompilationVisitor() {
+		// 以下の3行はcaslには必ず必要
+		outputStatementList.add("CASL" + '\t' + "START" + '\t' + "BEGIN");
+		outputStatementList.add("BEGIN" + '\t' + "LAD" + '\t' + "GR6, 0");
+		outputStatementList.add('\t' + "LAD" + '\t' + "GR7, LIBBUF");
+	}
+	
+	/**
+	 * ファイルに書き込む内容
+	 * 
+	 */
+	public List<String> getOutputStatementList(){
+		return outputStatementList;
+	}
+	
+	/**
+	 * リストに代入するメソッド
+	 * 
+	 */
+	public void addOutputList(String line) {
+		outputStatementList.add(line);
+	}
 	
     @Override
     public void visit(Program program) throws SemanticException {
@@ -391,35 +415,34 @@ public class CompilationVisitor extends SemanticValidationVisitor {
      * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
      * 
      */
-    public void writeln() {
-    	String line;
-    	
+    public void writeln() {    	
     	// 文字列の長さを取得する
-    	line = '\t' + "LAD" + '\t' + "GR1, 4";
-    	writeFile.addOutputList(line);
-    	line = null;
+    	String length = "4";
+    	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
     	
     	// GR1にPUSH
-    	line = '\t' + "PUSH" + '\t' + "0, GR1" ;
-    	writeFile.addOutputList(line);
-    	line = null;
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	
     	// PUSHするアドレスを取得する
-    	line = '\t' + "LAD" + '\t' + "GR2, CHAR0";
-    	writeFile.addOutputList(line);
-    	line = null;
+    	String adress = "CHAR0";
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + adress);
     	
-    	// GR2をPOPする
-    	line = '\t' + "POP" + '\t' + "GR2";
-    	writeFile.addOutputList(line);
-    	line = null;
+    	// GR2にPOPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
     	
-    	// GR1をPOPする
-    	line = '\t' + "POP" + '\t' + "GR2";
-    	writeFile.addOutputList(line);
-    	line = null;
+    	// GR1にPOPする
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
     	
+    	// WRTESTR，WRTLNをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "WRTSTR");
+    	addOutputList('\t' + "CALL" + '\t' + "WRTLN");
     	
+    	// RET
+    	addOutputList('\t' + "RET");
+    	
+
+		addOutputList("VAR" + '\t' + "DS" + '\t' + "0");
+		addOutputList("CHAR0" + '\t' + "DC" + '\t' + "'test'");
     }
     
     @Override
