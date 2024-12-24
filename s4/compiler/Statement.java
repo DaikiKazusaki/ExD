@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Statement implements Element {
+public class Statement implements Node {
     private BasicStatement basicStatement;
     private IfThen ifThen;
     private WhileDo whileDo;

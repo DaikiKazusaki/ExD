@@ -2,7 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class Equation implements Element {
+public class Equation implements Node {
     private List<SimpleEquation> simpleEquationList;
     private List<RelationalOperator> relationalOperatorList;
 

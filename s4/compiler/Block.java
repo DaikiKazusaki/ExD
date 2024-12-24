@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Block implements Element {
+public class Block implements Node {
     private VariableDeclaration variableDeclaration;
     private SubprogramDeclarationGroup subprogramDeclarationGroup;
 

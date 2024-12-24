@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Program implements Element {
+public class Program implements Node {
     private ProgramName programName;
     private Block block;
     private ComplexStatement complexStatement;

@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Constant implements Element {
+public class Constant implements Node {
     private String constant;
 
     public Constant(String constant) {

@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class VariableWithIndex implements Element {
+public class VariableWithIndex implements Node {
     private VariableName variableName;
     private Index index;
 

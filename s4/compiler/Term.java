@@ -2,7 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class Term implements Element {
+public class Term implements Node {
     private List<Factor> factorList;
     private List<MultipleOperator> multipleOperatorList;
 

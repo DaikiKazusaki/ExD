@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Type implements Element {
+public class Type implements Node {
     private StandardType standardType;
     private ArrayType arrayType;
 

@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class FormalParameter implements Element {
+public class FormalParameter implements Node {
     private FormalParameterGroup formalParameterGroup;
 
     public FormalParameter(FormalParameterGroup formalParameterGroup) {

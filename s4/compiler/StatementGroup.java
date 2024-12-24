@@ -2,7 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class StatementGroup implements Element {
+public class StatementGroup implements Node {
     private List<Statement> statementList;
 
     public StatementGroup(List<Statement> statementList) {

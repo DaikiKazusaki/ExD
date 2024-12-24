@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class LeftSide implements Element {
+public class LeftSide implements Node {
     private Variable variable;
 
     public LeftSide(Variable variable) {

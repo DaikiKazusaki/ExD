@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class NaturalVariable implements Element {
+public class NaturalVariable implements Node {
     private VariableName variableName;
 
     public NaturalVariable(VariableName variableName) {

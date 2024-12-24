@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class AssignStatement implements Element {
+public class AssignStatement implements Node {
     private LeftSide leftSide;
     private Equation equation;
 

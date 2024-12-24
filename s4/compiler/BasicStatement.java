@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class BasicStatement implements Element {
+public class BasicStatement implements Node {
     private AssignStatement assignStatement;
     private ProcedureCallStatement procedureCallStatement;
     private InputOutputStatement inputOutputStatement;

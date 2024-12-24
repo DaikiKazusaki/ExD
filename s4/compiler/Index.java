@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Index implements Element {
+public class Index implements Node {
     private Equation equation;
 
     public Index(Equation equation) {

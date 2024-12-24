@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class UnsignedInteger implements Element {
+public class UnsignedInteger implements Node {
     private String unsignedInteger;
 
     public UnsignedInteger(String unsignedInteger) {

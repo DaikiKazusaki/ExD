@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class VariableName implements Element {
+public class VariableName implements Node {
     private String variableName;
     private String lineNum;
 

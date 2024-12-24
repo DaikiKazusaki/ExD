@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class ArrayType implements Element {
+public class ArrayType implements Node {
 	private Int minimumInteger;
 	private Int maximumInteger;
 	private StandardType standardType;

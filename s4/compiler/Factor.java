@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Factor implements Element {
+public class Factor implements Node {
     private Variable variable;
     private Constant constant;
     private Equation equation;

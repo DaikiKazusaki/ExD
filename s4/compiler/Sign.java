@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Sign implements Element {
+public class Sign implements Node {
     private String sign;
 
     public Sign(String sign) {

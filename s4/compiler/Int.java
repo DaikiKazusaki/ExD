@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class Int implements Element {
+public class Int implements Node {
     private Sign sign;
     private UnsignedInteger unsignedInteger;
     private String lineNum;

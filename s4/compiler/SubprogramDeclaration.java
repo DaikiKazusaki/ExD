@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class SubprogramDeclaration implements Element {
+public class SubprogramDeclaration implements Node {
     private SubprogramHead subprogramHead;
     private VariableDeclaration variableDeclaration;
     private ComplexStatement complexStatement;

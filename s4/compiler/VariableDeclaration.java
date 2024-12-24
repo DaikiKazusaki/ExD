@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class VariableDeclaration implements Element {
+public class VariableDeclaration implements Node {
     private VariableDeclarationGroup variableDeclarationGroup;
 
     public VariableDeclaration(VariableDeclarationGroup variableDeclarationGroup) {

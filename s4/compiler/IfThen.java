@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class IfThen implements Element {
+public class IfThen implements Node {
     private Equation equation;
     private ComplexStatement complexStatement;
     private ElseStatement elseStatement;

@@ -2,7 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class SimpleEquation implements Element {
+public class SimpleEquation implements Node {
     private Sign sign;
     private List<Term> termList;
     private List<AdditionalOperator> additionalOperatorList;

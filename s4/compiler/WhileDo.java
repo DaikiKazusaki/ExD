@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class WhileDo implements Element {
+public class WhileDo implements Node {
     private Equation equation;
     private ComplexStatement complexStatement;
 

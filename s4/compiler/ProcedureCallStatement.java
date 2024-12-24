@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class ProcedureCallStatement implements Element {
+public class ProcedureCallStatement implements Node {
     private ProcedureName procedureName;
     private EquationGroup equationGroup;
 

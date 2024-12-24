@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class ProcedureName implements Element {
+public class ProcedureName implements Node {
     private String procedureName;
 
     public ProcedureName(String procedureName) {

@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class StandardType implements Element {
+public class StandardType implements Node {
     private String standardType;
     private String lineNum;
 

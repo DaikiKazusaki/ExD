@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class AdditionalOperator implements Element {
+public class AdditionalOperator implements Node {
 	private String additionalOperator;
 	
 	public AdditionalOperator(String additionalOperator) {

@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class InputOutputStatement implements Element {
+public class InputOutputStatement implements Node {
     private VariableGroup variableGroup;
     private EquationGroup equationGroup;
 

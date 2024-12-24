@@ -2,7 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class VariableDeclarationGroup implements Element {
+public class VariableDeclarationGroup implements Node {
     private List<VariableNameGroup> variableNameGroupList;
     private List<Type> typeList;
 

@@ -2,7 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class FormalParameterNameGroup implements Element {
+public class FormalParameterNameGroup implements Node {
     private List<FormalParameterName> formalParameterNameList;
 
     public FormalParameterNameGroup(List<FormalParameterName> formalParameterNameList) {

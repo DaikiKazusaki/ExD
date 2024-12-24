@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class MultipleOperator implements Element {
+public class MultipleOperator implements Node {
     private String multipleOperator;
 
     public MultipleOperator(String multipleOperator) {

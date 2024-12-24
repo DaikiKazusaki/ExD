@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class FormalParameterName implements Element {
+public class FormalParameterName implements Node {
     private String formalParameterName;
 
     public FormalParameterName(String formalParameterName) {

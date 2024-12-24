@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class SubprogramHead implements Element {
+public class SubprogramHead implements Node {
     private ProcedureName procedureName;
     private FormalParameter formalParameter;
 

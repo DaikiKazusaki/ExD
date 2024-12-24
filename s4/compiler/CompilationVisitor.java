@@ -5,6 +5,7 @@ import java.util.List;
 
 public class CompilationVisitor extends SemanticValidationVisitor {
 	private List<String> outputStatementList = new ArrayList<>();
+	private int stringNum = 0;
 	
 	public CompilationVisitor() {
 		// 以下の3行はcaslには必ず必要
@@ -264,6 +265,9 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	
     	leftSide.accept(this);
     	equation.accept(this);
+    	
+    	// 代入文の処理
+    	
     }
     
     @Override
@@ -406,25 +410,29 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	} else if (equationGroup != null) {
     		// writelnの場合
     		equationGroup.accept(this);
-    		writeln();
+    		createWRTSTR();
+    		// createWRTINT();
     	}
     }
     
     /**
-     * "writeln"の処理
+     * 文字列出力"WRTSTR"の処理
      * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
      * 
      */
-    public void writeln() {    	
+    public void createWRTSTR() { 
+    	// 文字列を取得する
+    	// String const = 
+    	
     	// 文字列の長さを取得する
-    	String length = "4";
+    	String length = "4";// const.length();
     	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
     	
     	// GR1にPUSH
     	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	
     	// PUSHするアドレスを取得する
-    	String adress = "CHAR0";
+    	String adress = "CHAR" + String.valueOf(stringNum);
     	addOutputList('\t' + "LAD" + '\t' + "GR2, " + adress);
     	
     	// GR2にPOPする
@@ -436,13 +444,41 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	// WRTESTR，WRTLNをCALL
     	addOutputList('\t' + "CALL" + '\t' + "WRTSTR");
     	addOutputList('\t' + "CALL" + '\t' + "WRTLN");
-    	
-    	// RET
     	addOutputList('\t' + "RET");
     	
-    	// 出力する文字列を取得
-		addOutputList("VAR" + '\t' + "DS" + '\t' + "0");
-		addOutputList("CHAR0" + '\t' + "DC" + '\t' + "'test'");
+    	// 出力する文字列を格納
+		addOutputList("VAR" + '\t' + "DS" + '\t' + "1");
+		addOutputList(adress + '\t' + "DC" + '\t' + "'test'");
+		
+		// 次の文字列を出力するためのインクリメント
+		stringNum++;
+    }
+    
+    /**
+     * 文字列出力"WRTINT"の処理
+     * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
+     * 
+     */
+    public void createWRTINT() {
+    	// GR2に0を代入
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    	
+    	// GR1にロード
+    	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	
+    	// POPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+    	
+    	// WRTINT，WRTLNをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "WRTINT");
+    	addOutputList('\t' + "CALL" + '\t' + "WRTLN");
+    	addOutputList('\t' + "RET");
+    	
+    	// 出力する数字を格納
+    	addOutputList("VAR" + '\t' + "DS" + '\t' + '1');
     }
     
     @Override

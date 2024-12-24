@@ -2,7 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class SubprogramDeclarationGroup implements Element {
+public class SubprogramDeclarationGroup implements Node {
     private List<SubprogramDeclaration> subprogramDeclaration;
 
     public SubprogramDeclarationGroup(List<SubprogramDeclaration> subprogramDeclarationList) {

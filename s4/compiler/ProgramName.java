@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class ProgramName implements Element {
+public class ProgramName implements Node {
 	private String name;
 	private String lineNum;
 	

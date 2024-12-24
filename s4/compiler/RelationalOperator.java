@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class RelationalOperator implements Element {
+public class RelationalOperator implements Node {
     private String relationalOperator;
 
     public RelationalOperator(String relationalOperator) {

@@ -1,6 +1,6 @@
 package enshud.s4.compiler;
 
-public class ElseStatement implements Element {
+public class ElseStatement implements Node {
     private ComplexStatement complexStatement;
 
     public ElseStatement(ComplexStatement complexStatement) {

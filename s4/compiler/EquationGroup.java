@@ -2,7 +2,7 @@ package enshud.s4.compiler;
 
 import java.util.List;
 
-public class EquationGroup implements Element {
+public class EquationGroup implements Node {
     private List<Equation> equationList;
 
     public EquationGroup(List<Equation> equationList) {
