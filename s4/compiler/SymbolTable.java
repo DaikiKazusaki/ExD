@@ -19,14 +19,15 @@ public class SymbolTable {
 	 * @param name
 	 * @param type
 	 * @param isArray
+	 * @param scope
 	 */
-	public void addSymbol(String name, String type, String isArray, String scope, String size) {
+	public void addSymbol(String name, String type, String isArray, String scope) {		
 		List<String> newSymbolInformation = new ArrayList<>();
 		newSymbolInformation.add(name);
 		newSymbolInformation.add(type);
 		newSymbolInformation.add(isArray);
 		newSymbolInformation.add(scope);
-		newSymbolInformation.add(size);
+		// newSymbolInformation.add(size);
 		
 		symbolTable.add(newSymbolInformation);
 	}
