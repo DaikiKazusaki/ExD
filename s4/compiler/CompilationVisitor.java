@@ -440,7 +440,7 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	// RET
     	addOutputList('\t' + "RET");
     	
-
+    	// 出力する文字列を取得
 		addOutputList("VAR" + '\t' + "DS" + '\t' + "0");
 		addOutputList("CHAR0" + '\t' + "DC" + '\t' + "'test'");
     }

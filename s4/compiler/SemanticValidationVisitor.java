@@ -5,6 +5,7 @@ import java.util.List;
 public class SemanticValidationVisitor extends Visitor {
 	private SymbolTable symbolTable = new SymbolTable();
 	private FunctionTable functionTable = new FunctionTable();
+	private String scope = "GLOBAL";
 	
     @Override
     public void visit(Program program) throws SemanticException {
@@ -47,13 +48,15 @@ public class SemanticValidationVisitor extends Visitor {
             variableNameGroupList.get(i).accept(this);
             typeList.get(i).accept(this);
         }
+    	
+    	// 記号表に追加する処理
     }
     
-    public void addSymbolTable() throws SemanticException {
-    	boolean isAbleToAdd = symbolTable.isAbleToAddSymbolTable(null, null);
+    public void addSymbolTable(String variableName, String type, String isArray) throws SemanticException {
+    	boolean isAbleToAdd = symbolTable.isAbleToAddSymbolTable(variableName, scope);
     	
     	if (isAbleToAdd) {
-    		symbolTable.addSymbol(null, null, null, null, null);
+    		symbolTable.addSymbol(variableName, type, isArray, scope);
     	} else {
     		throw new SemanticException(null);
     	}
@@ -144,7 +147,7 @@ public class SemanticValidationVisitor extends Visitor {
     	formalParameter.accept(this);
     }
     
-    public void addFunctionTable(String functionName, String lineNum) throws SemanticException {
+    public void addFunctionTable(String functionName, String lineNum) throws SemanticException {    	
     	if (functionTable.isAbleToAddFunctionTable(functionName)) {
     		functionTable.addFunctionTable(functionName);
     	} else {
