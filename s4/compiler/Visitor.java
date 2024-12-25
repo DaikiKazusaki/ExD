@@ -7,7 +7,7 @@ public abstract class Visitor {
 	public void visit(VariableDeclaration variableDeclaration) throws SemanticException {}
 	public void visit(VariableDeclarationGroup variableDeclarationGroup) throws SemanticException {}
 	public void visit(VariableNameGroup variableNameGroup) throws SemanticException {}
-	public void visit(VariableName variableName) {}
+	public void visit(VariableName variableName) throws SemanticException {}
 	public void visit(Type type) throws SemanticException {}
 	public void visit(StandardType standardType) {}
 	public void visit(ArrayType arrayType) throws SemanticException {}

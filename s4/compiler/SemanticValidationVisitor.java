@@ -5,7 +5,7 @@ import java.util.List;
 public class SemanticValidationVisitor extends Visitor {
 	private SymbolTable symbolTable = new SymbolTable();
 	private FunctionTable functionTable = new FunctionTable();
-	private String scope = "GLOBAL";
+	private String scope = "grobal";
 	
     @Override
     public void visit(Program program) throws SemanticException {
@@ -47,18 +47,64 @@ public class SemanticValidationVisitor extends Visitor {
     	for (int i = 0; i < variableNameGroupList.size(); i++) {
             variableNameGroupList.get(i).accept(this);
             typeList.get(i).accept(this);
+            
+            prepareVariableForAddingSymbolTable(variableNameGroupList, typeList, i);
         }
-    	
-    	// 記号表に追加する処理
     }
     
-    public void addSymbolTable(String variableName, String type, String isArray) throws SemanticException {
+    /**
+     * 記号表に変数を登録する準備をするメソッド
+     * 
+     * @param variableNameGroupList
+     * @param typeList
+     * @param i
+     * @throws SemanticException
+     */
+    public void prepareVariableForAddingSymbolTable(List<VariableNameGroup> variableNameGroupList, List<Type> typeList, int i) throws SemanticException {
+    	// 以下の文は要修正
+    	String lineNum = "6";
+    	VariableNameGroup variableNameGroup = variableNameGroupList.get(i);
+        List<VariableName> variableNameList = variableNameGroup.getVariableNameList();
+        Type type = typeList.get(i);
+        String isArray, standardType, size;
+
+        if (type.getStandardType() != null) {
+            // 標準型の変数の場合
+            standardType = type.getStandardType().getStandardType();
+            isArray = "false";
+            size = "1";
+        } else {
+            // 配列型の変数の場合
+            standardType = type.getArrayType().getStandardType().getStandardType();
+            isArray = "true";
+            int maximumSize = Integer.parseInt(type.getArrayType().getMaximumInteger().getUnsignedInteger().getUnsignedInteger());
+            int minimumSize = Integer.parseInt(type.getArrayType().getMinimumInteger().getUnsignedInteger().getUnsignedInteger());
+            size = String.valueOf(maximumSize - minimumSize + 1);
+        }
+
+        // 記号表に変数を登録
+        for (int j = 0; j < variableNameList.size(); j++) {
+            VariableName variableName = variableNameList.get(j);
+            String varName = variableName.getVariableName();
+            addVariableToSymbolTable(varName, standardType, isArray, size, lineNum);
+        }
+    }    
+    
+    /**
+     * 記号表に変数を追加するメソッド
+     * 
+     * @param variableName
+     * @param type
+     * @param isArray
+     * @throws SemanticException
+     */
+    public void addVariableToSymbolTable(String variableName, String type, String isArray, String size, String lineNum) throws SemanticException {
     	boolean isAbleToAdd = symbolTable.isAbleToAddSymbolTable(variableName, scope);
     	
     	if (isAbleToAdd) {
-    		symbolTable.addSymbol(variableName, type, isArray, scope);
+    		symbolTable.addSymbol(variableName, type, isArray, scope, size);
     	} else {
-    		throw new SemanticException(null);
+    		throw new SemanticException(lineNum);
     	}
     }
     
@@ -72,7 +118,8 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(VariableName variableName) {}
+    public void visit(VariableName variableName) throws SemanticException {}
+
     
     @Override
     public void visit(Type type) throws SemanticException {
@@ -135,8 +182,8 @@ public class SemanticValidationVisitor extends Visitor {
     }
     
     @Override
-    public void visit(SubprogramHead subprogramHead) throws SemanticException {
-    	String lineNum = "1"; 
+    public void visit(SubprogramHead subprogramHead) throws SemanticException {    	
+    	String lineNum = subprogramHead.getLineNum(); 
     	
     	ProcedureName procedureName = subprogramHead.getProcedureName();
     	FormalParameter formalParameter = subprogramHead.getFormalParameter();
@@ -147,9 +194,18 @@ public class SemanticValidationVisitor extends Visitor {
     	formalParameter.accept(this);
     }
     
-    public void addFunctionTable(String functionName, String lineNum) throws SemanticException {    	
+    /**
+     * 関数表に副プログラム名を登録するメソッド
+     * 
+     * @param functionName
+     * @param lineNum
+     * @throws SemanticException
+     */
+    public void addFunctionTable(String functionName, String lineNum) throws SemanticException {   
     	if (functionTable.isAbleToAddFunctionTable(functionName)) {
     		functionTable.addFunctionTable(functionName);
+    		// スコープ名の更新
+    		scope = functionName;
     	} else {
     		throw new SemanticException(lineNum);
     	}
@@ -178,6 +234,8 @@ public class SemanticValidationVisitor extends Visitor {
     		
     		formalParameterNameGroup.accept(this);
     		standardType.accept(this);
+    		
+    		// 記号表に仮引数を登録するメソッド
     	}
     }
     
@@ -326,6 +384,15 @@ public class SemanticValidationVisitor extends Visitor {
     	procedureName.accept(this);
     	if (equationGroup != null) {
     		equationGroup.accept(this);
+    	}
+    	
+    	// 手続き名が関数表に登録されているかの確認
+    	String functionName = procedureName.getProcedureName();
+    	List<String> functionList = functionTable.getFunctionTable();
+
+    	if (!functionList.contains(functionName)) {
+        	String lineNum = procedureCallStatement.getLineNum();
+    		throw new SemanticException(lineNum);
     	}
     }
     

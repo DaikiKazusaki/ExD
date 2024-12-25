@@ -15,8 +15,9 @@ public class CompilationVisitor extends SemanticValidationVisitor {
 	}
 	
 	/**
-	 * ファイルに書き込む内容
+	 * ファイルに書き込む内容を取得するメソッド
 	 * 
+	 * @return outputStatementList
 	 */
 	public List<String> getOutputStatementList(){
 		return outputStatementList;
@@ -410,8 +411,16 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	} else if (equationGroup != null) {
     		// writelnの場合
     		equationGroup.accept(this);
-    		createWRTSTR();
-    		// createWRTINT();
+    		
+    		// writelnする文字，数字を取得
+    		// String str = ;
+    		/*
+    		if (Character.isDigit(line)) {
+    			createWRTINT(line);
+    		} else {
+    		*/
+    			createWRTSTR("");
+    		// }
     	}
     }
     
@@ -419,13 +428,13 @@ public class CompilationVisitor extends SemanticValidationVisitor {
      * 文字列出力"WRTSTR"の処理
      * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
      * 
+     * @param constant
      */
-    public void createWRTSTR() { 
-    	// 文字列を取得する
-    	// String const = 
+    public void createWRTSTR(String str) {   
+    	str = "'test'";
     	
     	// 文字列の長さを取得する
-    	String length = "4";// const.length();
+    	String length = String.valueOf(str.length());
     	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
     	
     	// GR1にPUSH
@@ -448,7 +457,7 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	
     	// 出力する文字列を格納
 		addOutputList("VAR" + '\t' + "DS" + '\t' + "1");
-		addOutputList(adress + '\t' + "DC" + '\t' + "'test'");
+		addOutputList(adress + '\t' + "DC" + '\t' + str);
 		
 		// 次の文字列を出力するためのインクリメント
 		stringNum++;

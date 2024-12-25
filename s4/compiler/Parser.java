@@ -145,6 +145,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxException {
+		String lineNum = getLineNum();
 		List<VariableNameGroup> variableNameGroupList = new ArrayList<>();
 		List<Type> typeList = new ArrayList<>();
 		
@@ -184,6 +185,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public VariableNameGroup variableNameGroup() throws SyntaxException {
+		String lineNum = getLineNum();
 		List<VariableName> variableNameList = new ArrayList<>();
 		
 		// 変数名の判定
@@ -196,7 +198,7 @@ public class Parser {
 			variableNameList.add(variableName()); 
 		}
 		
-		return new VariableNameGroup(variableNameList);
+		return new VariableNameGroup(variableNameList, lineNum);
 	}
 	
 	/**
@@ -364,6 +366,8 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public SubprogramHead subprogramHead() throws SyntaxException {
+		String lineNum = getLineNum();
+		
 		// "procedure"の判定
 		checkToken("SPROCEDURE");
 		
@@ -376,7 +380,7 @@ public class Parser {
 		// ";"の判定
 		checkToken("SSEMICOLON");
 		
-		return new SubprogramHead(procedureName, formalParameter);
+		return new SubprogramHead(procedureName, formalParameter, lineNum);
 	}
 	
 	/**
@@ -389,7 +393,7 @@ public class Parser {
 		// 識別子の確認
 		checkToken("SIDENTIFIER");
 		
-		return new ProcedureName(getLexicality(tokenIndex));
+		return new ProcedureName(getLexicality(tokenIndex - 1));
 	}
 	
 	/**
@@ -758,6 +762,8 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public ProcedureCallStatement procedureCallStatement() throws SyntaxException {
+		String lineNum = getLineNum();
+		
 		// 手続き名の判定
 		ProcedureName procedureName = procedureName();
 		
@@ -773,7 +779,7 @@ public class Parser {
 			checkToken("SRPAREN");
 		}
 		
-		return new ProcedureCallStatement(procedureName, equationGroup);
+		return new ProcedureCallStatement(procedureName, equationGroup, lineNum);
 	}
 	
 	/**

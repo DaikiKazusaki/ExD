@@ -3,10 +3,12 @@ package enshud.s4.compiler;
 public class ProcedureCallStatement implements Node {
     private ProcedureName procedureName;
     private EquationGroup equationGroup;
+    private String lineNum;
 
-    public ProcedureCallStatement(ProcedureName procedureName, EquationGroup equationGroup) {
+    public ProcedureCallStatement(ProcedureName procedureName, EquationGroup equationGroup, String lineNum) {
         this.procedureName = procedureName;
         this.equationGroup = equationGroup;
+        this.lineNum = lineNum;
     }
 
     public ProcedureName getProcedureName() {
@@ -15,6 +17,10 @@ public class ProcedureCallStatement implements Node {
 
     public EquationGroup getEquationGroup() {
         return equationGroup;
+    }
+    
+    public String getLineNum() {
+    	return lineNum;
     }
 
     @Override

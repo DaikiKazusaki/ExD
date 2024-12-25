@@ -10,6 +10,10 @@ public class FunctionTable {
 		functionTable.add(functionName);
 	}
 	
+	public List<String> getFunctionTable() {
+		return functionTable;
+	}
+	
 	public boolean isAbleToAddFunctionTable(String name) {
 		if (functionTable.contains(name)) {
 			return false;

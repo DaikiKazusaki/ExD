@@ -5,6 +5,6 @@ public class SemanticException extends Exception {
 
     // コンストラクタ
     public SemanticException(String lineNum) {
-        super("Semantic error: line " + lineNum); // メッセージを直接渡す
+        super("Semantic error: line " + lineNum); 
     }
 }

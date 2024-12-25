@@ -21,13 +21,13 @@ public class SymbolTable {
 	 * @param isArray
 	 * @param scope
 	 */
-	public void addSymbol(String name, String type, String isArray, String scope) {		
+	public void addSymbol(String name, String type, String isArray, String scope, String size) {		
 		List<String> newSymbolInformation = new ArrayList<>();
 		newSymbolInformation.add(name);
 		newSymbolInformation.add(type);
 		newSymbolInformation.add(isArray);
 		newSymbolInformation.add(scope);
-		// newSymbolInformation.add(size);
+		newSymbolInformation.add(size);
 		
 		symbolTable.add(newSymbolInformation);
 	}
@@ -47,5 +47,14 @@ public class SymbolTable {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * 記号表を取得するメソッド
+	 * 
+	 * @return
+	 */
+	public List<List<String>> getSymbolTable(){
+		return symbolTable;
 	}
 }

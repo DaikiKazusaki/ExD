@@ -17,31 +17,6 @@ public class Compiler {
 	 * @throws SyntaxException 
 	 */
 	public static void main(final String[] args) throws SyntaxException, SemanticException {
-		// normalの確認
-		/*
-		for (int i = 1; i <= 9; i++) {
-			System.out.println("0" + i + ": " + new Compiler().run("data/ts/normal0" + i + ".ts", null));
-		}
-		for (int i = 10; i <= 20; i++) {
-			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", null));
-		}
-		*/
-
-		// synerrの確認
-		/*
-		for (int i = 1; i <= 8; i++) {
-			System.out.println("0" + i + ": " + new Compiler().run("data/ts/synerr0" + i + ".ts", null));
-		}
-		*/
-		
-		
-		// semerrの確認
-		/*
-		for (int i = 1; i <= 8; i++) {
-			System.out.println("0" + i + ": " + new Compiler().run("data/ts/semerr0" + i + ".ts", null));
-		}
-		*/
-		
 		// Compilerを実行してcasを生成する
 		/*
 		for (int i = 1; i <= 9; i++) {
@@ -51,7 +26,8 @@ public class Compiler {
 			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", "tmp/out" + i + ".cas"));
 		}
 		*/
-		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
+		// System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/semerr01.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -75,7 +51,7 @@ public class Compiler {
 	 * @throws SyntaxException 
 	 * @throws SemanticException 
 	 */
-	public String run(final String inputFileName, final String outputFileName) throws SyntaxException, SemanticException {
+	public String run(final String inputFileName, final String outputFileName) {
 		try {
 			// ファイルの内容を解析
 			List<String> buffer = Files.readAllLines(Paths.get(inputFileName)); 			
