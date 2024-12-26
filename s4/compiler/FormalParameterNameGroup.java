@@ -4,13 +4,19 @@ import java.util.List;
 
 public class FormalParameterNameGroup implements Node {
     private List<FormalParameterName> formalParameterNameList;
+    private String lineNum;
 
-    public FormalParameterNameGroup(List<FormalParameterName> formalParameterNameList) {
+    public FormalParameterNameGroup(List<FormalParameterName> formalParameterNameList, String lineNum) {
         this.formalParameterNameList = formalParameterNameList;
+        this.lineNum = lineNum;
     }
 
     public List<FormalParameterName> getFormalParameterNameList() {
         return formalParameterNameList;
+    }
+    
+    public String getLineNum() {
+    	return lineNum;
     }
 
     @Override

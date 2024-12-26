@@ -461,6 +461,7 @@ public class Parser {
 	 */
 	public FormalParameterNameGroup formalParameterNameGroup() throws SyntaxException {
 		List<FormalParameterName> formalParameterNameList = new ArrayList<>();
+		String lineNum = getLineNum();
 		
 		//仮パラメータ名の判定
 		formalParameterNameList.add(formalParameterName());
@@ -470,7 +471,7 @@ public class Parser {
 			formalParameterNameList.add(formalParameterName());
 		}
 		
-		return new FormalParameterNameGroup(formalParameterNameList);
+		return new FormalParameterNameGroup(formalParameterNameList, lineNum);
 	}
 	
 	/**

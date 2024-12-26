@@ -27,7 +27,7 @@ public class Compiler {
 		}
 		*/
 		// System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
-		System.out.println(new Compiler().run("data/ts/semerr01.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/semerr02.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");

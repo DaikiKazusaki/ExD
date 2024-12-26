@@ -41,40 +41,54 @@ public class SemanticValidationVisitor extends Visitor {
     
     @Override
     public void visit(VariableDeclarationGroup variableDeclarationGroup) throws SemanticException {
-    	List<VariableNameGroup> variableNameGroupList = variableDeclarationGroup.getVariableNameGroupList();
-    	List<Type> typeList = variableDeclarationGroup.getTypeList();
-    	
-    	for (int i = 0; i < variableNameGroupList.size(); i++) {
+        List<VariableNameGroup> variableNameGroupList = variableDeclarationGroup.getVariableNameGroupList();
+        List<Type> typeList = variableDeclarationGroup.getTypeList();
+        
+        for (int i = 0; i < variableNameGroupList.size(); i++) {
             variableNameGroupList.get(i).accept(this);
             typeList.get(i).accept(this);
             
-            prepareVariableForAddingSymbolTable(variableNameGroupList, typeList, i);
+            prepareVariableForAddingSymbolTable(variableNameGroupList.get(i), typeList.get(i));
         }
     }
-    
+
     /**
      * 記号表に変数を登録する準備をするメソッド
      * 
-     * @param variableNameGroupList
-     * @param typeList
-     * @param i
+     * @param variableNameGroup
+     * @param type
+     * @param lineNum
      * @throws SemanticException
      */
-    public void prepareVariableForAddingSymbolTable(List<VariableNameGroup> variableNameGroupList, List<Type> typeList, int i) throws SemanticException {
-    	// 以下の文は要修正
-    	String lineNum = "6";
-    	VariableNameGroup variableNameGroup = variableNameGroupList.get(i);
-        List<VariableName> variableNameList = variableNameGroup.getVariableNameList();
-        Type type = typeList.get(i);
-        String isArray, standardType, size;
+    public void prepareVariableForAddingSymbolTable(VariableNameGroup variableNameGroup, Type type) throws SemanticException {
+        String[] typeInfo = extractTypeInfo(type);
+        String standardType = typeInfo[0];
+        String isArray = typeInfo[1];
+        String size = typeInfo[2];
+        String lineNum = variableNameGroup.getLineNum();
+
+        // 記号表に変数を登録
+        for (VariableName variableName : variableNameGroup.getVariableNameList()) {
+            addVariableToSymbolTable(variableName.getVariableName(), standardType, isArray, size, lineNum);
+        }
+    }
+
+    /**
+     * 型情報を抽出するヘルパーメソッド
+     * 
+     * @param type
+     * @return [standardType, isArray, size]
+     */
+    private String[] extractTypeInfo(Type type) {
+        String standardType, isArray, size;
 
         if (type.getStandardType() != null) {
-            // 標準型の変数の場合
+            // 標準型
             standardType = type.getStandardType().getStandardType();
             isArray = "false";
             size = "1";
         } else {
-            // 配列型の変数の場合
+            // 配列型
             standardType = type.getArrayType().getStandardType().getStandardType();
             isArray = "true";
             int maximumSize = Integer.parseInt(type.getArrayType().getMaximumInteger().getUnsignedInteger().getUnsignedInteger());
@@ -82,31 +96,27 @@ public class SemanticValidationVisitor extends Visitor {
             size = String.valueOf(maximumSize - minimumSize + 1);
         }
 
-        // 記号表に変数を登録
-        for (int j = 0; j < variableNameList.size(); j++) {
-            VariableName variableName = variableNameList.get(j);
-            String varName = variableName.getVariableName();
-            addVariableToSymbolTable(varName, standardType, isArray, size, lineNum);
-        }
-    }    
-    
+        return new String[]{standardType, isArray, size};
+    }
+
     /**
      * 記号表に変数を追加するメソッド
      * 
      * @param variableName
      * @param type
      * @param isArray
+     * @param size
+     * @param lineNum
      * @throws SemanticException
      */
     public void addVariableToSymbolTable(String variableName, String type, String isArray, String size, String lineNum) throws SemanticException {
-    	boolean isAbleToAdd = symbolTable.isAbleToAddSymbolTable(variableName, scope);
-    	
-    	if (isAbleToAdd) {
-    		symbolTable.addSymbol(variableName, type, isArray, scope, size);
-    	} else {
-    		throw new SemanticException(lineNum);
-    	}
+        if (symbolTable.isAbleToAddSymbolTable(variableName, scope)) {
+            symbolTable.addSymbol(variableName, type, isArray, scope, size);
+        } else {
+            throw new SemanticException(lineNum);
+        }
     }
+
     
     @Override
     public void visit(VariableNameGroup variableNameGroup) throws SemanticException {
@@ -225,19 +235,39 @@ public class SemanticValidationVisitor extends Visitor {
     
     @Override
     public void visit(FormalParameterGroup formalParameterGroup) throws SemanticException {
-    	List<FormalParameterNameGroup> formalParameterNameGroupList = formalParameterGroup.getFormalParameterNameGroupList();
-    	List<StandardType> standardTypeList = formalParameterGroup.getStandardTypeList();
-    	
-    	for (int i = 0; i < formalParameterNameGroupList.size(); i++) {
-    		FormalParameterNameGroup formalParameterNameGroup = formalParameterNameGroupList.get(i);
-    		StandardType standardType = standardTypeList.get(i);
-    		
-    		formalParameterNameGroup.accept(this);
-    		standardType.accept(this);
-    		
-    		// 記号表に仮引数を登録するメソッド
-    	}
+        List<FormalParameterNameGroup> formalParameterNameGroupList = formalParameterGroup.getFormalParameterNameGroupList();
+        List<StandardType> standardTypeList = formalParameterGroup.getStandardTypeList();
+        
+        for (int i = 0; i < formalParameterNameGroupList.size(); i++) {
+            FormalParameterNameGroup formalParameterNameGroup = formalParameterNameGroupList.get(i);
+            StandardType standardType = standardTypeList.get(i);
+            
+            formalParameterNameGroup.accept(this);
+            standardType.accept(this);
+            
+            // 仮引数を記号表に登録
+            prepareFormalParameterForAddingSymbolTable(formalParameterNameGroup, standardType);
+        }
     }
+
+    /**
+     * 記号表に仮引数を登録する準備をするメソッド
+     * 
+     * @param formalParameterNameGroup
+     * @param standardType
+     * @throws SemanticException
+     */
+    public void prepareFormalParameterForAddingSymbolTable(FormalParameterNameGroup formalParameterNameGroup, StandardType standardType) throws SemanticException {
+        String type = standardType.getStandardType();
+        String isArray = "false"; // 仮引数は配列ではない前提
+        String size = "1"; // 仮引数は単一の値として扱う
+        String lineNum = formalParameterNameGroup.getLineNum();
+        
+        for (FormalParameterName formalParameterName : formalParameterNameGroup.getFormalParameterNameList()) {
+            addVariableToSymbolTable(formalParameterName.getFormalParameterName(), type, isArray, size, lineNum);
+        }
+    }
+
     
     @Override
     public void visit(FormalParameterNameGroup formalParameterNameGroup) throws SemanticException {
