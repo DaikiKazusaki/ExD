@@ -145,7 +145,6 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxException {
-		String lineNum = getLineNum();
 		List<VariableNameGroup> variableNameGroupList = new ArrayList<>();
 		List<Type> typeList = new ArrayList<>();
 		
@@ -750,10 +749,11 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Index index() throws SyntaxException {
+		String lineNum = getLineNum();
 		// 式の判定
 		Equation equation = equation();
 		
-		return new Index(equation);
+		return new Index(equation, lineNum);
 	}
 	
 	/**
@@ -838,6 +838,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public SimpleEquation simpleEquation() throws SyntaxException {
+		String lineNum = getLineNum();
 		Sign sign = null;
 		List<Term> termList = new ArrayList<>();
 		List<AdditionalOperator> additionalOperatorList = new ArrayList<>();
@@ -859,7 +860,7 @@ public class Parser {
 			termList.add(term());
 		}
 		
-		return new SimpleEquation(sign, termList, additionalOperatorList);
+		return new SimpleEquation(sign, termList, additionalOperatorList, lineNum);
 	}
 	
 	/**
@@ -869,6 +870,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Term term() throws SyntaxException {
+		String lineNum = getLineNum();
 		List<Factor> factorList = new ArrayList<>();
 		List<MultipleOperator> multipleOperatorList = new ArrayList<>();
 		List<String> setOfMultipleOperator = Arrays.asList("SSTAR", "SDIVD", "SMOD", "SAND");
@@ -884,7 +886,7 @@ public class Parser {
 			factorList.add(factor());
 		}
 		
-		return new Term(factorList, multipleOperatorList);
+		return new Term(factorList, multipleOperatorList, lineNum);
 	}
 	
 	/**
@@ -894,6 +896,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Factor factor() throws SyntaxException {
+		String lineNum = getLineNum();
 		Variable variable = null;
 		Constant constant = null;
 		Equation equation = null;
@@ -920,11 +923,10 @@ public class Parser {
 			// 因子の判定
 			factor = factor();
 		} else {
-			String lineNum = getLineNum();
 			throw new SyntaxException(lineNum);
 		}
 		
-		return new Factor(variable, constant, equation, factor);
+		return new Factor(variable, constant, equation, factor, lineNum);
 	}
 	
 	/**

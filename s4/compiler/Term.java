@@ -5,10 +5,12 @@ import java.util.List;
 public class Term implements Node {
     private List<Factor> factorList;
     private List<MultipleOperator> multipleOperatorList;
+    private String lineNum;
 
-    public Term(List<Factor> factorList, List<MultipleOperator> multipleOperatorList) {
+    public Term(List<Factor> factorList, List<MultipleOperator> multipleOperatorList, String lineNum) {
         this.factorList = factorList;
         this.multipleOperatorList = multipleOperatorList;
+        this.lineNum = lineNum;
     }
 
     public List<Factor> getFactorList() {
@@ -17,6 +19,10 @@ public class Term implements Node {
 
     public List<MultipleOperator> getMultipleOperatorList() {
         return multipleOperatorList;
+    }
+    
+    public String getLineNum() {
+    	return lineNum;
     }
 
     @Override

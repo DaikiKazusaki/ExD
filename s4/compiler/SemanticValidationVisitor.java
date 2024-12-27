@@ -259,8 +259,8 @@ public class SemanticValidationVisitor extends Visitor {
      */
     public void prepareFormalParameterForAddingSymbolTable(FormalParameterNameGroup formalParameterNameGroup, StandardType standardType) throws SemanticException {
         String type = standardType.getStandardType();
-        String isArray = "false"; // 仮引数は配列ではない前提
-        String size = "1"; // 仮引数は単一の値として扱う
+        String isArray = "false"; // 仮引数は配列ではないので，常にfalse
+        String size = "1"; // 仮引数は配列ではないので，常に1
         String lineNum = formalParameterNameGroup.getLineNum();
         
         for (FormalParameterName formalParameterName : formalParameterNameGroup.getFormalParameterNameList()) {
@@ -401,9 +401,24 @@ public class SemanticValidationVisitor extends Visitor {
     
     @Override
     public void visit(Index index) throws SemanticException {
+    	String lineNum = index.getLineNum();
     	Equation equation = index.getEquation();
     	
     	equation.accept(this);
+    	
+    	// 添え字の型の判定
+    	// "integer"以外の変数，arrayならエラー
+    	String[] typeOfIndex = getTypeOfIndex(index);
+    	if (!typeOfIndex[0].equals("integer") || typeOfIndex[1].equals("true")){
+    		throw new SemanticException(lineNum);
+    	}
+    }
+    
+    public String[] getTypeOfIndex(Index index) {
+    	// 型：[標準型，配列型]
+    	String type[] = {"integer", "false"};
+    	
+    	return type;
     }
     
     @Override

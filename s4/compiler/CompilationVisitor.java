@@ -412,6 +412,8 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     		// writelnの場合
     		equationGroup.accept(this);
     		
+    		// List<Equation> equationList = equationGroup.getEquationList();
+    		
     		// writelnする文字，数字を取得
     		// String str = ;
     		/*

@@ -18,15 +18,7 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) throws SyntaxException, SemanticException {
 		// Compilerを実行してcasを生成する
-		/*
-		for (int i = 1; i <= 9; i++) {
-			System.out.println("0" + i + ": " + new Compiler().run("data/ts/normal0" + i + ".ts", "tmp/out0" + i + ".cas"));
-		}
-		for (int i = 10; i <= 20; i++) {
-			System.out.println(i + ": " + new Compiler().run("data/ts/normal" + i + ".ts", "tmp/out" + i + ".cas"));
-		}
-		*/
-		// System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
+		// System.out.println(new Compiler().run("data/ts/normal13.ts", "tmp/out.cas"));
 		System.out.println(new Compiler().run("data/ts/semerr02.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
