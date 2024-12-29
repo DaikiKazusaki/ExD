@@ -696,6 +696,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Variable variable() throws SyntaxException {
+		String lineNum = getLineNum();
 		NaturalVariable naturalVariable = null;
 		VariableWithIndex variableWithIndex = null;
 		
@@ -705,7 +706,7 @@ public class Parser {
 			variableWithIndex = variableWithIndex();
 		} 
 		
-		return new Variable(naturalVariable, variableWithIndex);
+		return new Variable(naturalVariable, variableWithIndex, lineNum);
 	}
 	
 	/**

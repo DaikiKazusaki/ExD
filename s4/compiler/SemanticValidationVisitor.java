@@ -378,6 +378,18 @@ public class SemanticValidationVisitor extends Visitor {
     	Variable variable = leftSide.getVariable();
     	
     	variable.accept(this);
+    	
+    	String variableName = null;
+    	if (variable.getNaturalVariable() != null) {
+    		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+    	} else if (variable.getVariableWithIndex() != null) {
+    		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    	}
+    	String type = symbolTable.getType(variableName);
+    	if (type == null) {
+    		String lineNum = variable.getLineNum();
+    		throw new SemanticException(lineNum);
+    	}
     }
     
     @Override
@@ -410,16 +422,16 @@ public class SemanticValidationVisitor extends Visitor {
     
     @Override
     public void visit(Index index) throws SemanticException {
-    	String lineNum = index.getLineNum();
     	Equation equation = index.getEquation();
     	
     	equation.accept(this);
     	
     	// 添え字の型の判定
     	// "integer"以外の変数，arrayならエラー
-    	String[] typeOfIndex = getTypeOfIndex(index);
-    	if (!typeOfIndex[0].equals("integer") || typeOfIndex[1].equals("true")){
-    		throw new SemanticException(lineNum);
+    	String type = resolveType(equation);
+    	if (!type.equals("integer")) {
+        	String lineNum = index.getLineNum();
+        	throw new SemanticException(lineNum);
     	}
     }
     
@@ -636,8 +648,8 @@ public class SemanticValidationVisitor extends Visitor {
      */
     private String resolveVariableType(Factor factor) throws SemanticException {
         String varName = factor.getVariable().getNaturalVariable().getVariableName().getVariableName();
-        String type = symbolTable.judgeNaturalVariable(varName);
-        if (type.isEmpty()) {
+        String type = symbolTable.judgeVariable(varName);
+        if (type == null) {
             throw new SemanticException(factor.getLineNum());
         }
         return type;

@@ -3,10 +3,12 @@ package enshud.s4.compiler;
 public class Variable implements Node {
     private NaturalVariable naturalVariable;
     private VariableWithIndex variableWithIndex;
+    private String lineNum;
 
-    public Variable(NaturalVariable naturalVariable, VariableWithIndex variableWithIndex) {
+    public Variable(NaturalVariable naturalVariable, VariableWithIndex variableWithIndex, String lineNum) {
         this.naturalVariable = naturalVariable;
         this.variableWithIndex = variableWithIndex;
+        this.lineNum = lineNum;
     }
 
     public NaturalVariable getNaturalVariable() {
@@ -21,4 +23,8 @@ public class Variable implements Node {
     public void accept(Visitor visitor) throws SemanticException {
         visitor.visit(this);
     }
+
+	public String getLineNum() {
+		return lineNum;
+	}
 }
