@@ -145,7 +145,6 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxException {
-		String lineNum = getLineNum();
 		List<VariableNameGroup> variableNameGroupList = new ArrayList<>();
 		List<Type> typeList = new ArrayList<>();
 		
@@ -568,6 +567,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public IfThen ifThen() throws SyntaxException {
+		String lineNum = getLineNum();
 		// "if"の判定は済んでいるので，インクリメントのみを行う
 		tokenIndex++;
 		
@@ -586,7 +586,7 @@ public class Parser {
 			elseStatement = elseStatement();
 		}
 		
-		return new IfThen(equation, complexStatement, elseStatement);
+		return new IfThen(equation, complexStatement, elseStatement, lineNum);
 	}
 	
 	/**
@@ -696,6 +696,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Variable variable() throws SyntaxException {
+		String lineNum = getLineNum();
 		NaturalVariable naturalVariable = null;
 		VariableWithIndex variableWithIndex = null;
 		
@@ -705,7 +706,7 @@ public class Parser {
 			variableWithIndex = variableWithIndex();
 		} 
 		
-		return new Variable(naturalVariable, variableWithIndex);
+		return new Variable(naturalVariable, variableWithIndex, lineNum);
 	}
 	
 	/**
@@ -750,10 +751,11 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Index index() throws SyntaxException {
+		String lineNum = getLineNum();
 		// 式の判定
 		Equation equation = equation();
 		
-		return new Index(equation);
+		return new Index(equation, lineNum);
 	}
 	
 	/**
@@ -812,23 +814,23 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Equation equation() throws SyntaxException {
-		// 関係演算子のfirst集合，要修正
+		String lineNum = getLineNum();
 		List<String> setOfRelationalOperator = Arrays.asList("SEQUAL", "SNOTEQUAL", "SLESS", "SLESSEQUAL", "SGREAT", "SGREATEQUAL");
 		List<SimpleEquation> simpleEquationList = new ArrayList<>();
-		List<RelationalOperator> relationalOperatorList = new ArrayList<>();
+		RelationalOperator relationalOperator = null;
 		
 		// 単純式の判定
 		simpleEquationList.add(simpleEquation());
 		
 		if (setOfRelationalOperator.contains(getToken(tokenIndex))) {
 			// 関係演算子の判定
-			relationalOperatorList.add(relationalOperator());
+			relationalOperator = relationalOperator();
 			
 			// 単純式の判定
 			simpleEquationList.add(simpleEquation());
 		}
 		
-		return new Equation(simpleEquationList, relationalOperatorList);
+		return new Equation(simpleEquationList, relationalOperator, lineNum);
 	}
 	
 	/**
@@ -838,6 +840,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public SimpleEquation simpleEquation() throws SyntaxException {
+		String lineNum = getLineNum();
 		Sign sign = null;
 		List<Term> termList = new ArrayList<>();
 		List<AdditionalOperator> additionalOperatorList = new ArrayList<>();
@@ -859,7 +862,7 @@ public class Parser {
 			termList.add(term());
 		}
 		
-		return new SimpleEquation(sign, termList, additionalOperatorList);
+		return new SimpleEquation(sign, termList, additionalOperatorList, lineNum);
 	}
 	
 	/**
@@ -869,6 +872,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Term term() throws SyntaxException {
+		String lineNum = getLineNum();
 		List<Factor> factorList = new ArrayList<>();
 		List<MultipleOperator> multipleOperatorList = new ArrayList<>();
 		List<String> setOfMultipleOperator = Arrays.asList("SSTAR", "SDIVD", "SMOD", "SAND");
@@ -884,7 +888,7 @@ public class Parser {
 			factorList.add(factor());
 		}
 		
-		return new Term(factorList, multipleOperatorList);
+		return new Term(factorList, multipleOperatorList, lineNum);
 	}
 	
 	/**
@@ -894,6 +898,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Factor factor() throws SyntaxException {
+		String lineNum = getLineNum();
 		Variable variable = null;
 		Constant constant = null;
 		Equation equation = null;
@@ -920,11 +925,10 @@ public class Parser {
 			// 因子の判定
 			factor = factor();
 		} else {
-			String lineNum = getLineNum();
 			throw new SyntaxException(lineNum);
 		}
 		
-		return new Factor(variable, constant, equation, factor);
+		return new Factor(variable, constant, equation, factor, lineNum);
 	}
 	
 	/**

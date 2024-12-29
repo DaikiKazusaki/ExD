@@ -6,11 +6,13 @@ public class SimpleEquation implements Node {
     private Sign sign;
     private List<Term> termList;
     private List<AdditionalOperator> additionalOperatorList;
+    private String lineNum;
 
-    public SimpleEquation(Sign sign, List<Term> termList, List<AdditionalOperator> additionalOperatorList) {
+    public SimpleEquation(Sign sign, List<Term> termList, List<AdditionalOperator> additionalOperatorList, String lineNum) {
         this.sign = sign;
         this.termList = termList;
         this.additionalOperatorList = additionalOperatorList;
+        this.lineNum = lineNum;
     }
 
     public Sign getSign() {
@@ -23,6 +25,10 @@ public class SimpleEquation implements Node {
 
     public List<AdditionalOperator> getAdditionalOperatorList() {
         return additionalOperatorList;
+    }
+    
+    public String getLineNum() {
+    	return lineNum;
     }
 
     @Override

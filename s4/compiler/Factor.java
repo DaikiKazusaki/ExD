@@ -5,12 +5,14 @@ public class Factor implements Node {
     private Constant constant;
     private Equation equation;
     private Factor factor;
+    private String lineNum;
 
-    public Factor(Variable variable, Constant constant, Equation equation, Factor factor) {
+    public Factor(Variable variable, Constant constant, Equation equation, Factor factor, String lineNum) {
         this.variable = variable;
         this.constant = constant;
         this.equation = equation;
         this.factor = factor;
+        this.lineNum = lineNum;
     }
 
     public Variable getVariable() {
@@ -27,6 +29,10 @@ public class Factor implements Node {
 
     public Factor getFactor() {
         return factor;
+    }
+    
+    public String getLineNum() {
+    	return lineNum;
     }
 
     @Override

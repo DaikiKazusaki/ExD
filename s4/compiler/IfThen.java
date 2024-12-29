@@ -4,11 +4,13 @@ public class IfThen implements Node {
     private Equation equation;
     private ComplexStatement complexStatement;
     private ElseStatement elseStatement;
+    private String lineNum;
 
-    public IfThen(Equation equation, ComplexStatement complexStatement, ElseStatement elseStatement) {
+    public IfThen(Equation equation, ComplexStatement complexStatement, ElseStatement elseStatement, String lineNum) {
         this.equation = equation;
         this.complexStatement = complexStatement;
         this.elseStatement = elseStatement;
+        this.lineNum = lineNum;
     }
 
     public Equation getEquation() {
@@ -27,4 +29,8 @@ public class IfThen implements Node {
     public void accept(Visitor visitor) throws SemanticException {
         visitor.visit(this);
     }
+
+	public String getLineNum() {
+		return lineNum;
+	}
 }

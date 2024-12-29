@@ -11,6 +11,8 @@ public class SymbolTable {
 	 */
 	public List<List<String>> symbolTable = new ArrayList<>();
 	private int NAMECOLS = 0;
+	private int STANDARDTYPECOLS = 1;
+	private int ISARRAYCOLS = 2; 
 	private int SCOPECOLS = 3;
 	
 	/**
@@ -33,7 +35,8 @@ public class SymbolTable {
 	}
 	
 	/**
-	 * 記号表にすでに登録されているか
+	 * 記号表に変数を追加するメソッド
+	 * scopeがglobal or 同じ関数名の時は，すでに変数が登録されていると判定する
 	 * 
 	 * @param name
 	 * @return
@@ -56,5 +59,35 @@ public class SymbolTable {
 	 */
 	public List<List<String>> getSymbolTable(){
 		return symbolTable;
+	}
+	
+	/**
+	 * 記号表に登録されている変数の確認をするメソッド
+	 * 
+	 * @param variableName
+	 * @return
+	 */
+	public String judgeVariable(String variableName) {
+		for (int i = 0; i < symbolTable.size(); i++) {
+			if (symbolTable.get(i).get(NAMECOLS).equals(variableName)) {
+				return symbolTable.get(i).get(STANDARDTYPECOLS);
+			} 
+		}
+		return null;
+	}
+	
+	/**
+	 * 変数の型を返すメソッド
+	 * 
+	 * @param variableName
+	 * @return
+	 */
+	public String getType(String variableName) {
+		for (int i = 0; i < symbolTable.size(); i++) {
+			if (symbolTable.get(i).get(NAMECOLS).equals(variableName)) {
+				return symbolTable.get(i).get(STANDARDTYPECOLS);
+			} 
+		}
+		return null;
 	}
 }

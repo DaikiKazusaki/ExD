@@ -1,5 +1,6 @@
 package enshud.s4.compiler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SemanticValidationVisitor extends Visitor {
@@ -11,6 +12,7 @@ public class SemanticValidationVisitor extends Visitor {
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
     	Block block = program.getBlock();
+    	scope = "global"; // ブロックの終了後はグローバル変数以外使用できない
     	ComplexStatement complexStatement = program.getComplexStatement();
     	
     	programName.accept(this);
@@ -259,8 +261,8 @@ public class SemanticValidationVisitor extends Visitor {
      */
     public void prepareFormalParameterForAddingSymbolTable(FormalParameterNameGroup formalParameterNameGroup, StandardType standardType) throws SemanticException {
         String type = standardType.getStandardType();
-        String isArray = "false"; // 仮引数は配列ではない前提
-        String size = "1"; // 仮引数は単一の値として扱う
+        String isArray = "false"; // 仮引数は配列ではないので，常にfalse
+        String size = "1"; // 仮引数は配列ではないので，常に1
         String lineNum = formalParameterNameGroup.getLineNum();
         
         for (FormalParameterName formalParameterName : formalParameterNameGroup.getFormalParameterNameList()) {
@@ -319,6 +321,13 @@ public class SemanticValidationVisitor extends Visitor {
     	
     	equation.accept(this);
     	complexStatement.accept(this);
+    	
+    	// if文の式の判定
+    	String type = resolveType(equation);
+    	if (!type.equals("boolean")) {
+    		String lineNum = ifThen.getLineNum();
+    		throw new SemanticException(lineNum);
+    	}
     }
     
     @Override
@@ -369,6 +378,18 @@ public class SemanticValidationVisitor extends Visitor {
     	Variable variable = leftSide.getVariable();
     	
     	variable.accept(this);
+    	
+    	String variableName = null;
+    	if (variable.getNaturalVariable() != null) {
+    		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+    	} else if (variable.getVariableWithIndex() != null) {
+    		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    	}
+    	String type = symbolTable.getType(variableName);
+    	if (type == null) {
+    		String lineNum = variable.getLineNum();
+    		throw new SemanticException(lineNum);
+    	}
     }
     
     @Override
@@ -404,6 +425,21 @@ public class SemanticValidationVisitor extends Visitor {
     	Equation equation = index.getEquation();
     	
     	equation.accept(this);
+    	
+    	// 添え字の型の判定
+    	// "integer"以外の変数，arrayならエラー
+    	String type = resolveType(equation);
+    	if (!type.equals("integer")) {
+        	String lineNum = index.getLineNum();
+        	throw new SemanticException(lineNum);
+    	}
+    }
+    
+    public String[] getTypeOfIndex(Index index) {
+    	// 型：[標準型，配列型]
+    	String type[] = {"integer", "false"};
+    	
+    	return type;
     }
     
     @Override
@@ -438,12 +474,12 @@ public class SemanticValidationVisitor extends Visitor {
     @Override
     public void visit(Equation equation) throws SemanticException {
     	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
-    	List<RelationalOperator> relationalOperatorList = equation.getRelationalOperatorList();
+    	RelationalOperator relationalOperator = equation.getRelationalOperator();
     	
     	simpleEquationList.get(0).accept(this);
-    	for (int i = 0; i < relationalOperatorList.size(); i++) {
-    		relationalOperatorList.get(i).accept(this);
-    		simpleEquationList.get(i + 1).accept(this);
+    	if (relationalOperator != null) {
+    		relationalOperator.accept(this);
+    		simpleEquationList.get(1).accept(this);
     	}
     }
     
@@ -456,7 +492,11 @@ public class SemanticValidationVisitor extends Visitor {
     	if (sign != null) {
     		sign.accept(this);
     	} 
+    	
+    	// 最初の項を確認
     	termList.get(0).accept(this);
+    	
+    	// 2個目以降の項を確認
     	for (int i = 0; i < additionalOperatorList.size(); i++) {
     		additionalOperatorList.get(i).accept(this);
     		termList.get(i + 1).accept(this);
@@ -528,4 +568,115 @@ public class SemanticValidationVisitor extends Visitor {
     
     @Override
     public void visit(UnsignedInteger unsignedInteger) {}
+    
+    /**
+     * 式の型を確認するメソッド
+     * 
+     * @param equation
+     * @throws SemanticException
+     * @return 
+     */
+    private String resolveType(Equation equation) throws SemanticException {
+    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
+        List<String> termTypes = new ArrayList<>();
+        
+        for (SimpleEquation simpleEquation : simpleEquationList) {
+            List<String> factorTypes = resolveTermTypes(simpleEquation);
+            
+            // 項の型を収集し、整合性をチェック
+            checkTypeConsistency(factorTypes, simpleEquation.getLineNum());
+            termTypes.add(factorTypes.get(0));
+        }
+        
+        // 式全体の項の型を整合性チェック
+        checkTypeConsistency(termTypes, equation.getLineNum());
+        
+        // 式の型を返却
+        if (simpleEquationList.size() == 1) {
+        	return termTypes.get(0);
+        } else {
+        	return "boolean";
+        }
+    }
+
+    /**
+     * 項の型を取得し、整合性をチェックするメソッド
+     */
+    private List<String> resolveTermTypes(SimpleEquation simpleEquation) throws SemanticException {
+        List<String> factorTypes = new ArrayList<>();
+        
+        for (Term term : simpleEquation.getTermList()) {
+            List<String> typesInTerm = resolveFactorTypes(term);
+            
+            // 項内の因子型をチェック
+            checkTypeConsistency(typesInTerm, term.getLineNum());
+            factorTypes.add(typesInTerm.get(0));
+        }
+        return factorTypes;
+    }
+
+    /**
+     * 因子の型リストを取得するメソッド
+     */
+    private List<String> resolveFactorTypes(Term term) throws SemanticException {
+        List<String> factorTypes = new ArrayList<>();
+        for (Factor factor : term.getFactorList()) {
+            String factorType = resolveType(factor);
+            factorTypes.add(factorType);
+        }
+        return factorTypes;
+    }
+
+    /**
+     * 因子の型を解決するメソッド
+     */
+    private String resolveType(Factor factor) throws SemanticException {
+        if (factor.getVariable() != null) {
+            return resolveVariableType(factor);
+        } else if (factor.getConstant() != null) {
+            return resolveConstantType(factor.getConstant().getConstant());
+        } else if (factor.getEquation() != null) {
+            return resolveType(factor.getEquation());
+        } else if (factor.getFactor() != null) {
+            return resolveType(factor.getFactor());
+        }
+        throw new SemanticException(factor.getLineNum());
+    }
+
+    /**
+     * 変数の型を解決するメソッド
+     */
+    private String resolveVariableType(Factor factor) throws SemanticException {
+        String varName = factor.getVariable().getNaturalVariable().getVariableName().getVariableName();
+        String type = symbolTable.judgeVariable(varName);
+        if (type == null) {
+            throw new SemanticException(factor.getLineNum());
+        }
+        return type;
+    }
+
+    /**
+     * 定数の型を解決するメソッド
+     */
+    private String resolveConstantType(String constant) {
+        if ("true".equals(constant) || "false".equals(constant)) {
+            return "boolean";
+        } else if (constant.matches("\\d+")) {
+            return "integer";
+        } else {
+            return "char";
+        }
+    }
+
+    /**
+     * 型の整合性を確認するメソッド
+     */
+    private void checkTypeConsistency(List<String> types, String lineNum) throws SemanticException {
+        String baseType = types.get(0);
+        for (String type : types) {
+            if (!baseType.equals(type)) {
+                throw new SemanticException(lineNum);
+            }
+        }
+    }
 }

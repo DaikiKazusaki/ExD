@@ -6,6 +6,7 @@ import java.util.List;
 public class CompilationVisitor extends SemanticValidationVisitor {
 	private List<String> outputStatementList = new ArrayList<>();
 	private int stringNum = 0;
+	private int varNum = 0;
 	
 	public CompilationVisitor() {
 		// 以下の3行はcaslには必ず必要
@@ -268,7 +269,20 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	equation.accept(this);
     	
     	// 代入文の処理
-    	
+    	writeAssign(leftSide, equation);
+    }
+    
+    /**
+     * 代入文のcaslコードを生成する
+     * 
+     */
+    public void writeAssign(LeftSide leftSide, Equation equation) {
+    	// 変数の代入
+    	addOutputList('\t' + "PUSH" + '\t' + "1");
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
+		addOutputList("VAR" + Integer.valueOf(varNum) + '\t' + "DS" + '\t' + "1");
     }
     
     @Override
@@ -336,12 +350,12 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     @Override
     public void visit(Equation equation) throws SemanticException {
     	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
-    	List<RelationalOperator> relationalOperatorList = equation.getRelationalOperatorList();
+    	RelationalOperator relationalOperator = equation.getRelationalOperator();
     	
     	simpleEquationList.get(0).accept(this);
-    	for (int i = 0; i < relationalOperatorList.size(); i++) {
-    		relationalOperatorList.get(i).accept(this);
-    		simpleEquationList.get(i + 1).accept(this);
+    	if (relationalOperator != null) {
+    		relationalOperator.accept(this);
+    		simpleEquationList.get(1).accept(this);
     	}
     }
     
@@ -412,16 +426,79 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     		// writelnの場合
     		equationGroup.accept(this);
     		
-    		// writelnする文字，数字を取得
-    		// String str = ;
-    		/*
-    		if (Character.isDigit(line)) {
-    			createWRTINT(line);
-    		} else {
-    		*/
-    			createWRTSTR("");
-    		// }
+    		List<Equation> equationList = equationGroup.getEquationList();
+    		for (int i = 0; i < equationList.size(); i++) {
+    			Equation equation = equationList.get(i);
+    			
+    			// writelnする文字，数字を取得
+    			/*
+        		String str = getString(equation);
+        		
+        		if (str.matches("\\d+")) {
+        			createWRTINT(str);
+        		} else {
+        		*/
+        			createWRTSTR(""); // str);
+        		// }
+    		}
+    		// 改行の処理
+    	    addOutputList('\t' + "CALL" + '\t' + "WRTLN");
+    	    addOutputList('\t' + "RET");
     	}
+    }
+    
+    /**
+     * 式からfactorをとってくるメソッド
+     * 
+     * @param equation
+     * @return
+     */
+    public void getFactor(Equation equation) {
+    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
+    	// RelationalOperator relationalOperator = equation.getRelationalOperator();
+    	
+    	SimpleEquation simpleEquation = simpleEquationList.get(0);
+    	List<Term> termList = simpleEquation.getTermList();
+    	for (int i = 0; i < termList.size(); i++) {
+    		Term term = termList.get(i);
+    		List<Factor> factorList = term.getFactorList();
+    		for (int j = 0; j < factorList.size(); j++) {
+    			Factor factor = factorList.get(j);
+    			judgeFactor(factor);
+    		}
+    	}
+    }
+    
+    public void judgeFactor(Factor factor) {
+    	if (factor.getVariable() != null) {
+    		// factorが変数の場合
+    		Variable variable = factor.getVariable();
+    	} else if (factor.getConstant() !=  null) {
+    		// factorが定数の場合
+    		String constant = factor.getConstant().getConstant();
+    	} else if (factor.getEquation() != null) {
+    		// factorが式の場合
+    		Equation equation = factor.getEquation();
+    		getFactor(equation);
+    	} else if (factor.getFactor() != null) {
+    		// factorが"not"factorの場合
+    		Factor notFactor = factor.getFactor();
+    		judgeFactor(notFactor);
+    	}
+    }
+    
+    /**
+     * 式の並びの要素をとってくるメソッド
+     * 
+     */
+    public String getString(Equation equation) {
+    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
+    	for (int i = 0; i < simpleEquationList.size(); i++) {
+    		SimpleEquation simpleEquation = simpleEquationList.get(i);
+    		List<Term> termList = simpleEquation.getTermList();
+    		
+    	}
+    	return "";
     }
     
     /**
@@ -452,11 +529,8 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	
     	// WRTESTR，WRTLNをCALL
     	addOutputList('\t' + "CALL" + '\t' + "WRTSTR");
-    	addOutputList('\t' + "CALL" + '\t' + "WRTLN");
-    	addOutputList('\t' + "RET");
     	
     	// 出力する文字列を格納
-		addOutputList("VAR" + '\t' + "DS" + '\t' + "1");
 		addOutputList(adress + '\t' + "DC" + '\t' + str);
 		
 		// 次の文字列を出力するためのインクリメント
@@ -468,7 +542,7 @@ public class CompilationVisitor extends SemanticValidationVisitor {
      * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
      * 
      */
-    public void createWRTINT() {
+    public void createWRTINT(String str) {
     	// GR2に0を代入
     	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
     	
@@ -483,11 +557,6 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	
     	// WRTINT，WRTLNをCALL
     	addOutputList('\t' + "CALL" + '\t' + "WRTINT");
-    	addOutputList('\t' + "CALL" + '\t' + "WRTLN");
-    	addOutputList('\t' + "RET");
-    	
-    	// 出力する数字を格納
-    	addOutputList("VAR" + '\t' + "DS" + '\t' + '1');
     }
     
     @Override
