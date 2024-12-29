@@ -567,6 +567,7 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public IfThen ifThen() throws SyntaxException {
+		String lineNum = getLineNum();
 		// "if"の判定は済んでいるので，インクリメントのみを行う
 		tokenIndex++;
 		
@@ -585,7 +586,7 @@ public class Parser {
 			elseStatement = elseStatement();
 		}
 		
-		return new IfThen(equation, complexStatement, elseStatement);
+		return new IfThen(equation, complexStatement, elseStatement, lineNum);
 	}
 	
 	/**
@@ -812,23 +813,23 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public Equation equation() throws SyntaxException {
-		// 関係演算子のfirst集合，要修正
+		String lineNum = getLineNum();
 		List<String> setOfRelationalOperator = Arrays.asList("SEQUAL", "SNOTEQUAL", "SLESS", "SLESSEQUAL", "SGREAT", "SGREATEQUAL");
 		List<SimpleEquation> simpleEquationList = new ArrayList<>();
-		List<RelationalOperator> relationalOperatorList = new ArrayList<>();
+		RelationalOperator relationalOperator = null;
 		
 		// 単純式の判定
 		simpleEquationList.add(simpleEquation());
 		
 		if (setOfRelationalOperator.contains(getToken(tokenIndex))) {
 			// 関係演算子の判定
-			relationalOperatorList.add(relationalOperator());
+			relationalOperator = relationalOperator();
 			
 			// 単純式の判定
 			simpleEquationList.add(simpleEquation());
 		}
 		
-		return new Equation(simpleEquationList, relationalOperatorList);
+		return new Equation(simpleEquationList, relationalOperator, lineNum);
 	}
 	
 	/**
