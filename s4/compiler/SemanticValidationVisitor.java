@@ -6,13 +6,12 @@ import java.util.List;
 public class SemanticValidationVisitor extends Visitor {
 	private SymbolTable symbolTable = new SymbolTable();
 	private FunctionTable functionTable = new FunctionTable();
-	private String scope = "grobal";
+	private String scope = "global";
 	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
     	Block block = program.getBlock();
-    	scope = "global"; // ブロックの終了後はグローバル変数以外使用できない
     	ComplexStatement complexStatement = program.getComplexStatement();
     	
     	programName.accept(this);
@@ -180,6 +179,9 @@ public class SemanticValidationVisitor extends Visitor {
     	for (SubprogramDeclaration subprogramDeclaration: subprogramDeclarationList) {
     		subprogramDeclaration.accept(this);
     	}
+    	
+    	// ブロックの終了後はグローバル変数以外使用できない
+    	scope = "global"; 
     }
     
     @Override
@@ -433,13 +435,6 @@ public class SemanticValidationVisitor extends Visitor {
         	String lineNum = index.getLineNum();
         	throw new SemanticException(lineNum);
     	}
-    }
-    
-    public String[] getTypeOfIndex(Index index) {
-    	// 型：[標準型，配列型]
-    	String type[] = {"integer", "false"};
-    	
-    	return type;
     }
     
     @Override

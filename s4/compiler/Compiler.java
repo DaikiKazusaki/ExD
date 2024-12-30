@@ -66,7 +66,7 @@ public class Compiler {
             List<String> statementList = compilationVisitor.getOutputStatementList();
             writeFile(statementList, outputFileName);
             
-            // 構文解析，意味解析が終了したら"OK"を返す
+            // コンパイルが終了したら"OK"を返す
             return "OK"; 
         } catch (final IOException e) {
             return "File not found";
