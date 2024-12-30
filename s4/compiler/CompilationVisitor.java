@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompilationVisitor extends SemanticValidationVisitor {
+	private SymbolTable symbolTable = new SymbolTable();
 	private List<String> outputStatementList = new ArrayList<>();
 	private int stringNum = 0;
 	private int varNum = 0;
+	private List<String> listForSizeAndString = new ArrayList<>();
 	
 	public CompilationVisitor() {
 		// 以下の3行はcaslには必ず必要
@@ -32,6 +34,14 @@ public class CompilationVisitor extends SemanticValidationVisitor {
 		outputStatementList.add(line);
 	}
 	
+	/**
+	 * 文字列を番地に置いておく
+	 * 
+	 */
+	public void addSizeAndString(String line) {
+		listForSizeAndString.add(line);
+	}
+	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
@@ -41,6 +51,8 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	programName.accept(this);
     	block.accept(this);
     	complexStatement.accept(this);
+    	
+    	outputStatementList.addAll(listForSizeAndString);
     }
     
     @Override
@@ -429,17 +441,7 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     		List<Equation> equationList = equationGroup.getEquationList();
     		for (int i = 0; i < equationList.size(); i++) {
     			Equation equation = equationList.get(i);
-    			
-    			// writelnする文字，数字を取得
-    			/*
-        		String str = getString(equation);
-        		
-        		if (str.matches("\\d+")) {
-        			createWRTINT(str);
-        		} else {
-        		*/
-        			createWRTSTR(""); // str);
-        		// }
+    			resolveEquationType(equation);
     		}
     		// 改行の処理
     	    addOutputList('\t' + "CALL" + '\t' + "WRTLN");
@@ -448,70 +450,116 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     }
     
     /**
-     * 式からfactorをとってくるメソッド
+     * 式の型を判定するメソッド
      * 
      * @param equation
-     * @return
      */
-    public void getFactor(Equation equation) {
+    private void resolveEquationType(Equation equation) {
     	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
-    	// RelationalOperator relationalOperator = equation.getRelationalOperator();
     	
-    	SimpleEquation simpleEquation = simpleEquationList.get(0);
-    	List<Term> termList = simpleEquation.getTermList();
-    	for (int i = 0; i < termList.size(); i++) {
-    		Term term = termList.get(i);
-    		List<Factor> factorList = term.getFactorList();
-    		for (int j = 0; j < factorList.size(); j++) {
-    			Factor factor = factorList.get(j);
-    			judgeFactor(factor);
+    	for (SimpleEquation simpleEquation: simpleEquationList) {
+    		List<Term> termList = simpleEquation.getTermList();
+    		for (Term term: termList) {
+    			List<Factor> factorList = term.getFactorList();
+    			for (Factor factor: factorList) {
+    				resolveFactorType(factor);
+    			}
     		}
     	}
     }
     
-    public void judgeFactor(Factor factor) {
-    	if (factor.getVariable() != null) {
-    		// factorが変数の場合
-    		Variable variable = factor.getVariable();
-    	} else if (factor.getConstant() !=  null) {
-    		// factorが定数の場合
-    		String constant = factor.getConstant().getConstant();
-    	} else if (factor.getEquation() != null) {
-    		// factorが式の場合
-    		Equation equation = factor.getEquation();
-    		getFactor(equation);
-    	} else if (factor.getFactor() != null) {
-    		// factorが"not"factorの場合
-    		Factor notFactor = factor.getFactor();
-    		judgeFactor(notFactor);
-    	}
-    }
-    
     /**
-     * 式の並びの要素をとってくるメソッド
+     * 因子の型を判定するメソッド
      * 
+     * @param factor
      */
-    public String getString(Equation equation) {
-    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
-    	for (int i = 0; i < simpleEquationList.size(); i++) {
-    		SimpleEquation simpleEquation = simpleEquationList.get(i);
-    		List<Term> termList = simpleEquation.getTermList();
-    		
-    	}
-    	return "";
-    }
-    
-    /**
-     * 文字列出力"WRTSTR"の処理
-     * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
-     * 
-     * @param constant
-     */
-    public void createWRTSTR(String str) {   
-    	str = "'test'";
+    private void resolveFactorType(Factor factor) {
+    	String[] variableAndType = null;
     	
-    	// 文字列の長さを取得する
-    	String length = String.valueOf(str.length());
+    	if (factor.getVariable() != null) {
+    		Variable variable = factor.getVariable();
+    		variableAndType = getVariableType(variable);
+    	} else if (factor.getConstant() != null) {
+    		Constant constant = factor.getConstant();
+    		variableAndType = getConstantType(constant);
+    	} else if (factor.getEquation() != null) {
+    		Equation equation = factor.getEquation();
+    		resolveEquationType(equation);
+    	} else if (factor.getFactor() != null) {
+    		Factor notFactor = factor.getFactor();
+    		resolveFactorType(notFactor);
+    	}
+    	
+    	if (variableAndType[1].equals("integer")) {
+    		writeInteger(variableAndType[0]);
+    	} else if (variableAndType[1].equals("char")) {
+    		writeString(variableAndType[0]);
+    	}
+    }
+    
+    /**
+     * 変数の型を判定するメソッド
+     * 
+     * @param variable
+     */
+    private String[] getVariableType(Variable variable) {
+    	String variableName = null, type = null;
+    	
+    	if (variable.getNaturalVariable() != null) {
+    		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+    		type = symbolTable.containsNaturalVariable(variableName);
+    	} else if (variable.getVariableWithIndex() != null) {
+    		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    		type = symbolTable.containsVariableWithIndex(variableName);
+    	}
+
+    	String[] variableNameAndType = {variableName, type};
+    	return variableNameAndType;
+    }
+    
+    private String[] getConstantType(Constant constant) {
+    	String constantName = constant.getConstant();
+    	String type = null;
+    	
+    	if (constantName.equals("true") || constantName.equals("false")) {
+    		type = "boolean";
+    	} else if (constantName.matches("\\d+")) {
+    		type = "integer";
+    	} else {
+    		type = "char";
+    	}
+    	
+    	String[] constantNameAndType = {constantName, type};
+    	return constantNameAndType;
+    }
+    
+    @Override
+    public void visit(VariableGroup variableGroup) throws SemanticException {
+    	List<Variable> variableList = variableGroup.getVariableList();
+    	
+    	for (Variable variable: variableList) {
+    		variable.accept(this);
+    	}
+    }
+    
+    @Override
+    public void visit(Constant constant) {}
+    
+    @Override
+    public void visit(UnsignedInteger unsignedInteger) {}
+    
+    private void writeInteger(String integer) {
+    	
+    }
+    
+    /**
+     * WRTSTRをcaslファイルに書き込む
+     * 
+     * @param string
+     */
+    private void writeString(String string) {
+    	// 文字列の長さを取得
+    	String length = String.valueOf(string.length());
     	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
     	
     	// GR1にPUSH
@@ -531,46 +579,9 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	addOutputList('\t' + "CALL" + '\t' + "WRTSTR");
     	
     	// 出力する文字列を格納
-		addOutputList(adress + '\t' + "DC" + '\t' + str);
+    	addSizeAndString(adress + '\t' + "DC" + '\t' + string);
 		
 		// 次の文字列を出力するためのインクリメント
 		stringNum++;
     }
-    
-    /**
-     * 文字列出力"WRTINT"の処理
-     * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
-     * 
-     */
-    public void createWRTINT(String str) {
-    	// GR2に0を代入
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
-    	
-    	// GR1にロード
-    	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
-    	
-    	// PUSHする
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-    	
-    	// POPする
-    	addOutputList('\t' + "POP" + '\t' + "GR2");
-    	
-    	// WRTINT，WRTLNをCALL
-    	addOutputList('\t' + "CALL" + '\t' + "WRTINT");
-    }
-    
-    @Override
-    public void visit(VariableGroup variableGroup) throws SemanticException {
-    	List<Variable> variableList = variableGroup.getVariableList();
-    	
-    	for (Variable variable: variableList) {
-    		variable.accept(this);
-    	}
-    }
-    
-    @Override
-    public void visit(Constant constant) {}
-    
-    @Override
-    public void visit(UnsignedInteger unsignedInteger) {}
 }
