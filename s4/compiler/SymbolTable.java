@@ -84,7 +84,7 @@ public class SymbolTable {
 	 */
 	public String containsVariableWithIndex(String variableName) {
 		for (int i = 0; i < symbolTable.size(); i++) {
-			if (symbolTable.get(i).get(NAMECOLS).equals(variableName) && symbolTable.get(i).get(ISARRAYCOLS).equals("false")) {
+			if (symbolTable.get(i).get(NAMECOLS).equals(variableName) && symbolTable.get(i).get(ISARRAYCOLS).equals("true")) {
 				return symbolTable.get(i).get(STANDARDTYPECOLS);
 			} 
 		}
