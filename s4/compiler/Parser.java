@@ -612,6 +612,8 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public WhileDo whileDo() throws SyntaxException {
+		String lineNum = getLineNum();
+		
 		// "while"の判定は行われているので，インクリメントのみを行う
 		tokenIndex++;
 		
@@ -624,7 +626,7 @@ public class Parser {
 		// 複合文の判定
 		ComplexStatement complexStatement = complexStatement();
 		
-		return new WhileDo(equation, complexStatement);
+		return new WhileDo(equation, complexStatement, lineNum);
 	}
 	
 	/**

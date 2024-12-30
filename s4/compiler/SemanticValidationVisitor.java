@@ -346,6 +346,13 @@ public class SemanticValidationVisitor extends Visitor {
     	
     	equation.accept(this);
     	complexStatement.accept(this);
+    	
+    	// if文の式の判定
+    	String type = resolveType(equation);
+    	if (!type.equals("boolean")) {
+    		String lineNum = whileDo.getLineNum();
+    		throw new SemanticException(lineNum);
+    	}
     }
     
     @Override
@@ -414,6 +421,7 @@ public class SemanticValidationVisitor extends Visitor {
     	
     	variable.accept(this);
     	
+    	// 変数の型を取得する
     	String variableName, type = null;
     	if (variable.getNaturalVariable() != null) {
     		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
@@ -422,6 +430,8 @@ public class SemanticValidationVisitor extends Visitor {
     		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
     		type = symbolTable.containsVariableWithIndex(variableName);
     	}
+    	
+    	// 変数の型を確認
     	if (type == null) {
     		String lineNum = variable.getLineNum();
     		throw new SemanticException(lineNum);
