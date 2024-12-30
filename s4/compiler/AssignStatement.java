@@ -3,10 +3,12 @@ package enshud.s4.compiler;
 public class AssignStatement implements Node {
     private LeftSide leftSide;
     private Equation equation;
+    private String lineNum;
 
-    public AssignStatement(LeftSide leftSide, Equation equation) {
+    public AssignStatement(LeftSide leftSide, Equation equation, String lineNum) {
         this.leftSide = leftSide;
         this.equation = equation;
+        this.lineNum = lineNum;
     }
 
     public LeftSide getLeftSide() {
@@ -21,4 +23,8 @@ public class AssignStatement implements Node {
     public void accept(Visitor visitor) throws SemanticException {
         visitor.visit(this);        
     }
+
+	public String getLineNum() {
+		return lineNum;
+	}
 }

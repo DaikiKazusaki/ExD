@@ -664,6 +664,8 @@ public class Parser {
 	 * @throws SyntaxException
 	 */
 	public AssignStatement assignStatement() throws SyntaxException {
+		String lineNum = getLineNum();
+		
 		// 左辺の判定
 		LeftSide leftSide = leftSide();
 		
@@ -673,7 +675,7 @@ public class Parser {
 		// 式の判定
 		Equation equation = equation();
 		
-		return new AssignStatement(leftSide, equation);
+		return new AssignStatement(leftSide, equation, lineNum);
 	}
 	
 	/**
