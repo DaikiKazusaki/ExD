@@ -373,6 +373,39 @@ public class SemanticValidationVisitor extends Visitor {
     	
     	leftSide.accept(this);
     	equation.accept(this);
+    	
+    	// 左辺と右辺の型を取得する
+    	String lineNum = assignStatement.getLineNum();
+    	String leftSideType = getLeftSideType(leftSide, lineNum);
+    	String rightSideType = resolveType(equation);
+    	if (!leftSideType.equals(rightSideType)) {
+    		throw new SemanticException(lineNum);
+    	}
+    }
+    
+    /**
+     * 左辺の型を判定するメソッド
+     * 
+     * @param leftSide
+     * @return
+     * @throws SemanticException
+     */
+    private String getLeftSideType(LeftSide leftSide, String lineNum) throws SemanticException {
+    	String variableName, type = null;
+    	
+    	if (leftSide.getVariable().getNaturalVariable() != null) {
+    		variableName = leftSide.getVariable().getNaturalVariable().getVariableName().getVariableName();
+    		type = symbolTable.containsNaturalVariable(variableName);
+    	} else if (leftSide.getVariable().getVariableWithIndex() != null) {
+    		variableName = leftSide.getVariable().getVariableWithIndex().getVariableName().getVariableName();
+    		type = symbolTable.containsVariableWithIndex(variableName);
+    	}
+    	
+    	if (type == null) {
+    		throw new SemanticException(lineNum);
+    	}
+    	
+    	return type;
     }
     
     @Override
@@ -381,13 +414,14 @@ public class SemanticValidationVisitor extends Visitor {
     	
     	variable.accept(this);
     	
-    	String variableName = null;
+    	String variableName, type = null;
     	if (variable.getNaturalVariable() != null) {
     		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+    		type = symbolTable.containsNaturalVariable(variableName);
     	} else if (variable.getVariableWithIndex() != null) {
     		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    		type = symbolTable.containsVariableWithIndex(variableName);
     	}
-    	String type = symbolTable.getType(variableName);
     	if (type == null) {
     		String lineNum = variable.getLineNum();
     		throw new SemanticException(lineNum);
@@ -642,8 +676,15 @@ public class SemanticValidationVisitor extends Visitor {
      * 変数の型を解決するメソッド
      */
     private String resolveVariableType(Factor factor) throws SemanticException {
-        String varName = factor.getVariable().getNaturalVariable().getVariableName().getVariableName();
-        String type = symbolTable.judgeVariable(varName);
+        String varName, type = null;
+        if (factor.getVariable().getNaturalVariable() != null) {
+        	varName = factor.getVariable().getNaturalVariable().getVariableName().getVariableName();
+        	type = symbolTable.containsNaturalVariable(varName);
+        } else if (factor.getVariable().getVariableWithIndex() != null) {
+        	varName = factor.getVariable().getVariableWithIndex().getVariableName().getVariableName();
+        	type = symbolTable.containsNaturalVariable(varName);
+        }
+        
         if (type == null) {
             throw new SemanticException(factor.getLineNum());
         }

@@ -62,14 +62,14 @@ public class SymbolTable {
 	}
 	
 	/**
-	 * 記号表に登録されている変数の確認をするメソッド
+	 * 記号表に登録されている純変数の確認をするメソッド
 	 * 
 	 * @param variableName
 	 * @return
 	 */
-	public String judgeVariable(String variableName) {
+	public String containsNaturalVariable(String variableName) {
 		for (int i = 0; i < symbolTable.size(); i++) {
-			if (symbolTable.get(i).get(NAMECOLS).equals(variableName)) {
+			if (symbolTable.get(i).get(NAMECOLS).equals(variableName) && symbolTable.get(i).get(ISARRAYCOLS).equals("false")) {
 				return symbolTable.get(i).get(STANDARDTYPECOLS);
 			} 
 		}
@@ -77,14 +77,14 @@ public class SymbolTable {
 	}
 	
 	/**
-	 * 変数の型を返すメソッド
+	 * 記号表に登録されている添え字付き変数の確認をするメソッド
 	 * 
 	 * @param variableName
 	 * @return
 	 */
-	public String getType(String variableName) {
+	public String containsVariableWithIndex(String variableName) {
 		for (int i = 0; i < symbolTable.size(); i++) {
-			if (symbolTable.get(i).get(NAMECOLS).equals(variableName)) {
+			if (symbolTable.get(i).get(NAMECOLS).equals(variableName) && symbolTable.get(i).get(ISARRAYCOLS).equals("false")) {
 				return symbolTable.get(i).get(STANDARDTYPECOLS);
 			} 
 		}
