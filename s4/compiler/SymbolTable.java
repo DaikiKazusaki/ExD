@@ -14,6 +14,7 @@ public class SymbolTable {
 	private int STANDARDTYPECOLS = 1;
 	private int ISARRAYCOLS = 2; 
 	private int SCOPECOLS = 3;
+	private int SIZECOLS = 4;
 	
 	/**
 	 * 記号表に登録するメソッド
@@ -89,5 +90,15 @@ public class SymbolTable {
 			} 
 		}
 		return null;
+	}
+	
+	public String getSizeOfVar() {
+		int sum = 0;
+		for (int i = 0; i < symbolTable.size(); i++) {
+			int size = Integer.valueOf(symbolTable.get(i).get(SIZECOLS));
+			sum += size;
+		}
+		
+		return String.valueOf(sum);
 	}
 }

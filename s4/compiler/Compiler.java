@@ -57,10 +57,11 @@ public class Compiler {
 	        Program program = new Parser(tokenList).program();
             
             // 意味解析
-            program.accept(new SemanticValidationVisitor());           
+	        SemanticValidationVisitor semanticValidationVisitor = new SemanticValidationVisitor();
+            program.accept(semanticValidationVisitor);           
             
             // casファイルを作成
-            CompilationVisitor compilationVisitor = new CompilationVisitor();
+            CompilationVisitor compilationVisitor = new CompilationVisitor(semanticValidationVisitor);
             program.accept(compilationVisitor);
             List<String> statementList = compilationVisitor.getOutputStatementList();
             writeFile(statementList, outputFileName);

@@ -8,6 +8,10 @@ public class SemanticValidationVisitor extends Visitor {
 	private FunctionTable functionTable = new FunctionTable();
 	private String scope = "global";
 	
+	public SymbolTable getSymbolTable() {
+		return symbolTable;
+	}
+	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();

@@ -3,18 +3,20 @@ package enshud.s4.compiler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompilationVisitor extends SemanticValidationVisitor {
-	private SymbolTable symbolTable = new SymbolTable();
-	private List<String> outputStatementList = new ArrayList<>();
+public class CompilationVisitor extends Visitor {
+	private SymbolTable symbolTable;
 	private int stringNum = 0;
-	private int varNum = 0;
-	private List<String> listForSizeAndString = new ArrayList<>();
+	private List<String> outputStatementList = new ArrayList<>();
+	private List<String> listForString = new ArrayList<>();
 	
-	public CompilationVisitor() {
+	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
 		outputStatementList.add("CASL" + '\t' + "START" + '\t' + "BEGIN");
 		outputStatementList.add("BEGIN" + '\t' + "LAD" + '\t' + "GR6, 0");
 		outputStatementList.add('\t' + "LAD" + '\t' + "GR7, LIBBUF");
+		
+		// 記号表の取得に必要なインスタンス
+		this.symbolTable = semanticValidationVisitor.getSymbolTable();	
 	}
 	
 	/**
@@ -38,8 +40,8 @@ public class CompilationVisitor extends SemanticValidationVisitor {
 	 * 文字列を番地に置いておく
 	 * 
 	 */
-	public void addSizeAndString(String line) {
-		listForSizeAndString.add(line);
+	public void addString(String line) {
+		listForString.add(line);
 	}
 	
     @Override
@@ -52,7 +54,11 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	block.accept(this);
     	complexStatement.accept(this);
     	
-    	outputStatementList.addAll(listForSizeAndString);
+    	// 変数の領域確保
+    	String varSize = symbolTable.getSizeOfVar();
+    	outputStatementList.add("VAR" + '\t' + "DS" + '\t' + varSize);
+    	// 文字列の領域確保
+    	outputStatementList.addAll(listForString);
     }
     
     @Override
@@ -288,13 +294,18 @@ public class CompilationVisitor extends SemanticValidationVisitor {
      * 代入文のcaslコードを生成する
      * 
      */
-    public void writeAssign(LeftSide leftSide, Equation equation) {
-    	// 変数の代入
+    public void writeAssign(LeftSide leftSide, Equation equation) {    	
+    	// スタックに代入する式をPUSH
     	addOutputList('\t' + "PUSH" + '\t' + "1");
+    	
+    	// 代入する変数(=レジスタ)を用意
     	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    	
+    	// 
     	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	
+    	// VAR番地に合計をストア
     	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
-		addOutputList("VAR" + Integer.valueOf(varNum) + '\t' + "DS" + '\t' + "1");
     }
     
     @Override
@@ -548,8 +559,26 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     @Override
     public void visit(UnsignedInteger unsignedInteger) {}
     
+    /**
+     * WRTINTをcaslファイルに書き込む
+     * 
+     * @param integer
+     */
     private void writeInteger(String integer) {
+    	// GR2に0を代入
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
     	
+    	// GR1にロード
+    	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	
+    	// POPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+    	
+    	// WRTINTをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "WRTINT");
     }
     
     /**
@@ -560,14 +589,20 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     private void writeString(String string) {
     	// 文字列の長さを取得
     	String length = String.valueOf(string.length());
+    	if (string.contains("'")) {
+    		length = String.valueOf(Integer.valueOf(length) - 2);
+    	}
     	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
     	
     	// GR1にPUSH
     	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	
     	// PUSHするアドレスを取得する
-    	String adress = "CHAR" + String.valueOf(stringNum);
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + adress);
+    	String address = "CHAR" + String.valueOf(stringNum);
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
     	
     	// GR2にPOPする
     	addOutputList('\t' + "POP" + '\t' + "GR2");
@@ -575,11 +610,11 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	// GR1にPOPする
     	addOutputList('\t' + "POP" + '\t' + "GR1");
     	
-    	// WRTESTR，WRTLNをCALL
+    	// WRTESTRをCALL
     	addOutputList('\t' + "CALL" + '\t' + "WRTSTR");
     	
     	// 出力する文字列を格納
-    	addSizeAndString(adress + '\t' + "DC" + '\t' + string);
+    	addString(address + '\t' + "DC" + '\t' + string);
 		
 		// 次の文字列を出力するためのインクリメント
 		stringNum++;
