@@ -295,8 +295,8 @@ public class CompilationVisitor extends Visitor {
      * 
      */
     public void writeAssign(LeftSide leftSide, Equation equation) {    	
-    	// スタックに代入する式をPUSH
-    	addOutputList('\t' + "PUSH" + '\t' + "1");
+    	// スタックに代入する式を解析するメソッド
+    	parseEquation(equation);
     	
     	// 代入する変数(=レジスタ)を用意
     	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
@@ -306,6 +306,33 @@ public class CompilationVisitor extends Visitor {
     	
     	// VAR番地に合計をストア
     	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
+    }
+    
+    /**
+     * 式を解析するメソッド
+     * 
+     * @param equation
+     */
+    private void parseEquation(Equation equation) {
+    	String answer = getAnswer(equation);
+    	
+    	// スタックに式の結果をPUSH
+    	addOutputList('\t' + "PUSH" + '\t' + answer);
+    }
+    
+    /**
+     * 式の計算を行うメソッド
+     * 
+     * @param equation
+     * @return
+     */
+    private String getAnswer(Equation equation) {
+    	// 式の解析
+    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
+    	
+    	
+    	
+    	return "1";
     }
     
     @Override
@@ -528,6 +555,12 @@ public class CompilationVisitor extends Visitor {
     	return variableNameAndType;
     }
     
+    /**
+     * 定数の型を取得するメソッド
+     * 
+     * @param constant
+     * @return
+     */
     private String[] getConstantType(Constant constant) {
     	String constantName = constant.getConstant();
     	String type = null;
