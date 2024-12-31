@@ -287,52 +287,8 @@ public class CompilationVisitor extends Visitor {
     	equation.accept(this);
     	
     	// 代入文の処理
-    	writeAssign(leftSide, equation);
-    }
-    
-    /**
-     * 代入文のcaslコードを生成する
-     * 
-     */
-    public void writeAssign(LeftSide leftSide, Equation equation) {    	
-    	// スタックに代入する式を解析するメソッド
     	parseEquation(equation);
-    	
-    	// 代入する変数(=レジスタ)を用意
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
-    	
-    	// 
-    	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	
-    	// VAR番地に合計をストア
-    	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
-    }
-    
-    /**
-     * 式を解析するメソッド
-     * 
-     * @param equation
-     */
-    private void parseEquation(Equation equation) {
-    	String answer = getAnswer(equation);
-    	
-    	// スタックに式の結果をPUSH
-    	addOutputList('\t' + "PUSH" + '\t' + answer);
-    }
-    
-    /**
-     * 式の計算を行うメソッド
-     * 
-     * @param equation
-     * @return
-     */
-    private String getAnswer(Equation equation) {
-    	// 式の解析
-    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
-    	
-    	
-    	
-    	return "1";
+    	parseLeftSide(leftSide);
     }
     
     @Override
@@ -479,7 +435,7 @@ public class CompilationVisitor extends Visitor {
     		List<Equation> equationList = equationGroup.getEquationList();
     		for (int i = 0; i < equationList.size(); i++) {
     			Equation equation = equationList.get(i);
-    			resolveEquationType(equation);
+    			resolveEquationTypeOfWrite(equation);
     		}
     		// 改行の処理
     	    addOutputList('\t' + "CALL" + '\t' + "WRTLN");
@@ -492,7 +448,7 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param equation
      */
-    private void resolveEquationType(Equation equation) {
+    private void resolveEquationTypeOfWrite(Equation equation) {
     	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
     	
     	for (SimpleEquation simpleEquation: simpleEquationList) {
@@ -500,7 +456,7 @@ public class CompilationVisitor extends Visitor {
     		for (Term term: termList) {
     			List<Factor> factorList = term.getFactorList();
     			for (Factor factor: factorList) {
-    				resolveFactorType(factor);
+    				resolveFactorTypeOfWrite(factor);
     			}
     		}
     	}
@@ -511,7 +467,7 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param factor
      */
-    private void resolveFactorType(Factor factor) {
+    private void resolveFactorTypeOfWrite(Factor factor) {
     	String[] variableAndType = null;
     	
     	if (factor.getVariable() != null) {
@@ -522,10 +478,10 @@ public class CompilationVisitor extends Visitor {
     		variableAndType = getConstantType(constant);
     	} else if (factor.getEquation() != null) {
     		Equation equation = factor.getEquation();
-    		resolveEquationType(equation);
+    		resolveEquationTypeOfWrite(equation);
     	} else if (factor.getFactor() != null) {
     		Factor notFactor = factor.getFactor();
-    		resolveFactorType(notFactor);
+    		resolveFactorTypeOfWrite(notFactor);
     	}
     	
     	if (variableAndType[1].equals("integer")) {
@@ -651,5 +607,194 @@ public class CompilationVisitor extends Visitor {
 		
 		// 次の文字列を出力するためのインクリメント
 		stringNum++;
+    }
+    
+    /**
+     * 式を解析するメソッド
+     * 
+     * @param equation
+     */
+    private void parseEquation(Equation equation) {
+    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
+    	RelationalOperator relationalOperator = equation.getRelationalOperator();
+    	
+    	// 最初の単純式を解析
+    	parseSimpleEquation(simpleEquationList.get(0));
+    	
+    	// 2個目の項を解析
+    	if (simpleEquationList.size() == 2) {
+    		parseSimpleEquation(simpleEquationList.get(1));
+    		parseRelationalOperator(relationalOperator);
+    	}
+    }
+    
+    /**
+     * 関係演算子を解析するメソッド
+     * 
+     * @param relationalOperator
+     */
+    private void parseRelationalOperator(RelationalOperator relationalOperator) {
+    	String rel = relationalOperator.getRelationalOperator();
+    	
+    	if (rel.equals("=")) {
+    		
+    	} else if (rel.equals("<>")) {
+    		
+    	} else if (rel.equals("<")) {
+    		
+    	} else if (rel.equals("<=")) {
+    		
+    	} else if (rel.equals(">")) {
+    		
+    	} else if (rel.equals(">=")) {
+    		
+    	}
+    }
+    
+    /**
+     * 単純式を解析するメソッド
+     * 
+     * @param simpleEquation
+     */
+    private void parseSimpleEquation(SimpleEquation simpleEquation) {
+    	List<Term> termList = simpleEquation.getTermList();
+    	List<AdditionalOperator> additionalOperatorList = simpleEquation.getAdditionalOperatorList();
+    	
+    	// 最初の項のみを解析
+    	parseTerm(termList.get(0));
+		
+    	// 2個目以降の項を解析
+    	for (int i = 0; i < additionalOperatorList.size(); i++) {
+    		parseTerm(termList.get(i + 1));
+    		parseAdditionalOperator(additionalOperatorList.get(i));
+    	}
+    }
+    
+    /**
+     * 加法演算子の解析を行うメソッド
+     * 
+     * @param additionalOperator
+     */
+    private void parseAdditionalOperator(AdditionalOperator additionalOperator) {
+    	String add = additionalOperator.getAdditionalOperator();
+    	
+    	// スタックからPOPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+		addOutputList('\t' + "POP" + '\t' + "GR1");
+    	
+		// 演算子によって処理が変わる
+    	if (add.equals("+")) {
+    		addOutputList('\t' + "ADDA" + '\t' + "GR1, GR2");
+    	} else if (add.equals("-")) {
+    		addOutputList('\t' + "SUBA" + '\t' + "GR1, GR2");
+    	} else if (add.equals("or")) {
+    		addOutputList('\t' + "OR" + '\t' + "GR1, GR2");
+    	}
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    }
+    
+    /**
+     * 項を解析するメソッド
+     * 
+     * @param term
+     */
+    private void parseTerm(Term term) {
+    	List<Factor> factorList = term.getFactorList();
+    	List<MultipleOperator> multipleOperatorList = term.getMultipleOperatorList();
+
+		// 最初の項のみを解析
+		parseFactor(factorList.get(0));
+		
+		// 2個目以降の項を解析
+		if (factorList.size() > 1) {
+			for (int i = 0; i < multipleOperatorList.size(); i++) {
+				parseFactor(factorList.get(i + 1));
+				parseMultipleOperator(multipleOperatorList.get(i));
+			}
+		}
+    }
+    
+    /**
+     * 乗法演算子の解析を行うメソッド
+     * 
+     * @param multipleOperator
+     */
+    private void parseMultipleOperator(MultipleOperator multipleOperator) {
+    	String mul = multipleOperator.getMultipleOperator();
+    	
+    	if (mul.equals("*")) {
+    		
+    	} else if (mul.equals("/") || mul.equals("div")) {
+    		
+    	} else if (mul.equals("mod")) {
+    		
+    	} else if (mul.equals("and")) {
+    		
+    	} 
+    }
+    
+    /**
+     * 因子を解析するメソッド
+     * 
+     * @param factor
+     */
+    private void parseFactor(Factor factor) {
+    	if (factor.getVariable() != null) {
+    		Variable variable = factor.getVariable();
+    		parseVariable(variable);
+    	} else if (factor.getConstant() != null) {
+    		Constant constant = factor.getConstant();
+    		parseConstant(constant);
+    	} else if (factor.getEquation() != null) {
+    		Equation equation = factor.getEquation();
+    		parseEquation(equation);
+    	} else if (factor.getFactor() != null) {
+    		Factor notFactor = factor.getFactor();
+    		parseFactor(notFactor);
+    	}
+    }
+    
+    /**
+     * 変数を解析するメソッド
+     * 
+     * @param variable
+     */
+    private void parseVariable(Variable variable) {
+    	
+    }
+    
+    /**
+     * 定数を解析するメソッド
+     * 
+     * @param 
+     */
+    private void parseConstant(Constant constant) {
+    	String con = constant.getConstant();
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + con);
+    }
+    
+    /**
+     * 左辺を解析するメソッド
+     * 
+     * @param leftSide
+     */
+    private void parseLeftSide(LeftSide leftSide) {
+    	if (leftSide.getVariable() != null) {
+    		// 代入する変数(=レジスタ)を用意
+        	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    	} else if (leftSide.getVariable() != null) {
+    		// 代入する
+    		System.out.println("using variable with index.");
+    	}
+    	
+    	// POPする
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	
+    	// VAR番地に合計をストア
+    	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
     }
 }
