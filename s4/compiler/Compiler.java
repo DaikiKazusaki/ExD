@@ -18,11 +18,10 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) throws SyntaxException, SemanticException {
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/semerr06.ts", "tmp/out.cas"));
-		// System.out.println(new Compiler().run("data/ts/normal02.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/normal03.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
-		// CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
+		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
 	}
 
 	/**
@@ -58,10 +57,11 @@ public class Compiler {
 	        Program program = new Parser(tokenList).program();
             
             // 意味解析
-            program.accept(new SemanticValidationVisitor());           
+	        SemanticValidationVisitor semanticValidationVisitor = new SemanticValidationVisitor();
+            program.accept(semanticValidationVisitor);           
             
             // casファイルを作成
-            CompilationVisitor compilationVisitor = new CompilationVisitor();
+            CompilationVisitor compilationVisitor = new CompilationVisitor(semanticValidationVisitor);
             program.accept(compilationVisitor);
             List<String> statementList = compilationVisitor.getOutputStatementList();
             writeFile(statementList, outputFileName);

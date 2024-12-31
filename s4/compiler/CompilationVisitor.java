@@ -3,16 +3,20 @@ package enshud.s4.compiler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompilationVisitor extends SemanticValidationVisitor {
-	private List<String> outputStatementList = new ArrayList<>();
+public class CompilationVisitor extends Visitor {
+	private SymbolTable symbolTable;
 	private int stringNum = 0;
-	private int varNum = 0;
+	private List<String> outputStatementList = new ArrayList<>();
+	private List<String> listForString = new ArrayList<>();
 	
-	public CompilationVisitor() {
+	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
 		outputStatementList.add("CASL" + '\t' + "START" + '\t' + "BEGIN");
 		outputStatementList.add("BEGIN" + '\t' + "LAD" + '\t' + "GR6, 0");
 		outputStatementList.add('\t' + "LAD" + '\t' + "GR7, LIBBUF");
+		
+		// 記号表の取得に必要なインスタンス
+		this.symbolTable = semanticValidationVisitor.getSymbolTable();	
 	}
 	
 	/**
@@ -32,6 +36,14 @@ public class CompilationVisitor extends SemanticValidationVisitor {
 		outputStatementList.add(line);
 	}
 	
+	/**
+	 * 文字列を番地に置いておく
+	 * 
+	 */
+	public void addString(String line) {
+		listForString.add(line);
+	}
+	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
@@ -41,6 +53,12 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	programName.accept(this);
     	block.accept(this);
     	complexStatement.accept(this);
+    	
+    	// 変数の領域確保
+    	String varSize = symbolTable.getSizeOfVar();
+    	outputStatementList.add("VAR" + '\t' + "DS" + '\t' + varSize);
+    	// 文字列の領域確保
+    	outputStatementList.addAll(listForString);
     }
     
     @Override
@@ -269,20 +287,8 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     	equation.accept(this);
     	
     	// 代入文の処理
-    	writeAssign(leftSide, equation);
-    }
-    
-    /**
-     * 代入文のcaslコードを生成する
-     * 
-     */
-    public void writeAssign(LeftSide leftSide, Equation equation) {
-    	// 変数の代入
-    	addOutputList('\t' + "PUSH" + '\t' + "1");
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
-    	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
-		addOutputList("VAR" + Integer.valueOf(varNum) + '\t' + "DS" + '\t' + "1");
+    	parseEquation(equation);
+    	parseLeftSide(leftSide);
     }
     
     @Override
@@ -429,17 +435,7 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     		List<Equation> equationList = equationGroup.getEquationList();
     		for (int i = 0; i < equationList.size(); i++) {
     			Equation equation = equationList.get(i);
-    			
-    			// writelnする文字，数字を取得
-    			/*
-        		String str = getString(equation);
-        		
-        		if (str.matches("\\d+")) {
-        			createWRTINT(str);
-        		} else {
-        		*/
-        			createWRTSTR(""); // str);
-        		// }
+    			resolveEquationTypeOfWrite(equation);
     		}
     		// 改行の処理
     	    addOutputList('\t' + "CALL" + '\t' + "WRTLN");
@@ -448,115 +444,93 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     }
     
     /**
-     * 式からfactorをとってくるメソッド
+     * 式の型を判定するメソッド
      * 
      * @param equation
-     * @return
      */
-    public void getFactor(Equation equation) {
+    private void resolveEquationTypeOfWrite(Equation equation) {
     	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
-    	// RelationalOperator relationalOperator = equation.getRelationalOperator();
     	
-    	SimpleEquation simpleEquation = simpleEquationList.get(0);
-    	List<Term> termList = simpleEquation.getTermList();
-    	for (int i = 0; i < termList.size(); i++) {
-    		Term term = termList.get(i);
-    		List<Factor> factorList = term.getFactorList();
-    		for (int j = 0; j < factorList.size(); j++) {
-    			Factor factor = factorList.get(j);
-    			judgeFactor(factor);
+    	for (SimpleEquation simpleEquation: simpleEquationList) {
+    		List<Term> termList = simpleEquation.getTermList();
+    		for (Term term: termList) {
+    			List<Factor> factorList = term.getFactorList();
+    			for (Factor factor: factorList) {
+    				resolveFactorTypeOfWrite(factor);
+    			}
     		}
     	}
     }
     
-    public void judgeFactor(Factor factor) {
-    	if (factor.getVariable() != null) {
-    		// factorが変数の場合
-    		Variable variable = factor.getVariable();
-    	} else if (factor.getConstant() !=  null) {
-    		// factorが定数の場合
-    		String constant = factor.getConstant().getConstant();
-    	} else if (factor.getEquation() != null) {
-    		// factorが式の場合
-    		Equation equation = factor.getEquation();
-    		getFactor(equation);
-    	} else if (factor.getFactor() != null) {
-    		// factorが"not"factorの場合
-    		Factor notFactor = factor.getFactor();
-    		judgeFactor(notFactor);
-    	}
-    }
-    
     /**
-     * 式の並びの要素をとってくるメソッド
+     * 因子の型を判定するメソッド
      * 
+     * @param factor
      */
-    public String getString(Equation equation) {
-    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
-    	for (int i = 0; i < simpleEquationList.size(); i++) {
-    		SimpleEquation simpleEquation = simpleEquationList.get(i);
-    		List<Term> termList = simpleEquation.getTermList();
-    		
+    private void resolveFactorTypeOfWrite(Factor factor) {
+    	String[] variableAndType = null;
+    	
+    	if (factor.getVariable() != null) {
+    		Variable variable = factor.getVariable();
+    		variableAndType = getVariableType(variable);
+    	} else if (factor.getConstant() != null) {
+    		Constant constant = factor.getConstant();
+    		variableAndType = getConstantType(constant);
+    	} else if (factor.getEquation() != null) {
+    		Equation equation = factor.getEquation();
+    		resolveEquationTypeOfWrite(equation);
+    	} else if (factor.getFactor() != null) {
+    		Factor notFactor = factor.getFactor();
+    		resolveFactorTypeOfWrite(notFactor);
     	}
-    	return "";
+    	
+    	if (variableAndType[1].equals("integer")) {
+    		writeInteger(variableAndType[0]);
+    	} else if (variableAndType[1].equals("char")) {
+    		writeString(variableAndType[0]);
+    	}
     }
     
     /**
-     * 文字列出力"WRTSTR"の処理
-     * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
+     * 変数の型を判定するメソッド
+     * 
+     * @param variable
+     */
+    private String[] getVariableType(Variable variable) {
+    	String variableName = null, type = null;
+    	
+    	if (variable.getNaturalVariable() != null) {
+    		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+    		type = symbolTable.containsNaturalVariable(variableName);
+    	} else if (variable.getVariableWithIndex() != null) {
+    		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    		type = symbolTable.containsVariableWithIndex(variableName);
+    	}
+
+    	String[] variableNameAndType = {variableName, type};
+    	return variableNameAndType;
+    }
+    
+    /**
+     * 定数の型を取得するメソッド
      * 
      * @param constant
+     * @return
      */
-    public void createWRTSTR(String str) {   
-    	str = "'test'";
+    private String[] getConstantType(Constant constant) {
+    	String constantName = constant.getConstant();
+    	String type = null;
     	
-    	// 文字列の長さを取得する
-    	String length = String.valueOf(str.length());
-    	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
+    	if (constantName.equals("true") || constantName.equals("false")) {
+    		type = "boolean";
+    	} else if (constantName.matches("\\d+")) {
+    		type = "integer";
+    	} else {
+    		type = "char";
+    	}
     	
-    	// GR1にPUSH
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-    	
-    	// PUSHするアドレスを取得する
-    	String adress = "CHAR" + String.valueOf(stringNum);
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + adress);
-    	
-    	// GR2にPOPする
-    	addOutputList('\t' + "POP" + '\t' + "GR2");
-    	
-    	// GR1にPOPする
-    	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	
-    	// WRTESTR，WRTLNをCALL
-    	addOutputList('\t' + "CALL" + '\t' + "WRTSTR");
-    	
-    	// 出力する文字列を格納
-		addOutputList(adress + '\t' + "DC" + '\t' + str);
-		
-		// 次の文字列を出力するためのインクリメント
-		stringNum++;
-    }
-    
-    /**
-     * 文字列出力"WRTINT"の処理
-     * GR1: 文字列の長さ，GR2: 文字列が格納されている先頭アドレス
-     * 
-     */
-    public void createWRTINT(String str) {
-    	// GR2に0を代入
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
-    	
-    	// GR1にロード
-    	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
-    	
-    	// PUSHする
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-    	
-    	// POPする
-    	addOutputList('\t' + "POP" + '\t' + "GR2");
-    	
-    	// WRTINT，WRTLNをCALL
-    	addOutputList('\t' + "CALL" + '\t' + "WRTINT");
+    	String[] constantNameAndType = {constantName, type};
+    	return constantNameAndType;
     }
     
     @Override
@@ -573,4 +547,254 @@ public class CompilationVisitor extends SemanticValidationVisitor {
     
     @Override
     public void visit(UnsignedInteger unsignedInteger) {}
+    
+    /**
+     * WRTINTをcaslファイルに書き込む
+     * 
+     * @param integer
+     */
+    private void writeInteger(String integer) {
+    	// GR2に0を代入
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    	
+    	// GR1にロード
+    	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	
+    	// POPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+    	
+    	// WRTINTをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "WRTINT");
+    }
+    
+    /**
+     * WRTSTRをcaslファイルに書き込む
+     * 
+     * @param string
+     */
+    private void writeString(String string) {
+    	// 文字列の長さを取得
+    	String length = String.valueOf(string.length());
+    	if (string.contains("'")) {
+    		length = String.valueOf(Integer.valueOf(length) - 2);
+    	}
+    	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
+    	
+    	// GR1にPUSH
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	
+    	// PUSHするアドレスを取得する
+    	String address = "CHAR" + String.valueOf(stringNum);
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
+    	
+    	// GR2にPOPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+    	
+    	// GR1にPOPする
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	
+    	// WRTESTRをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "WRTSTR");
+    	
+    	// 出力する文字列を格納
+    	addString(address + '\t' + "DC" + '\t' + string);
+		
+		// 次の文字列を出力するためのインクリメント
+		stringNum++;
+    }
+    
+    /**
+     * 式を解析するメソッド
+     * 
+     * @param equation
+     */
+    private void parseEquation(Equation equation) {
+    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
+    	RelationalOperator relationalOperator = equation.getRelationalOperator();
+    	
+    	// 最初の単純式を解析
+    	parseSimpleEquation(simpleEquationList.get(0));
+    	
+    	// 2個目の項を解析
+    	if (simpleEquationList.size() == 2) {
+    		parseSimpleEquation(simpleEquationList.get(1));
+    		parseRelationalOperator(relationalOperator);
+    	}
+    }
+    
+    /**
+     * 関係演算子を解析するメソッド
+     * 
+     * @param relationalOperator
+     */
+    private void parseRelationalOperator(RelationalOperator relationalOperator) {
+    	String rel = relationalOperator.getRelationalOperator();
+    	
+    	if (rel.equals("=")) {
+    		
+    	} else if (rel.equals("<>")) {
+    		
+    	} else if (rel.equals("<")) {
+    		
+    	} else if (rel.equals("<=")) {
+    		
+    	} else if (rel.equals(">")) {
+    		
+    	} else if (rel.equals(">=")) {
+    		
+    	}
+    }
+    
+    /**
+     * 単純式を解析するメソッド
+     * 
+     * @param simpleEquation
+     */
+    private void parseSimpleEquation(SimpleEquation simpleEquation) {
+    	List<Term> termList = simpleEquation.getTermList();
+    	List<AdditionalOperator> additionalOperatorList = simpleEquation.getAdditionalOperatorList();
+    	
+    	// 最初の項のみを解析
+    	parseTerm(termList.get(0));
+		
+    	// 2個目以降の項を解析
+    	for (int i = 0; i < additionalOperatorList.size(); i++) {
+    		parseTerm(termList.get(i + 1));
+    		parseAdditionalOperator(additionalOperatorList.get(i));
+    	}
+    }
+    
+    /**
+     * 加法演算子の解析を行うメソッド
+     * 
+     * @param additionalOperator
+     */
+    private void parseAdditionalOperator(AdditionalOperator additionalOperator) {
+    	String add = additionalOperator.getAdditionalOperator();
+    	
+    	// スタックからPOPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+		addOutputList('\t' + "POP" + '\t' + "GR1");
+    	
+		// 演算子によって処理が変わる
+    	if (add.equals("+")) {
+    		addOutputList('\t' + "ADDA" + '\t' + "GR1, GR2");
+    	} else if (add.equals("-")) {
+    		addOutputList('\t' + "SUBA" + '\t' + "GR1, GR2");
+    	} else if (add.equals("or")) {
+    		addOutputList('\t' + "OR" + '\t' + "GR1, GR2");
+    	}
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    }
+    
+    /**
+     * 項を解析するメソッド
+     * 
+     * @param term
+     */
+    private void parseTerm(Term term) {
+    	List<Factor> factorList = term.getFactorList();
+    	List<MultipleOperator> multipleOperatorList = term.getMultipleOperatorList();
+
+		// 最初の項のみを解析
+		parseFactor(factorList.get(0));
+		
+		// 2個目以降の項を解析
+		if (factorList.size() > 1) {
+			for (int i = 0; i < multipleOperatorList.size(); i++) {
+				parseFactor(factorList.get(i + 1));
+				parseMultipleOperator(multipleOperatorList.get(i));
+			}
+		}
+    }
+    
+    /**
+     * 乗法演算子の解析を行うメソッド
+     * 
+     * @param multipleOperator
+     */
+    private void parseMultipleOperator(MultipleOperator multipleOperator) {
+    	String mul = multipleOperator.getMultipleOperator();
+    	
+    	if (mul.equals("*")) {
+    		
+    	} else if (mul.equals("/") || mul.equals("div")) {
+    		
+    	} else if (mul.equals("mod")) {
+    		
+    	} else if (mul.equals("and")) {
+    		
+    	} 
+    }
+    
+    /**
+     * 因子を解析するメソッド
+     * 
+     * @param factor
+     */
+    private void parseFactor(Factor factor) {
+    	if (factor.getVariable() != null) {
+    		Variable variable = factor.getVariable();
+    		parseVariable(variable);
+    	} else if (factor.getConstant() != null) {
+    		Constant constant = factor.getConstant();
+    		parseConstant(constant);
+    	} else if (factor.getEquation() != null) {
+    		Equation equation = factor.getEquation();
+    		parseEquation(equation);
+    	} else if (factor.getFactor() != null) {
+    		Factor notFactor = factor.getFactor();
+    		parseFactor(notFactor);
+    	}
+    }
+    
+    /**
+     * 変数を解析するメソッド
+     * 
+     * @param variable
+     */
+    private void parseVariable(Variable variable) {
+    	
+    }
+    
+    /**
+     * 定数を解析するメソッド
+     * 
+     * @param 
+     */
+    private void parseConstant(Constant constant) {
+    	String con = constant.getConstant();
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + con);
+    }
+    
+    /**
+     * 左辺を解析するメソッド
+     * 
+     * @param leftSide
+     */
+    private void parseLeftSide(LeftSide leftSide) {
+    	if (leftSide.getVariable() != null) {
+    		// 代入する変数(=レジスタ)を用意
+        	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    	} else if (leftSide.getVariable() != null) {
+    		// 代入する
+    		System.out.println("using variable with index.");
+    	}
+    	
+    	// POPする
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	
+    	// VAR番地に合計をストア
+    	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
+    }
 }
