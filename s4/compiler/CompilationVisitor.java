@@ -240,9 +240,29 @@ public class CompilationVisitor extends Visitor {
     public void visit(IfThen ifThen) throws SemanticException {
     	Equation equation = ifThen.getEquation();
     	ComplexStatement complexStatement = ifThen.getComplexStatement();
+    	ElseStatement elseStatement = ifThen.getElseStatement();
     	
+    	// 条件式の探索
+    	parseEquation(equation);
     	equation.accept(this);
+    	
+    	// 条件式の分岐を探索する
+    	resolveCondition(equation);
+    	
+    	// 複合文の探索
+    	addOutputList("BOTH" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
+    	addOutputList('\t' + "JZE" + '\t' + "ELSE" + String.valueOf(conditionNum));
     	complexStatement.accept(this);
+    	
+    	// else文の探索
+    	if (elseStatement == null) {
+    		addOutputList("ELSE" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	} else {
+        	elseStatement.accept(this);    		
+    	}
     }
     
     @Override
@@ -758,21 +778,25 @@ public class CompilationVisitor extends Visitor {
     	addOutputList('\t' + "POP" + '\t' + "GR1");
     	
     	if (mul.equals("*")) {
+    		// MULTをCALL
     		addOutputList('\t' + "CALL" + '\t' + "MULT");
     		
     		// PUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
     	} else if (mul.equals("/") || mul.equals("div")) {
+    		// DIVをCALL
     		addOutputList('\t' + "CALL" + '\t' + "DIV");
     		
     		// 商をPUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
     	} else if (mul.equals("mod")) {
+    		// DIVをCALL
     		addOutputList('\t' + "CALL" + '\t' + "DIV");
     		
     		// 余りをPUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	} else if (mul.equals("and")) {
+    		// ANDをとる
     		addOutputList('\t' + "AND" + '\t' + "GR1, GR2");
     		
     		// 結果をPUSHする
@@ -825,6 +849,12 @@ public class CompilationVisitor extends Visitor {
      */
     private void parseConstant(Constant constant) {
     	String con = constant.getConstant();
+    	
+    	if (con.equals("true")) {
+    		con = "#FFFF";
+    	} else if (con.equals("false")) {
+    		con = "#0000";
+    	}
     	
     	// PUSHする
     	addOutputList('\t' + "PUSH" + '\t' + con);
