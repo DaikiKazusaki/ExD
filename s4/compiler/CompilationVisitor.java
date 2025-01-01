@@ -5,6 +5,7 @@ import java.util.List;
 
 public class CompilationVisitor extends Visitor {
 	private SymbolTable symbolTable;
+	private boolean isNot = false;
 	private int stringNum = 0;
 	private int conditionNum = 0;
 	private List<String> outputStatementList = new ArrayList<>();
@@ -258,9 +259,8 @@ public class CompilationVisitor extends Visitor {
     	complexStatement.accept(this);
     	
     	// else文の探索
-    	if (elseStatement == null) {
-    		addOutputList("ELSE" + String.valueOf(conditionNum) + '\t' + "NOP");
-    	} else {
+    	addOutputList("ELSE" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	if (elseStatement != null) {
         	elseStatement.accept(this);    		
     	}
     }
@@ -809,10 +809,10 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param factor
      */
-    private void parseFactor(Factor factor) {
+    private void parseFactor(Factor factor) {    	
     	if (factor.getVariable() != null) {
     		Variable variable = factor.getVariable();
-    		parseVariable(variable);
+    		parseVariable(variable, isNot);
     	} else if (factor.getConstant() != null) {
     		Constant constant = factor.getConstant();
     		parseConstant(constant);
@@ -820,8 +820,10 @@ public class CompilationVisitor extends Visitor {
     		Equation equation = factor.getEquation();
     		parseEquation(equation);
     	} else if (factor.getFactor() != null) {
+    		isNot = true;
     		Factor notFactor = factor.getFactor();
     		parseFactor(notFactor);
+    		isNot = false;
     	}
     }
     
@@ -830,11 +832,17 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param variable
      */
-    private void parseVariable(Variable variable) {
+    private void parseVariable(Variable variable, boolean isNot) {
     	if (variable.getNaturalVariable() != null) {
     		// 代入する式をcaslにする
     		addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
     		addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    		if (isNot) {
+    			// notをとる
+        		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+        		addOutputList('\t' + "POP" + '\t' + "GR1");
+        		addOutputList('\t' + "XOR" + '\t' + "GR1, =#FFFF");
+    		}
     		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	} else if (variable.getVariableWithIndex() != null) {
     		Equation equation = variable.getVariableWithIndex().getIndex().getEquation();
