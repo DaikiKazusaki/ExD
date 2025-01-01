@@ -6,6 +6,7 @@ import java.util.List;
 public class CompilationVisitor extends Visitor {
 	private SymbolTable symbolTable;
 	private int stringNum = 0;
+	private int conditionNum = 0;
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
 	
@@ -258,6 +259,19 @@ public class CompilationVisitor extends Visitor {
     	
     	equation.accept(this);
     	complexStatement.accept(this);
+    	
+    	// whileループ開始の番地を設定
+    	String whileNum = String.valueOf(conditionNum);
+    	addOutputList("WHILE" + whileNum + '\t' + "NOP");
+    	parseEquation(equation);
+    	
+    	
+    	
+    	// whileループ終了番地の設定
+    	addOutputList("ENDWHL" + whileNum + '\t' + "NOP");
+    	
+    	// conditionNumのインクリメント
+    	conditionNum++;
     }
     
     @Override
@@ -468,6 +482,7 @@ public class CompilationVisitor extends Visitor {
      * @param factor
      */
     private void resolveFactorTypeOfWrite(Factor factor) {
+    	// [標準型, 配列型]
     	String[] variableAndType = null;
     	
     	if (factor.getVariable() != null) {
@@ -485,8 +500,10 @@ public class CompilationVisitor extends Visitor {
     	}
     	
     	if (variableAndType[1].equals("integer")) {
-    		writeInteger(variableAndType[0]);
+    		// integer型 -> WRTINTをCALL
+    		writeInteger(variableAndType[2]);
     	} else if (variableAndType[1].equals("char")) {
+    		// char型 -> WRTSTRをCALL
     		writeString(variableAndType[0]);
     	}
     }
@@ -497,18 +514,24 @@ public class CompilationVisitor extends Visitor {
      * @param variable
      */
     private String[] getVariableType(Variable variable) {
-    	String variableName = null, type = null;
+    	String variableName= null, standardType = null, arrayType = null;
     	
     	if (variable.getNaturalVariable() != null) {
     		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
-    		type = symbolTable.containsNaturalVariable(variableName);
+    		standardType = symbolTable.containsNaturalVariable(variableName);
+    		arrayType = "false";
     	} else if (variable.getVariableWithIndex() != null) {
     		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
-    		type = symbolTable.containsVariableWithIndex(variableName);
+    		standardType = symbolTable.containsVariableWithIndex(variableName);
+    		arrayType = "true";
+    		
+    		// 式の判定
+    		Equation equation = variable.getVariableWithIndex().getIndex().getEquation();
+    		parseEquation(equation);
     	}
 
-    	String[] variableNameAndType = {variableName, type};
-    	return variableNameAndType;
+    	String[] type = {variableName, standardType, arrayType};
+    	return type;
     }
     
     /**
@@ -529,7 +552,8 @@ public class CompilationVisitor extends Visitor {
     		type = "char";
     	}
     	
-    	String[] constantNameAndType = {constantName, type};
+    	// 定数に配列は含まないので，constantNameAndType[2] <- false
+    	String[] constantNameAndType = {constantName, type, "false"};
     	return constantNameAndType;
     }
     
@@ -553,9 +577,15 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param integer
      */
-    private void writeInteger(String integer) {
-    	// GR2に0を代入
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    private void writeInteger(String isArray) {    	
+    	if (isArray.equals("false")) {
+    		// 純変数の場合
+    		addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    	} else {
+    		// 添え字付き変数の場合
+    		addOutputList('\t' + "POP" + '\t' + "GR2");
+    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =0");
+    	}
     	
     	// GR1にロード
     	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
@@ -636,8 +666,14 @@ public class CompilationVisitor extends Visitor {
     private void parseRelationalOperator(RelationalOperator relationalOperator) {
     	String rel = relationalOperator.getRelationalOperator();
     	
+    	// 一度比較を行う
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	addOutputList('\t' + "CPA" + '\t' + "GR1, GR2");
+    	
+    	// 比較結果によって内容を変更する
     	if (rel.equals("=")) {
-    		
+    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + String.valueOf(conditionNum));
     	} else if (rel.equals("<>")) {
     		
     	} else if (rel.equals("<")) {
@@ -801,7 +837,7 @@ public class CompilationVisitor extends Visitor {
     		
     		// 代入する添え字付き変数(=レジスタ)を用意
     		addOutputList('\t' + "POP" + '\t' + "GR2");
-    		addOutputList('\t' + "ADDA" + '\t' + "GR2, 0");
+    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =0");
     	}
     	
     	// POPする
