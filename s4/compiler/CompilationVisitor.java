@@ -5,7 +5,7 @@ import java.util.List;
 
 public class CompilationVisitor extends Visitor {
 	private SymbolTable symbolTable;
-	private boolean isNot = false;
+	private boolean isNotFactor = false;
 	private int stringNum = 0;
 	private int conditionNum = 0;
 	private List<String> outputStatementList = new ArrayList<>();
@@ -812,7 +812,7 @@ public class CompilationVisitor extends Visitor {
     private void parseFactor(Factor factor) {    	
     	if (factor.getVariable() != null) {
     		Variable variable = factor.getVariable();
-    		parseVariable(variable, isNot);
+    		parseVariable(variable, isNotFactor);
     	} else if (factor.getConstant() != null) {
     		Constant constant = factor.getConstant();
     		parseConstant(constant);
@@ -820,10 +820,10 @@ public class CompilationVisitor extends Visitor {
     		Equation equation = factor.getEquation();
     		parseEquation(equation);
     	} else if (factor.getFactor() != null) {
-    		isNot = true;
+    		isNotFactor = true;
     		Factor notFactor = factor.getFactor();
     		parseFactor(notFactor);
-    		isNot = false;
+    		isNotFactor = false;
     	}
     }
     
@@ -832,12 +832,12 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param variable
      */
-    private void parseVariable(Variable variable, boolean isNot) {
+    private void parseVariable(Variable variable, boolean isNotFactor) {
     	if (variable.getNaturalVariable() != null) {
     		// 代入する式をcaslにする
     		addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
     		addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
-    		if (isNot) {
+    		if (isNotFactor) {
     			// notをとる
         		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
         		addOutputList('\t' + "POP" + '\t' + "GR1");
