@@ -257,17 +257,24 @@ public class CompilationVisitor extends Visitor {
     	Equation equation = whileDo.getEquation();
     	ComplexStatement complexStatement = whileDo.getComplexStatement();
     	
-    	equation.accept(this);
-    	complexStatement.accept(this);
-    	
     	// whileループ開始の番地を設定
     	String whileNum = String.valueOf(conditionNum);
     	addOutputList("WHILE" + whileNum + '\t' + "NOP");
+    	
+    	// 条件式の探索
     	parseEquation(equation);
+    	equation.accept(this);
     	
-    	
+    	// 複合文の探索
+    	addOutputList("BOTH" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
+    	addOutputList('\t' + "JZE" + '\t' + "ENDWHL" + String.valueOf(conditionNum));
+    	complexStatement.accept(this);
     	
     	// whileループ終了番地の設定
+    	addOutputList('\t' + "JUMP" + '\t' + "WHILE" + String.valueOf(conditionNum));
     	addOutputList("ENDWHL" + whileNum + '\t' + "NOP");
     	
     	// conditionNumのインクリメント
@@ -675,16 +682,24 @@ public class CompilationVisitor extends Visitor {
     	if (rel.equals("=")) {
     		addOutputList('\t' + "JZE" + '\t' + "TRUE" + String.valueOf(conditionNum));
     	} else if (rel.equals("<>")) {
-    		
+    		addOutputList('\t' + "JNZ" + '\t' + "TRUE" + String.valueOf(conditionNum));
     	} else if (rel.equals("<")) {
-    		
+    		addOutputList('\t' + "JMI" + '\t' + "TRUE" + String.valueOf(conditionNum));
     	} else if (rel.equals("<=")) {
-    		
+    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + String.valueOf(conditionNum));
+    		addOutputList('\t' + "JMI" + '\t' + "TRUE" + String.valueOf(conditionNum));
     	} else if (rel.equals(">")) {
-    		
+    		addOutputList('\t' + "JPL" + '\t' + "TRUE" + String.valueOf(conditionNum));
     	} else if (rel.equals(">=")) {
-    		
+    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + String.valueOf(conditionNum));
+    		addOutputList('\t' + "JPL" + '\t' + "TRUE" + String.valueOf(conditionNum));
     	}
+    	
+    	// 比較の処理
+    	addOutputList('\t' + "LAD" + '\t' + "GR1, #0000");
+    	addOutputList('\t' + "JUMP" + '\t' + "BOTH" + String.valueOf(conditionNum));
+    	addOutputList("TRUE" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	addOutputList('\t' + "LAD" + '\t' + "GR1, #FFFF");
     }
     
     /**
@@ -760,6 +775,10 @@ public class CompilationVisitor extends Visitor {
     private void parseMultipleOperator(MultipleOperator multipleOperator) {
     	String mul = multipleOperator.getMultipleOperator();
     	
+    	// POPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	
     	if (mul.equals("*")) {
     		addOutputList('\t' + "CALL" + '\t' + "MULT");
     	} else if (mul.equals("/") || mul.equals("div")) {
@@ -769,6 +788,9 @@ public class CompilationVisitor extends Visitor {
     	} else if (mul.equals("and")) {
     		
     	} 
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
     }
     
     /**
