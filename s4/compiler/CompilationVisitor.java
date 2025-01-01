@@ -725,7 +725,7 @@ public class CompilationVisitor extends Visitor {
     	String mul = multipleOperator.getMultipleOperator();
     	
     	if (mul.equals("*")) {
-    		
+    		addOutputList('\t' + "CALL" + '\t' + "MULT");
     	} else if (mul.equals("/") || mul.equals("div")) {
     		
     	} else if (mul.equals("mod")) {
@@ -762,7 +762,15 @@ public class CompilationVisitor extends Visitor {
      * @param variable
      */
     private void parseVariable(Variable variable) {
-    	
+    	if (variable.getNaturalVariable() != null) {
+    		// 代入する式をcaslにする
+    		addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    		addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	} else if (variable.getVariableWithIndex() != null) {
+    		Equation equation = variable.getVariableWithIndex().getIndex().getEquation();
+    		parseEquation(equation);
+    	}
     }
     
     /**
@@ -783,12 +791,17 @@ public class CompilationVisitor extends Visitor {
      * @param leftSide
      */
     private void parseLeftSide(LeftSide leftSide) {
-    	if (leftSide.getVariable() != null) {
-    		// 代入する変数(=レジスタ)を用意
+    	if (leftSide.getVariable().getNaturalVariable() != null) {
+    		// 代入する純変数(=レジスタ)を用意
         	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
-    	} else if (leftSide.getVariable() != null) {
-    		// 代入する
-    		System.out.println("using variable with index.");
+    	} else if (leftSide.getVariable().getVariableWithIndex() != null) {
+    		// 添え字の判定
+    		Equation equation = leftSide.getVariable().getVariableWithIndex().getIndex().getEquation();
+    		parseEquation(equation);
+    		
+    		// 代入する添え字付き変数(=レジスタ)を用意
+    		addOutputList('\t' + "POP" + '\t' + "GR2");
+    		addOutputList('\t' + "ADDA" + '\t' + "GR2, 0");
     	}
     	
     	// POPする
