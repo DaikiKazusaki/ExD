@@ -240,9 +240,29 @@ public class CompilationVisitor extends Visitor {
     public void visit(IfThen ifThen) throws SemanticException {
     	Equation equation = ifThen.getEquation();
     	ComplexStatement complexStatement = ifThen.getComplexStatement();
+    	ElseStatement elseStatement = ifThen.getElseStatement();
     	
+    	// 条件式の探索
+    	parseEquation(equation);
     	equation.accept(this);
+    	
+    	// 条件式の分岐を探索する
+    	resolveCondition(equation);
+    	
+    	// 複合文の探索
+    	addOutputList("BOTH" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	addOutputList('\t' + "POP" + '\t' + "GR1");
+    	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
+    	addOutputList('\t' + "JZE" + '\t' + "ELSE" + String.valueOf(conditionNum));
     	complexStatement.accept(this);
+    	
+    	// else文の探索
+    	if (elseStatement == null) {
+    		addOutputList("ELSE" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	} else {
+        	elseStatement.accept(this);    		
+    	}
     }
     
     @Override
