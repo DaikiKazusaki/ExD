@@ -9,7 +9,7 @@ public class CompilationVisitor extends Visitor {
 	private int stringNum = 0;
 	private int conditionNum = 0;
 	private int procedureNum = 0;
-	private String localValueNum = "0";
+	private int localValueNum = 0;
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
 	private List<String> listForSizeOfLocalVariable = new ArrayList<>();
@@ -158,6 +158,7 @@ public class CompilationVisitor extends Visitor {
     	
     	for (SubprogramDeclaration subprogramDeclaration: subprogramDeclarationList) {
     		subprogramDeclaration.accept(this);
+    		localValueNum++;
     	}
     }
     
@@ -554,6 +555,7 @@ public class CompilationVisitor extends Visitor {
     		resolveFactorTypeOfWrite(notFactor);
     	}
     	
+    	// サブルーチン(WRT)をCALL
     	if (variableAndType[1].equals("integer")) {
     		// integer型 -> WRTINTをCALL
     		writeInteger(variableAndType[2]);
@@ -935,7 +937,11 @@ public class CompilationVisitor extends Visitor {
     private void parseLeftSide(LeftSide leftSide) {
     	if (leftSide.getVariable().getNaturalVariable() != null) {
     		// 代入する純変数(=レジスタ)を用意
-        	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    		String address = "0";
+    		if (listForSizeOfLocalVariable.size() > 0) {
+    			address = listForSizeOfLocalVariable.get(localValueNum);
+    		}
+        	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     	} else if (leftSide.getVariable().getVariableWithIndex() != null) {
     		// 添え字の判定
     		Equation equation = leftSide.getVariable().getVariableWithIndex().getIndex().getEquation();

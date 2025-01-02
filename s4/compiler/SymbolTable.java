@@ -114,19 +114,18 @@ public class SymbolTable {
 	 * @return
 	 */
 	public List<String> getSizeOfLocalVariable() {
-		int i = 0;
-		String scope, viceScope = "global";
+		int count = 0;
+		String scope = null, viceScope = "global";
 		
 		// 各変数のサイズを取得する
-		for (i = 0; i < symbolTable.size(); i++) {
+		for (int i = 0; i < symbolTable.size(); i++) {
 			scope = symbolTable.get(i).get(SCOPECOLS);
 			if (!scope.equals(viceScope)) {
 				viceScope = scope;
-				sizeOfLocalVariable.add(String.valueOf(i - 1));
-			} 
+				sizeOfLocalVariable.add(String.valueOf(count));
+			}
+			count += Integer.valueOf(symbolTable.get(i).get(SIZECOLS));
 		}
-		// 最後の要素を追加
-		sizeOfLocalVariable.add(String.valueOf(i - 1));
 		
 		return sizeOfLocalVariable;
 	}
