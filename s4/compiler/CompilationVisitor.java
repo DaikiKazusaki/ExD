@@ -157,8 +157,8 @@ public class CompilationVisitor extends Visitor {
     	List<SubprogramDeclaration> subprogramDeclarationList = subprogramDeclarationGroup.getSubprogramDeclaration();
     	
     	for (SubprogramDeclaration subprogramDeclaration: subprogramDeclarationList) {
-    		subprogramDeclaration.accept(this);
     		localValueNum++;
+    		subprogramDeclaration.accept(this);
     	}
     }
     
@@ -937,10 +937,7 @@ public class CompilationVisitor extends Visitor {
     private void parseLeftSide(LeftSide leftSide) {
     	if (leftSide.getVariable().getNaturalVariable() != null) {
     		// 代入する純変数(=レジスタ)を用意
-    		String address = "0";
-    		if (listForSizeOfLocalVariable.size() > 0) {
-    			address = listForSizeOfLocalVariable.get(localValueNum);
-    		}
+    		String address = listForSizeOfLocalVariable.get(localValueNum);
         	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     	} else if (leftSide.getVariable().getVariableWithIndex() != null) {
     		// 添え字の判定
