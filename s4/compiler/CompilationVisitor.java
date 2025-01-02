@@ -410,13 +410,15 @@ public class CompilationVisitor extends Visitor {
     	ProcedureName procedureName = procedureCallStatement.getProcedureName();
     	EquationGroup equationGroup = procedureCallStatement.getEquationGroup();
     	
+    	// 式の並びを先に解析する
+    	if (equationGroup != null) {
+    		equationGroup.accept(this);
+    	}
+    	
     	// サブルーチンを呼び出す
     	addOutputList('\t' + "CALL" + '\t' + "PROC" + String.valueOf(procedureNum));
     	
     	procedureName.accept(this);
-    	if (equationGroup != null) {
-    		equationGroup.accept(this);
-    	}
     }
     
     @Override
@@ -424,6 +426,7 @@ public class CompilationVisitor extends Visitor {
     	List<Equation> equationList = equationGroup.getEquationList();
     	
     	for (Equation equation: equationList) {
+    		parseEquation(equation);
     		equation.accept(this);
     	}
     }
