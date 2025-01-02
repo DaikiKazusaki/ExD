@@ -8,9 +8,12 @@ public class CompilationVisitor extends Visitor {
 	private boolean isNotFactor = false;
 	private int stringNum = 0;
 	private int conditionNum = 0;
+	private int procedureNum = 0;
+	private int localValueNum = 0;
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
-	
+	private List<String> listForSizeOfLocalVariable = new ArrayList<>();
+ 	
 	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
 		outputStatementList.add("CASL" + '\t' + "START" + '\t' + "BEGIN");
@@ -19,6 +22,7 @@ public class CompilationVisitor extends Visitor {
 		
 		// 記号表の取得に必要なインスタンス
 		this.symbolTable = semanticValidationVisitor.getSymbolTable();	
+		this.listForSizeOfLocalVariable = symbolTable.getSizeOfLocalVariable();
 	}
 	
 	/**
@@ -53,12 +57,13 @@ public class CompilationVisitor extends Visitor {
     	ComplexStatement complexStatement = program.getComplexStatement();
     	
     	programName.accept(this);
-    	block.accept(this);
     	complexStatement.accept(this);
+    	block.accept(this);
     	
     	// 変数の領域確保
     	String varSize = symbolTable.getSizeOfVar();
     	outputStatementList.add("VAR" + '\t' + "DS" + '\t' + varSize);
+    	
     	// 文字列の領域確保
     	outputStatementList.addAll(listForString);
     }
@@ -153,11 +158,24 @@ public class CompilationVisitor extends Visitor {
     	
     	for (SubprogramDeclaration subprogramDeclaration: subprogramDeclarationList) {
     		subprogramDeclaration.accept(this);
+    		localValueNum++;
     	}
     }
     
     @Override
-    public void visit(SubprogramDeclaration subprogramDeclaration) {}
+    public void visit(SubprogramDeclaration subprogramDeclaration) throws SemanticException {
+    	SubprogramHead subprogramHead = subprogramDeclaration.getSubprogramHead();
+    	VariableDeclaration variableDeclaration = subprogramDeclaration.getVariableDeclaration();
+    	ComplexStatement complexStatement = subprogramDeclaration.getComplexStatement();
+    	
+    	subprogramHead.accept(this);
+    	variableDeclaration.accept(this);
+    	// ローカル変数宣言の処理
+    	addOutputList('\t' + "LD" + '\t' + "GR1, GR8");
+    	addOutputList('\t' + "ADDA" + '\t' + "GR1, =0");
+    	
+    	complexStatement.accept(this);
+    }
     
     @Override
     public void visit(SubprogramHead subprogramHead) throws SemanticException {    	
@@ -166,6 +184,10 @@ public class CompilationVisitor extends Visitor {
     	
     	procedureName.accept(this);
     	formalParameter.accept(this);
+    	
+
+    	// サブルーチン呼び出し
+    	addOutputList("PROC" + String.valueOf(procedureNum) + '\t' + "NOP");
     }
     
     @Override
@@ -382,6 +404,10 @@ public class CompilationVisitor extends Visitor {
     	ProcedureName procedureName = procedureCallStatement.getProcedureName();
     	EquationGroup equationGroup = procedureCallStatement.getEquationGroup();
     	
+    	// サブルーチンを呼び出す
+    	addOutputList('\t' + "CALL" + '\t' + "PROC" + String.valueOf(procedureNum));
+    	addOutputList('\t' + "RET");
+    	
     	procedureName.accept(this);
     	if (equationGroup != null) {
     		equationGroup.accept(this);
@@ -512,7 +538,7 @@ public class CompilationVisitor extends Visitor {
      * @param factor
      */
     private void resolveFactorTypeOfWrite(Factor factor) {
-    	// [標準型, 配列型]
+    	// [変数名，標準型, 配列型]
     	String[] variableAndType = null;
     	
     	if (factor.getVariable() != null) {
@@ -529,12 +555,19 @@ public class CompilationVisitor extends Visitor {
     		resolveFactorTypeOfWrite(notFactor);
     	}
     	
+    	// サブルーチン(WRT)をCALL
     	if (variableAndType[1].equals("integer")) {
     		// integer型 -> WRTINTをCALL
     		writeInteger(variableAndType[2]);
     	} else if (variableAndType[1].equals("char")) {
-    		// char型 -> WRTSTRをCALL
-    		writeString(variableAndType[0]);
+    		String value = variableAndType[0];
+    		if (variableAndType[2].equals("true")) {
+    			writeString(value);
+    		} else if (value.contains("'") && value.length() > 3) {
+    			writeString(value);
+    		} else {
+    			writeChar();
+    		}
     	}
     }
     
@@ -667,6 +700,27 @@ public class CompilationVisitor extends Visitor {
 		
 		// 次の文字列を出力するためのインクリメント
 		stringNum++;
+    }
+    
+    /**
+     * charを出力する
+     * 
+     */
+    private void writeChar() {
+    	// 文字列の長さを取得
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, 1");
+    	
+    	// LDする
+    	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    	
+    	// PUSHする
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	
+    	// POPする
+    	addOutputList('\t' + "POP" + '\t' + "GR2");
+    	
+    	// WRTCHをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "WRTCH");
     }
     
     /**
@@ -865,7 +919,14 @@ public class CompilationVisitor extends Visitor {
     	}
     	
     	// PUSHする
-    	addOutputList('\t' + "PUSH" + '\t' + con);
+    	if (con.contains("'")) {
+    		// 文字列の場合
+    		addOutputList('\t' + "LD" + '\t' + "GR1, =" + con);
+    		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	} else {
+    		// 文字列以外の場合
+    		addOutputList('\t' + "PUSH" + '\t' + con);
+    	}
     }
     
     /**
@@ -876,7 +937,11 @@ public class CompilationVisitor extends Visitor {
     private void parseLeftSide(LeftSide leftSide) {
     	if (leftSide.getVariable().getNaturalVariable() != null) {
     		// 代入する純変数(=レジスタ)を用意
-        	addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    		String address = "0";
+    		if (listForSizeOfLocalVariable.size() > 0) {
+    			address = listForSizeOfLocalVariable.get(localValueNum);
+    		}
+        	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     	} else if (leftSide.getVariable().getVariableWithIndex() != null) {
     		// 添え字の判定
     		Equation equation = leftSide.getVariable().getVariableWithIndex().getIndex().getEquation();
