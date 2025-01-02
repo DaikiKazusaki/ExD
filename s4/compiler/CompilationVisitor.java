@@ -22,7 +22,7 @@ public class CompilationVisitor extends Visitor {
 		
 		// 記号表の取得に必要なインスタンス
 		this.symbolTable = semanticValidationVisitor.getSymbolTable();	
-		this.listForSizeOfLocalVariable = symbolTable.getSizeOfLocalVariable();
+		this.listForSizeOfLocalVariable = symbolTable.getAddressOfVariableGroup();
 	}
 	
 	/**

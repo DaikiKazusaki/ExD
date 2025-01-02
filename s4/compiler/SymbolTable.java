@@ -113,7 +113,7 @@ public class SymbolTable {
 	 * 
 	 * @return
 	 */
-	public List<String> getSizeOfLocalVariable() {
+	public List<String> getAddressOfVariableGroup() {
 		int count = 0;
 		String scope = null, viceScope = "global";
 		
