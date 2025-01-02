@@ -10,7 +10,6 @@ public class SymbolTable {
 	 * 
 	 */
 	public List<List<String>> symbolTable = new ArrayList<>();
-	private List<String> sizeOfLocalVariable = new ArrayList<>();
 	private int NAMECOLS = 0;
 	private int STANDARDTYPECOLS = 1;
 	private int ISARRAYCOLS = 2; 
@@ -113,23 +112,20 @@ public class SymbolTable {
 	 * 
 	 * @return
 	 */
-	public List<String> getAddressOfSymbols() {
-		int count = 0;
-		String scope = null, viceScope = "global";
+	public String getAddressOfSymbol(String varName, String scope) {
+		int address = 0;
 		
-		// 最初のアドレスを追加
-		sizeOfLocalVariable.add("0");
-		
-		// 各変数のサイズを取得する
 		for (int i = 0; i < symbolTable.size(); i++) {
-			scope = symbolTable.get(i).get(SCOPECOLS);
-			if (!scope.equals(viceScope)) {
-				viceScope = scope;
-				sizeOfLocalVariable.add(String.valueOf(count));
+			String variableName = symbolTable.get(i).get(NAMECOLS);
+			String functionName = symbolTable.get(i).get(SCOPECOLS);
+			if (varName.equals(variableName) && scope.equals(functionName)) {
+				break;
+			} else {
+				String size = symbolTable.get(i).get(SIZECOLS);
+				address += Integer.valueOf(size);
 			}
-			count += Integer.valueOf(symbolTable.get(i).get(SIZECOLS));
 		}
 		
-		return sizeOfLocalVariable;
+		return String.valueOf(address);
 	}
 }

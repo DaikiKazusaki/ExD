@@ -9,10 +9,9 @@ public class CompilationVisitor extends Visitor {
 	private int stringNum = 0;
 	private int conditionNum = 0;
 	private int procedureNum = 0;
-	private int localValueNum = 0;
+	private String scope = "global";
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
-	private List<String> listForSizeOfLocalVariable = new ArrayList<>();
  	
 	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
@@ -21,8 +20,7 @@ public class CompilationVisitor extends Visitor {
 		outputStatementList.add('\t' + "LAD" + '\t' + "GR7, LIBBUF");
 		
 		// 記号表の取得に必要なインスタンス
-		this.symbolTable = semanticValidationVisitor.getSymbolTable();	
-		this.listForSizeOfLocalVariable = symbolTable.getAddressOfSymbols();
+		this.symbolTable = semanticValidationVisitor.getSymbolTable();
 	}
 	
 	/**
@@ -58,6 +56,10 @@ public class CompilationVisitor extends Visitor {
     	
     	programName.accept(this);
     	complexStatement.accept(this);
+    	
+    	// サブルーチンのreturn先を確保
+	    addOutputList('\t' + "RET");
+    	
     	block.accept(this);
     	
     	// 変数の領域確保
@@ -157,7 +159,6 @@ public class CompilationVisitor extends Visitor {
     	List<SubprogramDeclaration> subprogramDeclarationList = subprogramDeclarationGroup.getSubprogramDeclaration();
     	
     	for (SubprogramDeclaration subprogramDeclaration: subprogramDeclarationList) {
-    		localValueNum++;
     		subprogramDeclaration.accept(this);
     	}
     }
@@ -185,7 +186,9 @@ public class CompilationVisitor extends Visitor {
     	procedureName.accept(this);
     	formalParameter.accept(this);
     	
-
+    	// スコープの変更
+    	scope = subprogramHead.getProcedureName().getProcedureName();
+    	
     	// サブルーチン呼び出し
     	addOutputList("PROC" + String.valueOf(procedureNum) + '\t' + "NOP");
     }
@@ -285,6 +288,9 @@ public class CompilationVisitor extends Visitor {
     	if (elseStatement != null) {
         	elseStatement.accept(this);    		
     	}
+    	
+    	// 条件文のインクリメント
+    	// conditionNum++;
     }
     
     @Override
@@ -406,7 +412,6 @@ public class CompilationVisitor extends Visitor {
     	
     	// サブルーチンを呼び出す
     	addOutputList('\t' + "CALL" + '\t' + "PROC" + String.valueOf(procedureNum));
-    	addOutputList('\t' + "RET");
     	
     	procedureName.accept(this);
     	if (equationGroup != null) {
@@ -509,7 +514,6 @@ public class CompilationVisitor extends Visitor {
     		}
     		// 改行の処理
     	    addOutputList('\t' + "CALL" + '\t' + "WRTLN");
-    	    addOutputList('\t' + "RET");
     	}
     }
     
@@ -566,7 +570,7 @@ public class CompilationVisitor extends Visitor {
     		} else if (value.contains("'") && value.length() > 3) {
     			writeString(value);
     		} else {
-    			writeChar();
+    			writeChar(value);
     		}
     	}
     }
@@ -706,9 +710,9 @@ public class CompilationVisitor extends Visitor {
      * charを出力する
      * 
      */
-    private void writeChar() {
-    	// 文字列の長さを取得
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, 1");
+    private void writeChar(String variableName) {
+		String address = symbolTable.getAddressOfSymbol(variableName, scope);
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     	
     	// LDする
     	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
@@ -937,7 +941,8 @@ public class CompilationVisitor extends Visitor {
     private void parseLeftSide(LeftSide leftSide) {
     	if (leftSide.getVariable().getNaturalVariable() != null) {
     		// 代入する純変数(=レジスタ)を用意
-    		String address = listForSizeOfLocalVariable.get(localValueNum);
+    		String variableName = leftSide.getVariable().getNaturalVariable().getVariableName().getVariableName();
+    		String address = symbolTable.getAddressOfSymbol(variableName, scope);
         	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     	} else if (leftSide.getVariable().getVariableWithIndex() != null) {
     		// 添え字の判定
