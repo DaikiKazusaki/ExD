@@ -117,6 +117,8 @@ public class SymbolTable {
 		int count = 0;
 		String scope = null, viceScope = "global";
 		
+		sizeOfLocalVariable.add("0");
+		
 		// 各変数のサイズを取得する
 		for (int i = 0; i < symbolTable.size(); i++) {
 			scope = symbolTable.get(i).get(SCOPECOLS);
