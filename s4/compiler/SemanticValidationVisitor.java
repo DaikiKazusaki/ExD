@@ -682,21 +682,22 @@ public class SemanticValidationVisitor extends Visitor {
             return resolveType(factor.getEquation());
         } else if (factor.getFactor() != null) {
             return resolveType(factor.getFactor());
+        } else {
+        	throw new SemanticException(factor.getLineNum());
         }
-        throw new SemanticException(factor.getLineNum());
     }
 
     /**
      * 変数の型を解決するメソッド
      */
     private String resolveVariableType(Factor factor) throws SemanticException {
-        String varName, type = null;
+        String varName = null, type = null;
         if (factor.getVariable().getNaturalVariable() != null) {
         	varName = factor.getVariable().getNaturalVariable().getVariableName().getVariableName();
         	type = symbolTable.containsNaturalVariable(varName);
         } else if (factor.getVariable().getVariableWithIndex() != null) {
         	varName = factor.getVariable().getVariableWithIndex().getVariableName().getVariableName();
-        	type = symbolTable.containsNaturalVariable(varName);
+        	type = symbolTable.containsVariableWithIndex(varName);
         }
         
         if (type == null) {

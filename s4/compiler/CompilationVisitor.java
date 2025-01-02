@@ -9,8 +9,10 @@ public class CompilationVisitor extends Visitor {
 	private int stringNum = 0;
 	private int conditionNum = 0;
 	private int procedureNum = 0;
+	private String localValueNum = "0";
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
+	private List<String> listForSizeOfLocalVariable = new ArrayList<>();
  	
 	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
@@ -20,6 +22,7 @@ public class CompilationVisitor extends Visitor {
 		
 		// 記号表の取得に必要なインスタンス
 		this.symbolTable = semanticValidationVisitor.getSymbolTable();	
+		this.listForSizeOfLocalVariable = symbolTable.getSizeOfLocalVariable();
 	}
 	
 	/**

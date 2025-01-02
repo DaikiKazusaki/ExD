@@ -10,6 +10,7 @@ public class SymbolTable {
 	 * 
 	 */
 	public List<List<String>> symbolTable = new ArrayList<>();
+	private List<String> sizeOfLocalVariable = new ArrayList<>();
 	private int NAMECOLS = 0;
 	private int STANDARDTYPECOLS = 1;
 	private int ISARRAYCOLS = 2; 
@@ -92,6 +93,11 @@ public class SymbolTable {
 		return null;
 	}
 	
+	/**
+	 * 記号表の大きさを取得するメソッド
+	 * 
+	 * @return
+	 */
 	public String getSizeOfVar() {
 		int sum = 0;
 		for (int i = 0; i < symbolTable.size(); i++) {
@@ -100,5 +106,28 @@ public class SymbolTable {
 		}
 		
 		return String.valueOf(sum);
+	}
+	
+	/**
+	 * 各ローカル変数の大きさを取得するメソッド
+	 * 
+	 * @return
+	 */
+	public List<String> getSizeOfLocalVariable() {
+		int i = 0;
+		String scope, viceScope = "global";
+		
+		// 各変数のサイズを取得する
+		for (i = 0; i < symbolTable.size(); i++) {
+			scope = symbolTable.get(i).get(SCOPECOLS);
+			if (!scope.equals(viceScope)) {
+				viceScope = scope;
+				sizeOfLocalVariable.add(String.valueOf(i - 1));
+			} 
+		}
+		// 最後の要素を追加
+		sizeOfLocalVariable.add(String.valueOf(i - 1));
+		
+		return sizeOfLocalVariable;
 	}
 }
