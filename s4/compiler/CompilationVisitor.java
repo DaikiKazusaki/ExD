@@ -11,7 +11,6 @@ public class CompilationVisitor extends Visitor {
 	private int procedureNum = 0;
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
-	// private List<String> listForSubroutine = new ArrayList<>();
  	
 	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
@@ -41,14 +40,6 @@ public class CompilationVisitor extends Visitor {
 	}
 	
 	/**
-	 * サブルーチンのcaslコードを追加するメソッド
-	 * 
-	 */
-	// public void addListForSubroutine(String line) {
-	// 	listForSubroutine.add(line);
-	// }
-	
-	/**
 	 * 文字列を番地に置いておく
 	 * 
 	 */
@@ -65,9 +56,6 @@ public class CompilationVisitor extends Visitor {
     	programName.accept(this);
     	complexStatement.accept(this);
     	block.accept(this);
-    	
-    	// サブルーチンを追加
-    	// outputStatementList.addAll(listForSubroutine);
     	
     	// 変数の領域確保
     	String varSize = symbolTable.getSizeOfVar();
@@ -196,7 +184,6 @@ public class CompilationVisitor extends Visitor {
 
     	// サブルーチン呼び出し
     	addOutputList("PROC" + String.valueOf(procedureNum) + '\t' + "NOP");
-    	// addListForSubroutine("PROC" + String.valueOf(procedureNum) + '\t' + "NOP");
     }
     
     @Override
