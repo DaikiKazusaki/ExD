@@ -69,12 +69,13 @@ public class SemanticValidationVisitor extends Visitor {
         String[] typeInfo = extractTypeInfo(type);
         String standardType = typeInfo[0];
         String isArray = typeInfo[1];
+        String isFormalParameter = "false";
         String size = typeInfo[2];
         String lineNum = variableNameGroup.getLineNum();
 
         // 記号表に変数を登録
         for (VariableName variableName : variableNameGroup.getVariableNameList()) {
-            addVariableToSymbolTable(variableName.getVariableName(), standardType, isArray, size, lineNum);
+            addVariableToSymbolTable(variableName.getVariableName(), standardType, isArray, isFormalParameter, size, lineNum);
         }
     }
 
@@ -114,9 +115,9 @@ public class SemanticValidationVisitor extends Visitor {
      * @param lineNum
      * @throws SemanticException
      */
-    public void addVariableToSymbolTable(String variableName, String type, String isArray, String size, String lineNum) throws SemanticException {
+    public void addVariableToSymbolTable(String variableName, String type, String isArray, String isFormalParameter, String size, String lineNum) throws SemanticException {
         if (symbolTable.isAbleToAddSymbolTable(variableName, scope)) {
-            symbolTable.addSymbol(variableName, type, isArray, scope, size);
+            symbolTable.addSymbol(variableName, type, isArray, isFormalParameter, scope, size);
         } else {
             throw new SemanticException(lineNum);
         }
@@ -268,11 +269,12 @@ public class SemanticValidationVisitor extends Visitor {
     public void prepareFormalParameterForAddingSymbolTable(FormalParameterNameGroup formalParameterNameGroup, StandardType standardType) throws SemanticException {
         String type = standardType.getStandardType();
         String isArray = "false"; // 仮引数は配列ではないので，常にfalse
+        String isFormalParameter = "true";
         String size = "1"; // 仮引数は配列ではないので，常に1
         String lineNum = formalParameterNameGroup.getLineNum();
         
         for (FormalParameterName formalParameterName : formalParameterNameGroup.getFormalParameterNameList()) {
-            addVariableToSymbolTable(formalParameterName.getFormalParameterName(), type, isArray, size, lineNum);
+            addVariableToSymbolTable(formalParameterName.getFormalParameterName(), type, isArray, isFormalParameter, size, lineNum);
         }
     }
 

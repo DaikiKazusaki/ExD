@@ -171,10 +171,6 @@ public class CompilationVisitor extends Visitor {
     	
     	subprogramHead.accept(this);
     	variableDeclaration.accept(this);
-    	// ローカル変数宣言の処理
-    	addOutputList('\t' + "LD" + '\t' + "GR1, GR8");
-    	addOutputList('\t' + "ADDA" + '\t' + "GR1, =0");
-    	
     	complexStatement.accept(this);
     }
     
@@ -183,14 +179,19 @@ public class CompilationVisitor extends Visitor {
     	ProcedureName procedureName = subprogramHead.getProcedureName();
     	FormalParameter formalParameter = subprogramHead.getFormalParameter();
     	
-    	procedureName.accept(this);
-    	formalParameter.accept(this);
-    	
     	// スコープの変更
     	scope = subprogramHead.getProcedureName().getProcedureName();
     	
     	// サブルーチン呼び出し
     	addOutputList("PROC" + String.valueOf(procedureNum) + '\t' + "NOP");
+    	
+    	// ローカル変数宣言の処理
+    	addOutputList('\t' + "LD" + '\t' + "GR1, GR8");
+    	String size = symbolTable.getSizeOfFormalParameter(scope);
+    	addOutputList('\t' + "ADDA" + '\t' + "GR1, =" + size);
+    	
+    	procedureName.accept(this);
+    	formalParameter.accept(this);
     }
     
     @Override
@@ -216,6 +217,15 @@ public class CompilationVisitor extends Visitor {
     		
     		formalParameterNameGroup.accept(this);
     		standardType.accept(this);
+    		
+    		// 仮引数の処理
+    		addOutputList('\t' + "LD" + '\t' + "GR2, 0, GR1");
+    		addOutputList('\t' + "LAD" + '\t' + "GR3, 2");
+    		addOutputList('\t' + "ST" + '\t' + "GR2, VAR, GR3");
+    		addOutputList('\t' + "SUBA" + '\t' + "GR1, 1");
+    		addOutputList('\t' + "LD" + '\t' + "GR1, 0, GR8");
+    		addOutputList('\t' + "ADDA" + '\t' + "GR8, =1");
+    		addOutputList('\t' + "ST" + '\t' + "GR1, 0, GR8");
     	}
     }
     
@@ -410,13 +420,19 @@ public class CompilationVisitor extends Visitor {
     	ProcedureName procedureName = procedureCallStatement.getProcedureName();
     	EquationGroup equationGroup = procedureCallStatement.getEquationGroup();
     	
+    	// 式の並びを先に解析する
+    	if (equationGroup != null) {
+    		equationGroup.accept(this);
+    		List<Equation> equationList = equationGroup.getEquationList();
+        	for (Equation equation: equationList) {
+        		parseEquation(equation);
+        	}
+    	}
+    	
     	// サブルーチンを呼び出す
     	addOutputList('\t' + "CALL" + '\t' + "PROC" + String.valueOf(procedureNum));
     	
     	procedureName.accept(this);
-    	if (equationGroup != null) {
-    		equationGroup.accept(this);
-    	}
     }
     
     @Override
@@ -562,7 +578,7 @@ public class CompilationVisitor extends Visitor {
     	// サブルーチン(WRT)をCALL
     	if (variableAndType[1].equals("integer")) {
     		// integer型 -> WRTINTをCALL
-    		writeInteger(variableAndType[2]);
+    		writeInteger(variableAndType[0], variableAndType[2]);
     	} else if (variableAndType[1].equals("char")) {
     		String value = variableAndType[0];
     		if (variableAndType[2].equals("true")) {
@@ -641,13 +657,15 @@ public class CompilationVisitor extends Visitor {
     
     /**
      * WRTINTをcaslファイルに書き込む
+     * @param variableAndType 
      * 
      * @param integer
      */
-    private void writeInteger(String isArray) {    	
+    private void writeInteger(String variableName, String isArray) {    	
     	if (isArray.equals("false")) {
     		// 純変数の場合
-    		addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    		String address = symbolTable.getAddressOfSymbol(variableName, scope);
+    		addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     	} else {
     		// 添え字付き変数の場合
     		addOutputList('\t' + "POP" + '\t' + "GR2");
