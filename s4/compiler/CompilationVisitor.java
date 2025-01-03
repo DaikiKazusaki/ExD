@@ -711,12 +711,15 @@ public class CompilationVisitor extends Visitor {
      * @param string
      */
     private void writeString(String string) {
-    	// 文字列の長さを取得
-    	String length = String.valueOf(string.length());
     	if (string.contains("'")) {
-    		length = String.valueOf(Integer.valueOf(length) - 2);
-    	}
-    	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
+    		// 文字列の長さを取得
+        	String length = String.valueOf(string.length());
+        	length = String.valueOf(Integer.valueOf(length) - 2);
+        	addOutputList('\t' + "LAD" + '\t' + "GR1, " + length);
+    	} else {
+    		String address = symbolTable.getAddressOfSymbol(string, scope);
+    		addOutputList('\t' + "LAD" + '\t' + "GR1, " + address);
+    	}    	
     	
     	// GR1にPUSH
     	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
@@ -745,15 +748,20 @@ public class CompilationVisitor extends Visitor {
     }
     
     /**
-     * charを出力する
+     * WRTCHをcaslファイルに書き込む
      * 
+     * @param variable
      */
-    private void writeChar(String variableName) {
-		String address = symbolTable.getAddressOfSymbol(variableName, scope);
-    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
-    	
-    	// LDする
-    	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    private void writeChar(String variable) {
+    	if (variable.contains("'")) {
+    		// 文字定数の場合
+    		addOutputList('\t' + "LD" + '\t' + "GR1, =" + variable);
+    	} else {
+    		// char型の変数の場合
+    		String address = symbolTable.getAddressOfSymbol(variable, scope);
+        	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
+        	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    	}
     	
     	// PUSHする
     	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");

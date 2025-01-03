@@ -125,6 +125,8 @@ public class Lib {
 		    "\tJNZ\tEND",
 		    "\tXOR\tGR2,=#FFFF",
 		    "\tLAD\tGR2,1,GR2",
+		    "\tJUMP\tEND",
+		    "\t;　エラーを出力する",
 		    "ERROR\tOUT\tERRSTR,ERRLEN",
 		    "END\tST\tGR2,0,GR5",
 		    "\tLD\tGR2,GR5",
