@@ -413,6 +413,10 @@ public class CompilationVisitor extends Visitor {
     	// 式の並びを先に解析する
     	if (equationGroup != null) {
     		equationGroup.accept(this);
+    		List<Equation> equationList = equationGroup.getEquationList();
+        	for (Equation equation: equationList) {
+        		parseEquation(equation);
+        	}
     	}
     	
     	// サブルーチンを呼び出す
@@ -426,7 +430,6 @@ public class CompilationVisitor extends Visitor {
     	List<Equation> equationList = equationGroup.getEquationList();
     	
     	for (Equation equation: equationList) {
-    		parseEquation(equation);
     		equation.accept(this);
     	}
     }
