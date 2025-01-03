@@ -8,6 +8,7 @@ public class CompilationVisitor extends Visitor {
 	private boolean isNotFactor = false;
 	private int stringNum = 0;
 	private int conditionNum = -1; // 条件文のラベルの開始番地を保持する
+	private int previousConditionNum = -1;
 	private int nestNum = 0;  // 条件文(if, while)のネスト数を保持する
 	private int procedureNum = 0;
 	private String scope = "global";
@@ -61,6 +62,8 @@ public class CompilationVisitor extends Visitor {
     	// サブルーチンのreturn先を確保
 	    addOutputList('\t' + "RET");
     	
+	    // 副プログラムの個数を揃える
+	    procedureNum = 0;
     	block.accept(this);
     	
     	// 変数の領域確保
@@ -183,8 +186,9 @@ public class CompilationVisitor extends Visitor {
     	// スコープの変更
     	scope = subprogramHead.getProcedureName().getProcedureName();
     	
-    	// サブルーチン呼び出し
+    	// サブルーチン開始
     	addOutputList("PROC" + String.valueOf(procedureNum) + '\t' + "NOP");
+    	procedureNum++;
     	
     	// ローカル変数宣言の処理
     	addOutputList('\t' + "LD" + '\t' + "GR1, GR8");
@@ -268,14 +272,15 @@ public class CompilationVisitor extends Visitor {
     		basicStatement.accept(this);
     	} else if (ifThen != null) {
     		ifThen.accept(this);
-    		// 条件文のインデックスを更新
-        	// conditionNum += nestNum;
-        	// nestNum = 0;
     	} else if (whileDo != null) {
     		whileDo.accept(this);
-    		// 条件文のインデックスを更新
-        	// conditionNum += nestNum;
-        	// nestNum = 0;
+    	}
+    	
+    	// 条件文のインデックスを更新
+    	if (conditionNum == previousConditionNum) {
+        	conditionNum += nestNum;
+        	nestNum = 0;
+        	previousConditionNum = conditionNum;
     	}
     }
     
@@ -445,6 +450,7 @@ public class CompilationVisitor extends Visitor {
     	
     	// サブルーチンを呼び出す
     	addOutputList('\t' + "CALL" + '\t' + "PROC" + String.valueOf(procedureNum));
+    	procedureNum++;
     	
     	procedureName.accept(this);
     }
@@ -925,7 +931,9 @@ public class CompilationVisitor extends Visitor {
     private void parseVariable(Variable variable, boolean isNotFactor) {
     	if (variable.getNaturalVariable() != null) {
     		// 代入する式をcaslにする
-    		addOutputList('\t' + "LAD" + '\t' + "GR2, 0");
+    		String varName = variable.getNaturalVariable().getVariableName().getVariableName();
+    		String address = symbolTable.getAddressOfSymbol(varName, scope);
+    		addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     		addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
     		if (isNotFactor) {
     			// notをとる
@@ -1021,10 +1029,10 @@ public class CompilationVisitor extends Visitor {
         	}
         	
         	// 比較の処理
-        	addOutputList('\t' + "LAD" + '\t' + "GR1, #0000");
+        	addOutputList('\t' + "LD" + '\t' + "GR1, =#0000");
         	addOutputList('\t' + "JUMP" + '\t' + "BOTH" + String.valueOf(conditionNum));
         	addOutputList("TRUE" + String.valueOf(conditionNum) + '\t' + "NOP");
-        	addOutputList('\t' + "LAD" + '\t' + "GR1, #FFFF");
+        	addOutputList('\t' + "LD" + '\t' + "GR1, =#FFFF");
     	}
     }
 }
