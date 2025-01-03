@@ -8,8 +8,22 @@ public class SemanticValidationVisitor extends Visitor {
 	private FunctionTable functionTable = new FunctionTable();
 	private String scope = "global";
 	
+	/**
+	 * 記号表を取得するメソッド
+	 * 
+	 * @return
+	 */
 	public SymbolTable getSymbolTable() {
 		return symbolTable;
+	}
+	
+	/**
+	 * 関数表を取得するメソッド
+	 * 
+	 * @return
+	 */
+	public FunctionTable getFunctionTable() {
+		return functionTable;
 	}
 	
     @Override

@@ -5,12 +5,12 @@ import java.util.List;
 
 public class CompilationVisitor extends Visitor {
 	private SymbolTable symbolTable;
+	private FunctionTable functionTable;
 	private boolean isNotFactor = false;
 	private int stringNum = 0;
 	private int conditionNum = -1; // 条件文のラベルの開始番地を保持する
 	private int previousConditionNum = -1;
 	private int nestNum = 0;  // 条件文(if, while)のネスト数を保持する
-	private int procedureNum = 0;
 	private String scope = "global";
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
@@ -23,6 +23,7 @@ public class CompilationVisitor extends Visitor {
 		
 		// 記号表の取得に必要なインスタンス
 		this.symbolTable = semanticValidationVisitor.getSymbolTable();
+		this.functionTable = semanticValidationVisitor.getFunctionTable();
 	}
 	
 	/**
@@ -62,8 +63,6 @@ public class CompilationVisitor extends Visitor {
     	// サブルーチンのreturn先を確保
 	    addOutputList('\t' + "RET");
     	
-	    // 副プログラムの個数を揃える
-	    procedureNum = 0;
     	block.accept(this);
     	
     	// 変数の領域確保
@@ -187,8 +186,9 @@ public class CompilationVisitor extends Visitor {
     	scope = subprogramHead.getProcedureName().getProcedureName();
     	
     	// サブルーチン開始
-    	addOutputList("PROC" + String.valueOf(procedureNum) + '\t' + "NOP");
-    	procedureNum++;
+    	String procedure = procedureName.getProcedureName();
+    	String index = String.valueOf(functionTable.getFunctionTable().indexOf(procedure));
+    	addOutputList("PROC" + index + '\t' + "NOP" + '\t');
     	
     	// ローカル変数宣言の処理
     	addOutputList('\t' + "LD" + '\t' + "GR1, GR8");
@@ -449,8 +449,9 @@ public class CompilationVisitor extends Visitor {
     	}
     	
     	// サブルーチンを呼び出す
-    	addOutputList('\t' + "CALL" + '\t' + "PROC" + String.valueOf(procedureNum));
-    	procedureNum++;
+    	String procedure = procedureName.getProcedureName();
+    	String index = String.valueOf(functionTable.getFunctionTable().indexOf(procedure));
+    	addOutputList('\t' + "CALL" + '\t' + "PROC" + index);
     	
     	procedureName.accept(this);
     }
