@@ -13,8 +13,9 @@ public class SymbolTable {
 	private int NAMECOLS = 0;
 	private int STANDARDTYPECOLS = 1;
 	private int ISARRAYCOLS = 2; 
-	private int SCOPECOLS = 3;
-	private int SIZECOLS = 4;
+	private int ISFORMALPARAMETER = 3;
+	private int SCOPECOLS = 4;
+	private int SIZECOLS = 5;
 	
 	/**
 	 * 記号表に登録するメソッド
@@ -24,11 +25,12 @@ public class SymbolTable {
 	 * @param isArray
 	 * @param scope
 	 */
-	public void addSymbol(String name, String type, String isArray, String scope, String size) {		
+	public void addSymbol(String name, String type, String isArray, String isFormalParameter, String scope, String size) {		
 		List<String> newSymbolInformation = new ArrayList<>();
 		newSymbolInformation.add(name);
 		newSymbolInformation.add(type);
 		newSymbolInformation.add(isArray);
+		newSymbolInformation.add(isFormalParameter);
 		newSymbolInformation.add(scope);
 		newSymbolInformation.add(size);
 		
@@ -127,5 +129,20 @@ public class SymbolTable {
 		}
 		
 		return String.valueOf(address);
+	}
+	
+	public String getSizeOfFormalParameter(String functionName) {
+		int count = 0;
+		
+		for (int i = 0; i < symbolTable.size(); i++) {
+			String scope = symbolTable.get(i).get(SCOPECOLS);
+			String isFormalParameter = symbolTable.get(i).get(ISFORMALPARAMETER);
+			if (scope.equals(functionName) && isFormalParameter.equals("true")) {
+				String size = symbolTable.get(i).get(SIZECOLS);
+				count += Integer.valueOf(size);
+			}
+		}
+		
+		return String.valueOf(count);
 	}
 }
