@@ -7,7 +7,8 @@ public class CompilationVisitor extends Visitor {
 	private SymbolTable symbolTable;
 	private boolean isNotFactor = false;
 	private int stringNum = 0;
-	private int conditionNum = 0;
+	private int conditionNum = -1; // 条件文のラベルの開始番地を保持する
+	private int nestNum = 0;  // 条件文(if, while)のネスト数を保持する
 	private int procedureNum = 0;
 	private String scope = "global";
 	private List<String> outputStatementList = new ArrayList<>();
@@ -267,8 +268,14 @@ public class CompilationVisitor extends Visitor {
     		basicStatement.accept(this);
     	} else if (ifThen != null) {
     		ifThen.accept(this);
+    		// 条件文のインデックスを更新
+        	// conditionNum += nestNum;
+        	// nestNum = 0;
     	} else if (whileDo != null) {
     		whileDo.accept(this);
+    		// 条件文のインデックスを更新
+        	// conditionNum += nestNum;
+        	// nestNum = 0;
     	}
     }
     
@@ -277,6 +284,10 @@ public class CompilationVisitor extends Visitor {
     	Equation equation = ifThen.getEquation();
     	ComplexStatement complexStatement = ifThen.getComplexStatement();
     	ElseStatement elseStatement = ifThen.getElseStatement();
+    	
+    	// 条件文の個数のインクリメント
+    	conditionNum++;
+    	nestNum++;
     	
     	// 条件式の探索
     	parseEquation(equation);
@@ -299,8 +310,8 @@ public class CompilationVisitor extends Visitor {
         	elseStatement.accept(this);    		
     	}
     	
-    	// 条件文のインクリメント
-    	// conditionNum++;
+    	// 条件文の個数を元に戻す
+    	conditionNum--;
     }
     
     @Override
@@ -315,9 +326,12 @@ public class CompilationVisitor extends Visitor {
     	Equation equation = whileDo.getEquation();
     	ComplexStatement complexStatement = whileDo.getComplexStatement();
     	
+    	// 条件文の個数のインクリメント
+    	conditionNum++;
+    	nestNum++;
+    	
     	// whileループ開始の番地を設定
-    	String whileNum = String.valueOf(conditionNum);
-    	addOutputList("WHILE" + whileNum + '\t' + "NOP");
+    	addOutputList("WHILE" + String.valueOf(conditionNum) + '\t' + "NOP");
     	
     	// 条件式の探索
     	parseEquation(equation);
@@ -336,10 +350,10 @@ public class CompilationVisitor extends Visitor {
     	
     	// whileループ終了番地の設定
     	addOutputList('\t' + "JUMP" + '\t' + "WHILE" + String.valueOf(conditionNum));
-    	addOutputList("ENDWHL" + whileNum + '\t' + "NOP");
+    	addOutputList("ENDWHL" + String.valueOf(conditionNum) + '\t' + "NOP");
     	
-    	// conditionNumのインクリメント
-    	conditionNum++;
+    	// 条件文の個数を元に戻す
+    	conditionNum--;
     }
     
     @Override
@@ -657,9 +671,9 @@ public class CompilationVisitor extends Visitor {
     
     /**
      * WRTINTをcaslファイルに書き込む
-     * @param variableAndType 
      * 
-     * @param integer
+     * @param variableName
+     * @param isArray
      */
     private void writeInteger(String variableName, String isArray) {    	
     	if (isArray.equals("false")) {

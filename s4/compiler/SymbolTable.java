@@ -131,6 +131,12 @@ public class SymbolTable {
 		return String.valueOf(address);
 	}
 	
+	/**
+	 * 仮引数のサイズを取得するメソッド
+	 * 
+	 * @param functionName
+	 * @return
+	 */
 	public String getSizeOfFormalParameter(String functionName) {
 		int count = 0;
 		
