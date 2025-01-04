@@ -116,11 +116,14 @@ public class SymbolTable {
 	 */
 	public String getAddressOfSymbol(String varName, String scope) {
 		int address = 0;
+		boolean exist = false;
 		
+		// スコープ内で探索
 		for (int i = 0; i < symbolTable.size(); i++) {
 			String variableName = symbolTable.get(i).get(NAMECOLS);
 			String functionName = symbolTable.get(i).get(SCOPECOLS);
 			if (varName.equals(variableName) && scope.equals(functionName)) {
+				exist = true;
 				break;
 			} else {
 				String size = symbolTable.get(i).get(SIZECOLS);
@@ -128,9 +131,30 @@ public class SymbolTable {
 			}
 		}
 		
+		// グローバル内で探索
+		if (!exist) {
+			address = 0;
+			for (int i = 0; i < symbolTable.size(); i++) {
+				String variableName = symbolTable.get(i).get(NAMECOLS);
+				String functionName = symbolTable.get(i).get(SCOPECOLS);
+				if (varName.equals(variableName) && "global".equals(functionName)) {
+					break;
+				} else {
+					String size = symbolTable.get(i).get(SIZECOLS);
+					address += Integer.valueOf(size);
+				}
+			}
+		}
+		
 		return String.valueOf(address);
 	}
 	
+	/**
+	 * 仮引数のサイズを取得するメソッド
+	 * 
+	 * @param functionName
+	 * @return
+	 */
 	public String getSizeOfFormalParameter(String functionName) {
 		int count = 0;
 		
