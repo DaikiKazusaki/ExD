@@ -2,18 +2,19 @@ package enshud.s4.compiler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class CompilationVisitor extends Visitor {
 	private SymbolTable symbolTable;
 	private FunctionTable functionTable;
 	private boolean isNotFactor = false;
 	private int stringNum = 0;
-	private int conditionNum = -1; // 条件文のラベルの開始番地を保持する
-	private int previousConditionNum = -1;
-	private int nestNum = 0;  // 条件文(if, while)のネスト数を保持する
+	private int conditionCount = 0;
 	private String scope = "global";
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
+	private Stack<String> stack = new Stack<>(); // ラベル付けのためのスタック
+	
  	
 	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
@@ -163,6 +164,9 @@ public class CompilationVisitor extends Visitor {
     	
     	for (SubprogramDeclaration subprogramDeclaration: subprogramDeclarationList) {
     		subprogramDeclaration.accept(this);
+    		
+    		// returnの追加
+    		addOutputList('\t' + "RET");
     	}
     }
     
@@ -275,13 +279,6 @@ public class CompilationVisitor extends Visitor {
     	} else if (whileDo != null) {
     		whileDo.accept(this);
     	}
-    	
-    	// 条件文のインデックスを更新
-    	if (conditionNum == previousConditionNum) {
-        	conditionNum += nestNum;
-        	nestNum = 0;
-        	previousConditionNum = conditionNum;
-    	}
     }
     
     @Override
@@ -291,32 +288,35 @@ public class CompilationVisitor extends Visitor {
     	ElseStatement elseStatement = ifThen.getElseStatement();
     	
     	// 条件文の個数のインクリメント
-    	conditionNum++;
-    	nestNum++;
+    	stack.push(String.valueOf(conditionCount));
+    	conditionCount++;
     	
     	// 条件式の探索
-    	parseEquation(equation);
     	equation.accept(this);
     	
     	// 条件式の分岐を探索する
-    	resolveCondition(equation);
+    	parseEquation(equation);
     	
     	// 複合文の探索
+    	String conditionNum = stack.pop();
     	addOutputList("BOTH" + String.valueOf(conditionNum) + '\t' + "NOP");
     	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	addOutputList('\t' + "POP" + '\t' + "GR1");
     	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
-    	addOutputList('\t' + "JZE" + '\t' + "ELSE" + String.valueOf(conditionNum));
+    	addOutputList('\t' + "JZE" + '\t' + "ELSE" + conditionNum);
+    	stack.push(conditionNum);
     	complexStatement.accept(this);
     	
     	// else文の探索
-    	addOutputList("ELSE" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	conditionNum = stack.pop();
+    	addOutputList("ELSE" + conditionNum + '\t' + "NOP");
+    	stack.push(conditionNum);
     	if (elseStatement != null) {
         	elseStatement.accept(this);    		
     	}
     	
-    	// 条件文の個数を元に戻す
-    	conditionNum--;
+    	// スタックからpopする
+    	stack.pop();
     }
     
     @Override
@@ -332,33 +332,34 @@ public class CompilationVisitor extends Visitor {
     	ComplexStatement complexStatement = whileDo.getComplexStatement();
     	
     	// 条件文の個数のインクリメント
-    	conditionNum++;
-    	nestNum++;
+    	stack.push(String.valueOf(conditionCount));
+    	conditionCount++;
     	
     	// whileループ開始の番地を設定
-    	addOutputList("WHILE" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	String conditionNum = stack.pop();
+    	addOutputList("WHILE" + conditionNum + '\t' + "NOP");
+    	stack.push(conditionNum);
     	
     	// 条件式の探索
-    	parseEquation(equation);
     	equation.accept(this);
     	
     	// 条件式の分岐を探索する
-    	resolveCondition(equation);
+    	parseEquation(equation);
     	
     	// 複合文の探索
-    	addOutputList("BOTH" + String.valueOf(conditionNum) + '\t' + "NOP");
+    	conditionNum = stack.pop();
+    	addOutputList("BOTH" + conditionNum + '\t' + "NOP");
     	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	addOutputList('\t' + "POP" + '\t' + "GR1");
     	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
-    	addOutputList('\t' + "JZE" + '\t' + "ENDWHL" + String.valueOf(conditionNum));
+    	addOutputList('\t' + "JZE" + '\t' + "ENDWHL" + conditionNum);
+    	stack.push(conditionNum);
     	complexStatement.accept(this);
     	
     	// whileループ終了番地の設定
+    	conditionNum = stack.pop();
     	addOutputList('\t' + "JUMP" + '\t' + "WHILE" + String.valueOf(conditionNum));
-    	addOutputList("ENDWHL" + String.valueOf(conditionNum) + '\t' + "NOP");
-    	
-    	// 条件文の個数を元に戻す
-    	conditionNum--;
+    	addOutputList("ENDWHL" + conditionNum + '\t' + "NOP");
     }
     
     @Override
@@ -799,10 +800,39 @@ public class CompilationVisitor extends Visitor {
      * @param relationalOperator
      */
     private void parseRelationalOperator(RelationalOperator relationalOperator) {    	
-    	// 一度比較を行う
-    	addOutputList('\t' + "POP" + '\t' + "GR2");
-    	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	addOutputList('\t' + "CPA" + '\t' + "GR1, GR2");
+    	String rel = relationalOperator.getRelationalOperator();
+		
+		// 比較を行う
+		addOutputList('\t' + "POP" + '\t' + "GR2");
+		addOutputList('\t' + "POP" + '\t' + "GR1");
+		addOutputList('\t' + "CPA" + '\t' + "GR1, GR2");
+		
+		// 比較結果によって内容を変更する
+		String conditionNum = stack.pop();
+    	if (rel.equals("=")) {
+    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + conditionNum);
+    	} else if (rel.equals("<>")) {
+    		addOutputList('\t' + "JNZ" + '\t' + "TRUE" + conditionNum);
+    	} else if (rel.equals("<")) {
+    		addOutputList('\t' + "JMI" + '\t' + "TRUE" + conditionNum);
+    	} else if (rel.equals("<=")) {
+    		addOutputList('\t' + "JMI" + '\t' + "TRUE" + conditionNum);
+    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + conditionNum);
+    	} else if (rel.equals(">")) {
+    		addOutputList('\t' + "JPL" + '\t' + "TRUE" + conditionNum);
+    	} else if (rel.equals(">=")) {
+    		addOutputList('\t' + "JPL" + '\t' + "TRUE" + conditionNum);
+    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + conditionNum);
+    	}
+    	
+    	// 比較の処理
+    	addOutputList('\t' + "LD" + '\t' + "GR1, =#0000");
+    	addOutputList('\t' + "JUMP" + '\t' + "BOTH" + conditionNum);
+    	addOutputList("TRUE" + conditionNum + '\t' + "NOP");
+    	addOutputList('\t' + "LD" + '\t' + "GR1, =#FFFF");
+    	
+    	// スタックに戻す
+    	stack.push(conditionNum);
     }
     
     /**
@@ -811,12 +841,21 @@ public class CompilationVisitor extends Visitor {
      * @param simpleEquation
      */
     private void parseSimpleEquation(SimpleEquation simpleEquation) {
+    	Sign sign = simpleEquation.getSign();
     	List<Term> termList = simpleEquation.getTermList();
     	List<AdditionalOperator> additionalOperatorList = simpleEquation.getAdditionalOperatorList();
     	
     	// 最初の項のみを解析
     	parseTerm(termList.get(0));
 		
+    	// 負の数の判定
+    	if (sign != null && sign.getSign().equals("-")) {
+    		addOutputList('\t' + "POP" + '\t' + "GR2");
+    		addOutputList('\t' + "LAD" + '\t' + "GR1, 0");
+    		addOutputList('\t' + "SUBA" + '\t' + "GR1, GR2");
+    		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    	}
+    	
     	// 2個目以降の項を解析
     	for (int i = 0; i < additionalOperatorList.size(); i++) {
     		parseTerm(termList.get(i + 1));
@@ -1008,40 +1047,5 @@ public class CompilationVisitor extends Visitor {
     	
     	// VAR番地に合計をストア
     	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
-    }
-    
-    /**
-     * 条件式のcaslコードを生成するメソッド
-     * 
-     * @param equaiton
-     */
-    private void resolveCondition(Equation equation) {
-    	RelationalOperator relationalOperator = equation.getRelationalOperator();
-    	if (relationalOperator != null) {
-    		String rel = relationalOperator.getRelationalOperator();
-    		
-    		// 比較結果によって内容を変更する
-        	if (rel.equals("=")) {
-        		addOutputList('\t' + "JZE" + '\t' + "TRUE" + String.valueOf(conditionNum));
-        	} else if (rel.equals("<>")) {
-        		addOutputList('\t' + "JNZ" + '\t' + "TRUE" + String.valueOf(conditionNum));
-        	} else if (rel.equals("<")) {
-        		addOutputList('\t' + "JMI" + '\t' + "TRUE" + String.valueOf(conditionNum));
-        	} else if (rel.equals("<=")) {
-        		addOutputList('\t' + "JZE" + '\t' + "TRUE" + String.valueOf(conditionNum));
-        		addOutputList('\t' + "JMI" + '\t' + "TRUE" + String.valueOf(conditionNum));
-        	} else if (rel.equals(">")) {
-        		addOutputList('\t' + "JPL" + '\t' + "TRUE" + String.valueOf(conditionNum));
-        	} else if (rel.equals(">=")) {
-        		addOutputList('\t' + "JZE" + '\t' + "TRUE" + String.valueOf(conditionNum));
-        		addOutputList('\t' + "JPL" + '\t' + "TRUE" + String.valueOf(conditionNum));
-        	}
-        	
-        	// 比較の処理
-        	addOutputList('\t' + "LD" + '\t' + "GR1, =#0000");
-        	addOutputList('\t' + "JUMP" + '\t' + "BOTH" + String.valueOf(conditionNum));
-        	addOutputList("TRUE" + String.valueOf(conditionNum) + '\t' + "NOP");
-        	addOutputList('\t' + "LD" + '\t' + "GR1, =#FFFF");
-    	}
     }
 }
