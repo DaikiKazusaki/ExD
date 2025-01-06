@@ -6,7 +6,7 @@ import java.util.List;
 public class SymbolTable {
 	/**
 	 * 記号表の情報
-	 * [変数名，標準型，配列の判定，添え字付き変数の判定，スコープ，サイズ]
+	 * [変数名，標準型，配列の判定，フォーマルパラメータの判定，スコープ，サイズ]
 	 * 
 	 */
 	public List<List<String>> symbolTable = new ArrayList<>();
@@ -23,7 +23,9 @@ public class SymbolTable {
 	 * @param name
 	 * @param type
 	 * @param isArray
+	 * @param isFormalParameter
 	 * @param scope
+	 * @param size
 	 */
 	public void addSymbol(String name, String type, String isArray, String isFormalParameter, String scope, String size) {		
 		List<String> newSymbolInformation = new ArrayList<>();
@@ -39,7 +41,7 @@ public class SymbolTable {
 	
 	/**
 	 * 記号表に変数を追加するメソッド
-	 * scopeがglobal or 同じ関数名の時は，すでに変数が登録されていると判定する
+	 * scopeがglobal, 同じ関数名の時は，すでに変数が登録されていると判定する
 	 * 
 	 * @param name
 	 * @return
@@ -48,8 +50,9 @@ public class SymbolTable {
 		boolean result = true;
 		
 		for (int i = 0; i < symbolTable.size(); i++) {
-			if (symbolTable.get(i).get(NAMECOLS).equals(name) && symbolTable.get(i).get(SCOPECOLS).equals(scope))
-			result = false;
+			if (symbolTable.get(i).get(NAMECOLS).equals(name) && symbolTable.get(i).get(SCOPECOLS).equals(scope)) {
+				result = false;
+			}
 		}
 		
 		return result;
@@ -95,7 +98,7 @@ public class SymbolTable {
 	}
 	
 	/**
-	 * 記号表の大きさを取得するメソッド
+	 * 変数の領域を取得するメソッド
 	 * 
 	 * @return
 	 */
@@ -110,7 +113,7 @@ public class SymbolTable {
 	}
 	
 	/**
-	 * 各ローカル変数の大きさを取得するメソッド
+	 *　変数のアドレスを取得するメソッド
 	 * 
 	 * @return
 	 */
@@ -131,7 +134,7 @@ public class SymbolTable {
 			}
 		}
 		
-		// グローバル内で探索
+		// スコープ内に存在しない場合，グローバルで探索
 		if (!exist) {
 			address = 0;
 			for (int i = 0; i < symbolTable.size(); i++) {

@@ -18,7 +18,7 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) throws SyntaxException, SemanticException {
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/normal12.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/normal09.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -87,6 +87,7 @@ public class Compiler {
 		// CASLの最後に必要な要素を追加
 		statementList.add("LIBBUF" + '\t' + "DS" + '\t' + "256");
 		statementList.add('\t' + "END");
+
 		// lib.casを記載
 		List<String> libStatementList = new Lib().getLibStatementList();
 		statementList.addAll(libStatementList);

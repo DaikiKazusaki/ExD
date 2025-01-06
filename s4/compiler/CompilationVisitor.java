@@ -580,7 +580,7 @@ public class CompilationVisitor extends Visitor {
      * @param factor
      */
     private void resolveFactorTypeOfWrite(Factor factor) {
-    	// [変数名, 標準型, 配列型]
+    	// [変数名，標準型, 配列型]
     	String[] variableAndType = null;
     	
     	if (factor.getVariable() != null) {
@@ -603,10 +603,12 @@ public class CompilationVisitor extends Visitor {
     		writeInteger(variableAndType[0], variableAndType[2]);
     	} else if (variableAndType[1].equals("char")) {
     		String value = variableAndType[0];
-    		if (value.contains("'") && value.length() > 3) {
+    		if (variableAndType[2].equals("true")) {
+    			writeString(value);
+    		} else if (value.contains("'") && value.length() > 3) {
     			writeString(value);
     		} else {
-    			writeChar(value, variableAndType[2]);
+    			writeChar(value);
     		}
     	}
     }
@@ -751,22 +753,15 @@ public class CompilationVisitor extends Visitor {
      * WRTCHをcaslファイルに書き込む
      * 
      * @param variable
-     * @param isArray 
      */
-    private void writeChar(String variable, String isArray) {
+    private void writeChar(String variable) {
     	if (variable.contains("'")) {
     		// 文字定数の場合
     		addOutputList('\t' + "LD" + '\t' + "GR1, =" + variable);
-    	} else if (isArray.equals("false")){
+    	} else {
     		// char型の変数の場合
     		String address = symbolTable.getAddressOfSymbol(variable, scope);
         	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
-        	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
-    	} else {
-    		// char型の配列の場合
-    		String address = String.valueOf(Integer.valueOf(symbolTable.getAddressOfSymbol(variable, scope)) - 1);
-    		addOutputList('\t' + "POP" + '\t' + "GR2");
-    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =" + address);
         	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
     	}
     	
@@ -811,11 +806,6 @@ public class CompilationVisitor extends Visitor {
 		addOutputList('\t' + "POP" + '\t' + "GR2");
 		addOutputList('\t' + "POP" + '\t' + "GR1");
 		addOutputList('\t' + "CPA" + '\t' + "GR1, GR2");
-		
-		if (stack.isEmpty()) {
-			stack.push(String.valueOf(conditionCount));
-			conditionCount++;
-		}
 		
 		// 比較結果によって内容を変更する
 		String conditionNum = stack.pop();
