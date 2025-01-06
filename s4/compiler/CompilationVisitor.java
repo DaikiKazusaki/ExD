@@ -603,12 +603,10 @@ public class CompilationVisitor extends Visitor {
     		writeInteger(variableAndType[0], variableAndType[2]);
     	} else if (variableAndType[1].equals("char")) {
     		String value = variableAndType[0];
-    		if (variableAndType[2].equals("true")) {
-    			writeString(value);
-    		} else if (value.contains("'") && value.length() > 3) {
+    		if (value.contains("'") && value.length() > 3) {
     			writeString(value);
     		} else {
-    			writeChar(value);
+    			writeChar(value, variableAndType[2]);
     		}
     	}
     }
@@ -754,14 +752,23 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param variable
      */
-    private void writeChar(String variable) {
+    private void writeChar(String variable, String isArray) {
     	if (variable.contains("'")) {
     		// 文字定数の場合
     		addOutputList('\t' + "LD" + '\t' + "GR1, =" + variable);
-    	} else {
+    	} else if (isArray.equals("false")) {
     		// char型の変数の場合
     		String address = symbolTable.getAddressOfSymbol(variable, scope);
         	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
+        	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    	} else if (isArray.equals("true")) {
+    		// char型の配列の場合
+    		String address = symbolTable.getAddressOfSymbol(variable, scope);
+    		address = String.valueOf(Integer.valueOf(address) - 1);
+    		
+    		// POPする
+    		addOutputList('\t' + "POP" + '\t' + "GR2");
+    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =" + address);
         	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
     	}
     	
@@ -806,6 +813,12 @@ public class CompilationVisitor extends Visitor {
 		addOutputList('\t' + "POP" + '\t' + "GR2");
 		addOutputList('\t' + "POP" + '\t' + "GR1");
 		addOutputList('\t' + "CPA" + '\t' + "GR1, GR2");
+		
+		// スタックがからの場合
+		if (stack.isEmpty()) {
+			stack.push(String.valueOf(conditionCount));
+			conditionCount++;
+		}
 		
 		// 比較結果によって内容を変更する
 		String conditionNum = stack.pop();
