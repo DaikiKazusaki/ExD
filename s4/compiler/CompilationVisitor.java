@@ -299,8 +299,6 @@ public class CompilationVisitor extends Visitor {
     	
     	// 複合文の探索
     	String conditionNum = stack.pop();
-    	addOutputList("BOTH" + String.valueOf(conditionNum) + '\t' + "NOP");
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	addOutputList('\t' + "POP" + '\t' + "GR1");
     	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
     	addOutputList('\t' + "JZE" + '\t' + "ELSE" + conditionNum);
@@ -348,8 +346,6 @@ public class CompilationVisitor extends Visitor {
     	
     	// 複合文の探索
     	conditionNum = stack.pop();
-    	addOutputList("BOTH" + conditionNum + '\t' + "NOP");
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	addOutputList('\t' + "POP" + '\t' + "GR1");
     	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
     	addOutputList('\t' + "JZE" + '\t' + "ENDWHL" + conditionNum);
@@ -808,6 +804,7 @@ public class CompilationVisitor extends Visitor {
      */
     private void parseRelationalOperator(RelationalOperator relationalOperator) {    	
     	String rel = relationalOperator.getRelationalOperator();
+    	boolean isEmpty = false;
 		
 		// 比較を行う
 		addOutputList('\t' + "POP" + '\t' + "GR2");
@@ -816,6 +813,7 @@ public class CompilationVisitor extends Visitor {
 		
 		// スタックがからの場合
 		if (stack.isEmpty()) {
+			isEmpty = true;
 			stack.push(String.valueOf(conditionCount));
 			conditionCount++;
 		}
@@ -843,9 +841,13 @@ public class CompilationVisitor extends Visitor {
     	addOutputList('\t' + "JUMP" + '\t' + "BOTH" + conditionNum);
     	addOutputList("TRUE" + conditionNum + '\t' + "NOP");
     	addOutputList('\t' + "LD" + '\t' + "GR1, =#FFFF");
+    	addOutputList("BOTH" + conditionNum + '\t' + "NOP");
+    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	
     	// スタックに戻す
-    	stack.push(conditionNum);
+    	if (!isEmpty) {
+            stack.push(conditionNum);
+    	}
     }
     
     /**
@@ -1050,9 +1052,13 @@ public class CompilationVisitor extends Visitor {
     		Equation equation = leftSide.getVariable().getVariableWithIndex().getIndex().getEquation();
     		parseEquation(equation);
     		
-    		// 代入する添え字付き変数(=レジスタ)を用意
+    		// GR2にインデックスをPOPする
     		addOutputList('\t' + "POP" + '\t' + "GR2");
-    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =0");
+    		
+    		// 配列先頭アドレス + インデックス
+    		String variableName = leftSide.getVariable().getVariableWithIndex().getVariableName().getVariableName();
+    		String address = String.valueOf(Integer.valueOf(symbolTable.getAddressOfSymbol(variableName, scope)) - 1);
+    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =" + address);
     	}
     	
     	// POPする
