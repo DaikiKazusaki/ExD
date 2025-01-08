@@ -226,7 +226,8 @@ public class CompilationVisitor extends Visitor {
     		
     		// 仮引数の処理
     		addOutputList('\t' + "LD" + '\t' + "GR1, 0, GR8");
-    		addOutputList('\t' + "ADDA" + '\t' + "GR8, =1");
+    		String size = symbolTable.getSizeOfFormalParameter(scope);
+    		addOutputList('\t' + "ADDA" + '\t' + "GR8, =" + size);
     		addOutputList('\t' + "ST" + '\t' + "GR1, 0, GR8");
     	}
     }
