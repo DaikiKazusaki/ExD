@@ -225,12 +225,9 @@ public class CompilationVisitor extends Visitor {
     		standardType.accept(this);
     		
     		// 仮引数の処理
-    		addOutputList('\t' + "LD" + '\t' + "GR2, 0, GR1");
-    		addOutputList('\t' + "LAD" + '\t' + "GR3, 2");
-    		addOutputList('\t' + "ST" + '\t' + "GR2, VAR, GR3");
-    		addOutputList('\t' + "SUBA" + '\t' + "GR1, 1");
     		addOutputList('\t' + "LD" + '\t' + "GR1, 0, GR8");
-    		addOutputList('\t' + "ADDA" + '\t' + "GR8, =1");
+    		String size = symbolTable.getSizeOfFormalParameter(scope);
+    		addOutputList('\t' + "ADDA" + '\t' + "GR8, =" + size);
     		addOutputList('\t' + "ST" + '\t' + "GR1, 0, GR8");
     	}
     }
@@ -241,6 +238,14 @@ public class CompilationVisitor extends Visitor {
     	
     	for (FormalParameterName formalParameterName: formalParameterNameList) {
     		formalParameterName.accept(this);
+    		
+    		// 仮引数の処理
+    		addOutputList('\t' + "LD" + '\t' + "GR2, 0, GR1");
+    		String formalParameter = formalParameterName.getFormalParameterName();
+    		String address = symbolTable.getAddressOfSymbol(formalParameter, scope);
+    		addOutputList('\t' + "LAD" + '\t' + "GR3, " + address);
+    		addOutputList('\t' + "ST" + '\t' + "GR2, VAR, GR3");
+    		addOutputList('\t' + "SUBA" + '\t' + "GR1, =1");
     	}
     }
     
@@ -290,11 +295,15 @@ public class CompilationVisitor extends Visitor {
     	
     	// 条件式の探索
     	equation.accept(this);
-    	parseEquation(equation);
+    	boolean isBoolean = parseEquation(equation);
     	
     	// 条件分岐の判定
     	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	addOutputList('\t' + "CPA" + '\t' + "GR1, =#0000");
+    	if (isBoolean) {
+        	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
+    	} else {
+    		addOutputList('\t' + "CPA" + '\t' + "GR1, =#0000");
+    	}
     	addOutputList('\t' + "JZE" + '\t' + ifLabel.getValue());
     	
     	// 複合文の探索
@@ -337,11 +346,15 @@ public class CompilationVisitor extends Visitor {
     	
     	// 条件式の探索
     	equation.accept(this);
-    	parseEquation(equation);
+    	boolean isBoolean = parseEquation(equation);
     	
     	// 終了条件の探索
     	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
+    	if (isBoolean) {
+        	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
+    	} else {
+    		addOutputList('\t' + "CPA" + '\t' + "GR1, =#0000");
+    	}
     	addOutputList('\t' + "JZE" + '\t' + whileLabel.getValue());
     	
     	// 複合文の探索
@@ -678,8 +691,9 @@ public class CompilationVisitor extends Visitor {
     		addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     	} else {
     		// 添え字付き変数の場合
+    		String address = String.valueOf(Integer.valueOf(symbolTable.getAddressOfSymbol(variableName, scope)) - 1);
     		addOutputList('\t' + "POP" + '\t' + "GR2");
-    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =0");
+    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =" + address);
     	}
     	
     	// GR1にロード
@@ -1038,9 +1052,15 @@ public class CompilationVisitor extends Visitor {
     	} else if (variable.getVariableWithIndex() != null) {
     		Equation equation = variable.getVariableWithIndex().getIndex().getEquation();
     		parseEquation(equation);
+
+    		String varName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    		addOutputList('\t' + "POP" + '\t' + "GR2");
+    		String address = String.valueOf(Integer.valueOf(symbolTable.getAddressOfSymbol(varName, scope)) - 1);
+    		addOutputList('\t' + "ADDA" + '\t' + "GR2, =" + address);
+    		addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
+    		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     		
     		// boolean型の判定
-    		String varName = variable.getVariableWithIndex().getVariableName().getVariableName();
     		String type = symbolTable.getVariableType(varName, scope);
     		if (type.equals("boolean")) {
     			return true;
