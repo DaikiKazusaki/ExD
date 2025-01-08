@@ -172,4 +172,33 @@ public class SymbolTable {
 		
 		return String.valueOf(count);
 	}
+	
+	/**
+	 * 変数の型を返すメソッド
+	 * 
+	 * @param variableName
+	 * @param scope
+	 * @return
+	 */
+	public String getVariableType(String variableName, String scope) {
+		// スコープ内の探索
+		for (int i = 0; i < symbolTable.size(); i++) {
+			String varName = symbolTable.get(i).get(NAMECOLS);
+			String functionName = symbolTable.get(i).get(SCOPECOLS);
+			if (varName.equals(variableName) && functionName.equals(scope)) {
+				return symbolTable.get(i).get(STANDARDTYPECOLS);
+			}
+		}
+		
+		// 大域変数の探索
+		for (int i = 0; i < symbolTable.size(); i++) {
+			String varName = symbolTable.get(i).get(NAMECOLS);
+			String functionName = symbolTable.get(i).get(SCOPECOLS);
+			if (varName.equals(variableName) && functionName.equals("global")) {
+				return symbolTable.get(i).get(STANDARDTYPECOLS);
+			}
+		}
+		
+		return null;
+	}
 }

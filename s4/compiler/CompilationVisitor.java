@@ -2,19 +2,16 @@ package enshud.s4.compiler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
+import java.util.Map;
 
 public class CompilationVisitor extends Visitor {
 	private SymbolTable symbolTable;
 	private FunctionTable functionTable;
-	private boolean isNotFactor = false;
 	private int stringNum = 0;
-	private int conditionCount = 0;
 	private String scope = "global";
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
-	private Stack<String> stack = new Stack<>(); // ラベル付けのためのスタック
-	
+	private LabelManager labelManager = new LabelManager();
  	
 	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
@@ -287,34 +284,36 @@ public class CompilationVisitor extends Visitor {
     	ComplexStatement complexStatement = ifThen.getComplexStatement();
     	ElseStatement elseStatement = ifThen.getElseStatement();
     	
-    	// 条件文の個数のインクリメント
-    	stack.push(String.valueOf(conditionCount));
-    	conditionCount++;
+    	// 条件文のラベルをスタックにPUSH
+    	labelManager.pushLabel("IF");
+    	Map.Entry<String, String> ifLabel = labelManager.peekLabel();
     	
     	// 条件式の探索
     	equation.accept(this);
-    	
-    	// 条件式の分岐を探索する
     	parseEquation(equation);
     	
-    	// 複合文の探索
-    	String conditionNum = stack.pop();
+    	// 条件分岐の判定
     	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
-    	addOutputList('\t' + "JZE" + '\t' + "ELSE" + conditionNum);
-    	stack.push(conditionNum);
+    	addOutputList('\t' + "CPA" + '\t' + "GR1, =#0000");
+    	addOutputList('\t' + "JZE" + '\t' + ifLabel.getValue());
+    	
+    	// 複合文の探索
     	complexStatement.accept(this);
     	
+    	// ENDIFへJUMP
+    	addOutputList('\t' + "JUMP" + '\t' + ifLabel.getKey());
+    	
     	// else文の探索
-    	conditionNum = stack.pop();
-    	addOutputList("ELSE" + conditionNum + '\t' + "NOP");
-    	stack.push(conditionNum);
+    	addOutputList(ifLabel.getValue() + '\t' + "NOP");
     	if (elseStatement != null) {
         	elseStatement.accept(this);    		
     	}
     	
-    	// スタックからpopする
-    	stack.pop();
+    	// ENDIFラベルの設定
+    	addOutputList(ifLabel.getKey() + '\t' + "NOP");
+    	
+    	// POPする
+    	labelManager.popLabel();
     }
     
     @Override
@@ -329,33 +328,28 @@ public class CompilationVisitor extends Visitor {
     	Equation equation = whileDo.getEquation();
     	ComplexStatement complexStatement = whileDo.getComplexStatement();
     	
-    	// 条件文の個数のインクリメント
-    	stack.push(String.valueOf(conditionCount));
-    	conditionCount++;
+    	// 条件文のラベルをスタックにPUSH
+    	labelManager.pushLabel("WHILE");
+    	Map.Entry<String, String> whileLabel = labelManager.peekLabel();
     	
     	// whileループ開始の番地を設定
-    	String conditionNum = stack.pop();
-    	addOutputList("WHILE" + conditionNum + '\t' + "NOP");
-    	stack.push(conditionNum);
+    	addOutputList(whileLabel.getKey() + '\t' + "NOP");
     	
     	// 条件式の探索
     	equation.accept(this);
-    	
-    	// 条件式の分岐を探索する
     	parseEquation(equation);
     	
-    	// 複合文の探索
-    	conditionNum = stack.pop();
+    	// 終了条件の探索
     	addOutputList('\t' + "POP" + '\t' + "GR1");
     	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
-    	addOutputList('\t' + "JZE" + '\t' + "ENDWHL" + conditionNum);
-    	stack.push(conditionNum);
+    	addOutputList('\t' + "JZE" + '\t' + whileLabel.getValue());
+    	
+    	// 複合文の探索
     	complexStatement.accept(this);
     	
     	// whileループ終了番地の設定
-    	conditionNum = stack.pop();
-    	addOutputList('\t' + "JUMP" + '\t' + "WHILE" + String.valueOf(conditionNum));
-    	addOutputList("ENDWHL" + conditionNum + '\t' + "NOP");
+    	addOutputList('\t' + "JUMP" + '\t' + whileLabel.getKey());
+    	addOutputList(whileLabel.getValue() + '\t' + "NOP");
     }
     
     @Override
@@ -782,100 +776,116 @@ public class CompilationVisitor extends Visitor {
      * 式を解析するメソッド
      * 
      * @param equation
+     * @return 
      */
-    private void parseEquation(Equation equation) {
+    private boolean parseEquation(Equation equation) {
+    	boolean isBoolean = false;
     	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
     	RelationalOperator relationalOperator = equation.getRelationalOperator();
     	
     	// 最初の単純式を解析
-    	parseSimpleEquation(simpleEquationList.get(0));
+    	isBoolean = parseSimpleEquation(simpleEquationList.get(0));
     	
     	// 2個目の項を解析
     	if (simpleEquationList.size() == 2) {
-    		parseSimpleEquation(simpleEquationList.get(1));
-    		parseRelationalOperator(relationalOperator);
+    		isBoolean = parseSimpleEquation(simpleEquationList.get(1));
+    		parseRelationalOperator(relationalOperator, isBoolean);
     	}
+    	
+    	return isBoolean;
     }
     
     /**
      * 関係演算子を解析するメソッド
      * 
      * @param relationalOperator
+     * @param isBoolean 
      */
-    private void parseRelationalOperator(RelationalOperator relationalOperator) {    	
+    private void parseRelationalOperator(RelationalOperator relationalOperator, boolean isBoolean) {    	
     	String rel = relationalOperator.getRelationalOperator();
-    	boolean isEmpty = false;
+    	labelManager.pushLabel("BOTH");
+		labelManager.pushLabel("TRUE");
+		Map.Entry<String, String> trueLabel = labelManager.popLabel();
+		Map.Entry<String, String> bothLabel = labelManager.popLabel();
 		
-		// 比較を行う
+		// 左側の単純式，右側の単純式をGR1, GR2にPOP
 		addOutputList('\t' + "POP" + '\t' + "GR2");
 		addOutputList('\t' + "POP" + '\t' + "GR1");
-		addOutputList('\t' + "CPA" + '\t' + "GR1, GR2");
-		
-		// スタックがからの場合
-		if (stack.isEmpty()) {
-			isEmpty = true;
-			stack.push(String.valueOf(conditionCount));
-			conditionCount++;
+		// 比較する(boolean同士の比較 -> CPL，その他 -> CPA)
+		if (isBoolean) {
+			addOutputList('\t' + "CPL" + '\t' + "GR1, GR2");
+		} else {
+			addOutputList('\t' + "CPA" + '\t' + "GR1, GR2");
 		}
 		
 		// 比較結果によって内容を変更する
-		String conditionNum = stack.pop();
     	if (rel.equals("=")) {
-    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + conditionNum);
+    		addOutputList('\t' + "JZE" + '\t' + trueLabel.getKey());
     	} else if (rel.equals("<>")) {
-    		addOutputList('\t' + "JNZ" + '\t' + "TRUE" + conditionNum);
+    		addOutputList('\t' + "JNZ" + '\t' + trueLabel.getKey());
     	} else if (rel.equals("<")) {
-    		addOutputList('\t' + "JMI" + '\t' + "TRUE" + conditionNum);
+    		addOutputList('\t' + "JMI" + '\t' + trueLabel.getKey());
     	} else if (rel.equals("<=")) {
-    		addOutputList('\t' + "JMI" + '\t' + "TRUE" + conditionNum);
-    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + conditionNum);
+    		addOutputList('\t' + "JMI" + '\t' + trueLabel.getKey());
+    		addOutputList('\t' + "JZE" + '\t' + trueLabel.getKey());
     	} else if (rel.equals(">")) {
-    		addOutputList('\t' + "JPL" + '\t' + "TRUE" + conditionNum);
+    		addOutputList('\t' + "JPL" + '\t' + trueLabel.getKey());
     	} else if (rel.equals(">=")) {
-    		addOutputList('\t' + "JPL" + '\t' + "TRUE" + conditionNum);
-    		addOutputList('\t' + "JZE" + '\t' + "TRUE" + conditionNum);
+    		addOutputList('\t' + "JPL" + '\t' + trueLabel.getKey());
+    		addOutputList('\t' + "JZE" + '\t' + trueLabel.getKey());
     	}
     	
     	// 比較の処理
     	addOutputList('\t' + "LD" + '\t' + "GR1, =#0000");
-    	addOutputList('\t' + "JUMP" + '\t' + "BOTH" + conditionNum);
-    	addOutputList("TRUE" + conditionNum + '\t' + "NOP");
+    	addOutputList('\t' + "JUMP" + '\t' + bothLabel.getKey());
+    	addOutputList(trueLabel.getKey() + '\t' + "NOP");
     	addOutputList('\t' + "LD" + '\t' + "GR1, =#FFFF");
-    	addOutputList("BOTH" + conditionNum + '\t' + "NOP");
+    	addOutputList(bothLabel.getKey() + '\t' + "NOP");
     	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-    	
-    	// スタックに戻す
-    	if (!isEmpty) {
-            stack.push(conditionNum);
-    	}
     }
     
     /**
-     * 単純式を解析するメソッド
-     * 
+     * 単純式を解析し，型がbooleanであるかを判定するメソッド
+     *
      * @param simpleEquation
+     * @return boolean型の場合はtrue，それ以外はfalse
      */
-    private void parseSimpleEquation(SimpleEquation simpleEquation) {
-    	Sign sign = simpleEquation.getSign();
-    	List<Term> termList = simpleEquation.getTermList();
-    	List<AdditionalOperator> additionalOperatorList = simpleEquation.getAdditionalOperatorList();
-    	
-    	// 最初の項のみを解析
-    	parseTerm(termList.get(0));
-		
-    	// 負の数の判定
-    	if (sign != null && sign.getSign().equals("-")) {
-    		addOutputList('\t' + "POP" + '\t' + "GR2");
-    		addOutputList('\t' + "LAD" + '\t' + "GR1, 0");
-    		addOutputList('\t' + "SUBA" + '\t' + "GR1, GR2");
-    		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-    	}
-    	
-    	// 2個目以降の項を解析
-    	for (int i = 0; i < additionalOperatorList.size(); i++) {
-    		parseTerm(termList.get(i + 1));
-    		parseAdditionalOperator(additionalOperatorList.get(i));
-    	}
+    private boolean parseSimpleEquation(SimpleEquation simpleEquation) {
+        boolean isBoolean = true; // 初期値をtrueにして，非boolean型が見つかったらfalseにする
+
+        Sign sign = simpleEquation.getSign();
+        List<Term> termList = simpleEquation.getTermList();
+        List<AdditionalOperator> additionalOperatorList = simpleEquation.getAdditionalOperatorList();
+
+        // 最初の項を解析し，型を判定
+        boolean firstTermIsBoolean = parseTerm(termList.get(0));
+        isBoolean = isBoolean && firstTermIsBoolean;
+
+        // 負の数の判定（負の数はboolean型ではない）
+        if (sign != null && sign.getSign().equals("-")) {
+            isBoolean = false;
+            addOutputList('\t' + "POP" + '\t' + "GR2");
+            addOutputList('\t' + "LAD" + '\t' + "GR1, 0");
+            addOutputList('\t' + "SUBA" + '\t' + "GR1, GR2");
+            addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+        }
+
+        // 2個目以降の項を解析
+        for (int i = 0; i < additionalOperatorList.size(); i++) {
+            boolean nextTermIsBoolean = parseTerm(termList.get(i + 1));
+            isBoolean = isBoolean && nextTermIsBoolean;
+
+            // 加法演算子を解析し，型を判定
+            String operator = additionalOperatorList.get(i).getAdditionalOperator();
+            if (operator.equals("+") || operator.equals("-")) {
+                isBoolean = false; // 加算・減算はboolean型ではない
+            } else if (operator.equals("or")) {
+                isBoolean = isBoolean && firstTermIsBoolean && nextTermIsBoolean;
+            }
+            parseAdditionalOperator(additionalOperatorList.get(i));
+        }
+
+        return isBoolean;
     }
     
     /**
@@ -902,27 +912,41 @@ public class CompilationVisitor extends Visitor {
     	// PUSHする
     	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     }
-    
-    /**
-     * 項を解析するメソッド
-     * 
-     * @param term
-     */
-    private void parseTerm(Term term) {
-    	List<Factor> factorList = term.getFactorList();
-    	List<MultipleOperator> multipleOperatorList = term.getMultipleOperatorList();
 
-		// 最初の項のみを解析
-		parseFactor(factorList.get(0));
-		
-		// 2個目以降の項を解析
-		if (factorList.size() > 1) {
-			for (int i = 0; i < multipleOperatorList.size(); i++) {
-				parseFactor(factorList.get(i + 1));
-				parseMultipleOperator(multipleOperatorList.get(i));
-			}
-		}
+    /**
+     * 項を解析し，型がbooleanであるかを判定するメソッド
+     *
+     * @param term
+     * @return boolean型の場合はtrue，それ以外はfalse
+     */
+    private boolean parseTerm(Term term) {
+        boolean isBoolean = true; // 初期値をtrueにする
+
+        List<Factor> factorList = term.getFactorList();
+        List<MultipleOperator> multipleOperatorList = term.getMultipleOperatorList();
+
+        // 最初の因子を解析し，型を判定
+        boolean firstFactorIsBoolean = parseFactor(factorList.get(0));
+        isBoolean = isBoolean && firstFactorIsBoolean;
+
+        // 2個目以降の因子を解析
+        for (int i = 0; i < multipleOperatorList.size(); i++) {
+            boolean nextFactorIsBoolean = parseFactor(factorList.get(i + 1));
+            isBoolean = isBoolean && nextFactorIsBoolean;
+
+            // 乗法演算子を解析
+            String operator = multipleOperatorList.get(i).getMultipleOperator();
+            if (operator.equals("*") || operator.equals("/") || operator.equals("div") || operator.equals("mod")) {
+                isBoolean = false; // 乗除演算はboolean型ではない
+            } else if (operator.equals("and")) {
+                isBoolean = isBoolean && firstFactorIsBoolean && nextFactorIsBoolean;
+            }
+            parseMultipleOperator(multipleOperatorList.get(i));
+        }
+
+        return isBoolean;
     }
+
     
     /**
      * 乗法演算子の解析を行うメソッド
@@ -968,22 +992,28 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param factor
      */
-    private void parseFactor(Factor factor) {    	
+    private boolean parseFactor(Factor factor) {
+    	boolean isBoolean = false;
+    	
     	if (factor.getVariable() != null) {
     		Variable variable = factor.getVariable();
-    		parseVariable(variable, isNotFactor);
+    		isBoolean = parseVariable(variable);
     	} else if (factor.getConstant() != null) {
     		Constant constant = factor.getConstant();
-    		parseConstant(constant);
+    		isBoolean = parseConstant(constant);
     	} else if (factor.getEquation() != null) {
     		Equation equation = factor.getEquation();
     		parseEquation(equation);
     	} else if (factor.getFactor() != null) {
-    		isNotFactor = true;
     		Factor notFactor = factor.getFactor();
     		parseFactor(notFactor);
-    		isNotFactor = false;
+    		// notの処理
+    		addOutputList('\t' + "POP" + '\t' + "GR1");
+    		addOutputList('\t' + "XOR" + '\t' + "GR1, =#FFFF");
+    		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
     	}
+    	
+    	return isBoolean;
     }
     
     /**
@@ -991,24 +1021,33 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param variable
      */
-    private void parseVariable(Variable variable, boolean isNotFactor) {
+    private boolean parseVariable(Variable variable) {    	
     	if (variable.getNaturalVariable() != null) {
     		// 代入する式をcaslにする
     		String varName = variable.getNaturalVariable().getVariableName().getVariableName();
     		String address = symbolTable.getAddressOfSymbol(varName, scope);
     		addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     		addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
-    		if (isNotFactor) {
-    			// notをとる
-        		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-        		addOutputList('\t' + "POP" + '\t' + "GR1");
-        		addOutputList('\t' + "XOR" + '\t' + "GR1, =#FFFF");
-    		}
     		addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+    		
+    		// boolean型の判定
+    		String type = symbolTable.getVariableType(varName, scope);
+    		if (type.equals("boolean")) {
+    			return true;
+    		}
     	} else if (variable.getVariableWithIndex() != null) {
     		Equation equation = variable.getVariableWithIndex().getIndex().getEquation();
     		parseEquation(equation);
+    		
+    		// boolean型の判定
+    		String varName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    		String type = symbolTable.getVariableType(varName, scope);
+    		if (type.equals("boolean")) {
+    			return true;
+    		}
     	}
+    	
+    	return false;
     }
     
     /**
@@ -1016,12 +1055,15 @@ public class CompilationVisitor extends Visitor {
      * 
      * @param 
      */
-    private void parseConstant(Constant constant) {
+    private boolean parseConstant(Constant constant) {
     	String con = constant.getConstant();
+    	boolean isBoolean = false;
     	
     	if (con.equals("true")) {
+    		isBoolean = true;
     		con = "#FFFF";
     	} else if (con.equals("false")) {
+    		isBoolean = true;
     		con = "#0000";
     	}
     	
@@ -1034,6 +1076,8 @@ public class CompilationVisitor extends Visitor {
     		// 文字列以外の場合
     		addOutputList('\t' + "PUSH" + '\t' + con);
     	}
+    	
+    	return isBoolean;
     }
     
     /**
