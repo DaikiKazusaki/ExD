@@ -4,17 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Lib {
-	private List<String> libStatementList = new ArrayList<>();
-	
-	public List<String> getLibStatementList(){
-		return libStatementList;
-	}
-	
-	public Lib() {
-		libStatementList = Arrays.asList(
-		    "; lib.cas",
-		    ";============================================================",
+public class Lib {	
+	public List<String> getMULT() {
+		List<String> multStatement = new ArrayList<>();
+		multStatement = Arrays.asList(
+			";============================================================",
 		    "; MULT: 掛け算を行うサブルーチン",
 		    "; GR1 * GR2 -> GR2",
 		    "MULT\tSTART",
@@ -42,8 +36,16 @@ public class Lib {
 		    "\tPOP\tGR3",
 		    "\tPOP\tGR1",
 		    "\tRET",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return multStatement;
+	}
+	
+	public List<String> getDIV() {
+		List<String> divStatement = new ArrayList<>();
+		divStatement = Arrays.asList(
+			";============================================================",
 		    "; DIV: 割り算を行うサブルーチン",
 		    "; GR1 / GR2 -> 商は GR2, 余りは GR1",
 		    "DIV\tSTART",
@@ -81,8 +83,21 @@ public class Lib {
 		    "\tRET",
 		    "A\tDS\t1",
 		    "B\tDS\t1",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return divStatement;
+	}
+	
+	/**
+	 * RDINT
+	 * 
+	 * @return
+	 */
+	public List<String> getRDINT() {
+		List<String> rdintStatement = new ArrayList<>();
+		rdintStatement = Arrays.asList(
+			";============================================================",
 		    "; RDINT: 入力装置から数値データを読み込み、",
 		    "; その内容をGR2が指すアドレスに格納するサブルーチン",
 		    "RDINT\tSTART",
@@ -140,8 +155,16 @@ public class Lib {
 		    "ERRLEN\tDC\t13",
 		    "INAREA\tDS\t6",
 		    "INLEN\tDS\t1",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return rdintStatement;
+	}
+	
+	public List<String> getRDCH() {
+		List<String> rdchStatement = new ArrayList<>();
+		rdchStatement = Arrays.asList(
+			";============================================================",
 		    "; RDCH: 入力装置から文字を読み込み、",
 		    "; その内容をGR2が指すアドレスに格納するサブルーチン",
 		    "RDCH\tSTART",
@@ -151,8 +174,16 @@ public class Lib {
 		    "\tRET",
 		    "INCHAR\tDS\t1",
 		    "INLEN\tDS\t1",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return rdchStatement;
+	}
+	
+	public List<String> getRDSTR() {
+		List<String> rdstrStatement = new ArrayList<>();
+		rdstrStatement = Arrays.asList(
+			";============================================================",
 		    "; RDSTR: 入力装置から、GR1の文字数を読み込む。",
 		    "; 読み込んだ文字列は、GR2 が指すアドレスから順に格納される",
 		    "RDSTR\tSTART",
@@ -177,8 +208,16 @@ public class Lib {
 		    "\tRET",
 		    "INSTR\tDS\t256",
 		    "INLEN\tDS\t1",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return rdstrStatement;
+	}
+	
+	public List<String> getRDLN() {
+		List<String> rdlnStatement = new ArrayList<>();
+		rdlnStatement = Arrays.asList(
+			";============================================================",
 		    ";============================================================",
 		    "; 入力装置からの文字列を改行まで読み飛ばすサブルーチン",
 		    "RDLN\tSTART",
@@ -186,8 +225,16 @@ public class Lib {
 		    "\tRET",
 		    "INAREA\tDS\t256",
 		    "INLEN\tDS\t1",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return rdlnStatement;
+	}
+	
+	public List<String> getWRTINT() {
+		List<String> wrtintStatement = new ArrayList<>();
+		wrtintStatement = Arrays.asList(
+			";============================================================",
 		    "; GR2の内容（数値データ）を出力装置に書き出すサブルーチン",
 		    "; このサブルーチンが呼ばれたとき，",
 		    "; GR7には，出力用番地の先頭アドレスが，",
@@ -235,8 +282,16 @@ public class Lib {
 		    "\tPOP\tGR1",
 		    "\tRET",
 		    "BUFFER\tDS\t6",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return wrtintStatement;
+	}
+	
+	public List<String> getWRTCH() {
+		List<String> wrtchStatement = new ArrayList<>();
+		wrtchStatement = Arrays.asList(
+			";============================================================",
 		    "; GR2の内容（文字）を出力装置に書き出すサブルーチン",
 		    "; このサブルーチンが呼ばれたとき，",
 		    "; GR7には，出力用番地の先頭アドレスが，",
@@ -250,8 +305,16 @@ public class Lib {
 		    "\tLAD\tGR6,1,GR6",
 		    "\tPOP\tGR1",
 		    "\tRET",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return wrtchStatement;
+	}
+	
+	public List<String> getWRTSTR() {
+		List<String> wrtstrStatement = new ArrayList<>();
+		wrtstrStatement = Arrays.asList(
+			";============================================================",
 		    "; GR2の指すメモリ番地から，長さGR1の文字列を出力装置に書き出すサブルーチン",
 		    "; このサブルーチンが呼ばれたとき，",
 		    "; GR7には，出力用番地の先頭アドレスが，",
@@ -277,8 +340,16 @@ public class Lib {
 		    "\tPOP\tGR4",
 		    "\tPOP\tGR3",
 		    "\tRET",
-		    "\tEND",
-		    ";============================================================",
+		    "\tEND"
+		);
+		
+		return wrtstrStatement;
+	}
+	
+	public List<String> getWRTLN() {
+		List<String> wrtlnStatement = new ArrayList<>();
+		wrtlnStatement = Arrays.asList(
+			";============================================================",
 		    "; 改行を出力装置に書き出すサブルーチン",
 		    "; 実質的には，GR7で始まるアドレス番地から長さGR6の文字列を出力する",
 		    "WRTLN\tSTART",
@@ -305,6 +376,7 @@ public class Lib {
 		    "OUTLEN\tDS\t1",
 		    "\tEND"
 		);
-
+		
+		return wrtlnStatement;
 	}
 }

@@ -12,6 +12,8 @@ public class CompilationVisitor extends Visitor {
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
 	private LabelManager labelManager = new LabelManager();
+	// [MULT, DIV, RDINT, RDCH, RDSTR, RDLN, WRTINT, WRTCH, WRTSTR, WRTLN]
+	private boolean[] isNecessaryOfLib = {false, false, false, false, false, false, false, false, false, false};
  	
 	public CompilationVisitor(SemanticValidationVisitor semanticValidationVisitor) {
 		// 以下の3行はcaslには必ず必要
@@ -49,6 +51,12 @@ public class CompilationVisitor extends Visitor {
 		listForString.add(line);
 	}
 	
+	
+	public boolean[] getIsNessesaryOfLib() {
+		return isNecessaryOfLib;
+	}
+	
+	
     @Override
     public void visit(Program program) throws SemanticException {
     	ProgramName programName = program.getProgramName();
@@ -56,6 +64,8 @@ public class CompilationVisitor extends Visitor {
     	ComplexStatement complexStatement = program.getComplexStatement();
     	
     	programName.accept(this);
+    	
+    	// メインプログラムを探索する
     	complexStatement.accept(this);
     	
     	// サブルーチンのreturn先を確保
@@ -544,17 +554,48 @@ public class CompilationVisitor extends Visitor {
     	if (variableGroup != null) {
     		// readlnの場合
     		variableGroup.accept(this);
+    		
+    		List<Variable> variableList = variableGroup.getVariableList();
+    		for (Variable variable: variableList) {
+    			resolveVariableTypeOfRead(variable);
+    		}
+    		// 改行の処理
+    		addOutputList('\t' + "CALL" + '\t' + "RDLN");
     	} else if (equationGroup != null) {
     		// writelnの場合
     		equationGroup.accept(this);
     		
     		List<Equation> equationList = equationGroup.getEquationList();
-    		for (int i = 0; i < equationList.size(); i++) {
-    			Equation equation = equationList.get(i);
+    		for (Equation equation: equationList) {
     			resolveEquationTypeOfWrite(equation);
     		}
     		// 改行の処理
     	    addOutputList('\t' + "CALL" + '\t' + "WRTLN");
+    	    isNecessaryOfLib[9] = true;
+    	}
+    }
+    
+    /**
+     * 変数の型を判定するメソッド
+     * 
+     * @param variable
+     */
+    private void resolveVariableTypeOfRead(Variable variable) {
+    	String type = null;
+    	
+    	if (variable.getNaturalVariable() != null) {
+    		String variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+    		type = symbolTable.getAddressOfSymbol(variableName, scope);
+    	} else if (variable.getVariableWithIndex() != null) {
+    		String variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    		type = symbolTable.getAddressOfSymbol(variableName, scope);
+    	}
+    	
+    	// サブルーチンをCALL
+    	if (type.equals("integer")) {
+    		readInteger();
+    	} else if (type.equals("char")) {
+    		// readChar();
     	}
     }
     
@@ -604,12 +645,16 @@ public class CompilationVisitor extends Visitor {
     	if (variableAndType[1].equals("integer")) {
     		// integer型 -> WRTINTをCALL
     		writeInteger(variableAndType[0], variableAndType[2]);
+    		isNecessaryOfLib[1] = true;
+    		isNecessaryOfLib[6] = true;
     	} else if (variableAndType[1].equals("char")) {
     		String value = variableAndType[0];
     		if (value.contains("'") && value.length() > 3) {
     			writeString(value);
+    			isNecessaryOfLib[8] = true;
     		} else {
     			writeChar(value, variableAndType[2]);
+    			isNecessaryOfLib[7] = true;
     		}
     	}
     }
@@ -956,6 +1001,7 @@ public class CompilationVisitor extends Visitor {
                 isBoolean = isBoolean && firstFactorIsBoolean && nextFactorIsBoolean;
             }
             parseMultipleOperator(multipleOperatorList.get(i));
+            
         }
 
         return isBoolean;
@@ -980,18 +1026,27 @@ public class CompilationVisitor extends Visitor {
     		
     		// PUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
+        	
+        	// libを追加
+            isNecessaryOfLib[0] = true;
     	} else if (mul.equals("/") || mul.equals("div")) {
     		// DIVをCALL
     		addOutputList('\t' + "CALL" + '\t' + "DIV");
     		
     		// 商をPUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
+        	
+        	// libを追加
+            isNecessaryOfLib[1] = true;
     	} else if (mul.equals("mod")) {
     		// DIVをCALL
     		addOutputList('\t' + "CALL" + '\t' + "DIV");
     		
     		// 余りをPUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
+        	
+        	// libを追加
+            isNecessaryOfLib[1] = true;
     	} else if (mul.equals("and")) {
     		// ANDをとる
     		addOutputList('\t' + "AND" + '\t' + "GR1, GR2");
@@ -1130,5 +1185,9 @@ public class CompilationVisitor extends Visitor {
     	
     	// VAR番地に合計をストア
     	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
+    }
+    
+    private void readInteger() {
+    	
     }
 }

@@ -13,12 +13,13 @@ public class Compiler {
 	/**
 	 * サンプルmainメソッド．
 	 * 単体テストの対象ではないので自由に改変しても良い．
+	 * 
 	 * @throws SemanticException 
 	 * @throws SyntaxException 
 	 */
 	public static void main(final String[] args) throws SyntaxException, SemanticException {
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/normal17.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/normal02.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -64,7 +65,7 @@ public class Compiler {
             CompilationVisitor compilationVisitor = new CompilationVisitor(semanticValidationVisitor);
             program.accept(compilationVisitor);
             List<String> statementList = compilationVisitor.getOutputStatementList();
-            writeFile(statementList, outputFileName);
+            writeFile(statementList, compilationVisitor, outputFileName);
             
             // コンパイルが終了したら"OK"を返す
             return "OK"; 
@@ -83,13 +84,14 @@ public class Compiler {
 	 * @param statementList
 	 * @param outputFileName
 	 */
-	public void writeFile(List<String> statementList, final String outputFileName) {
+	public void writeFile(List<String> statementList, final CompilationVisitor compilationVisitor, final String outputFileName) {
 		// CASLの最後に必要な要素を追加
 		statementList.add("LIBBUF" + '\t' + "DS" + '\t' + "256");
 		statementList.add('\t' + "END");
 
 		// lib.casを記載
-		List<String> libStatementList = new Lib().getLibStatementList();
+		boolean[] isNecessaryOfLib = compilationVisitor.getIsNessesaryOfLib();
+		List<String> libStatementList = addLibToStatement(isNecessaryOfLib);
 		statementList.addAll(libStatementList);
 		
 		try{
@@ -103,5 +105,49 @@ public class Compiler {
 		} catch (IOException e) {
 			System.out.println(e);
 		}
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param isNecessaryOfLib
+	 * @return
+	 */
+	public List<String> addLibToStatement(boolean[] isNecessaryOfLib){
+		Lib lib = new Lib();
+		List<String> libStatement = new ArrayList<>();
+		
+		if (isNecessaryOfLib[0] == true) {
+			libStatement.addAll(lib.getMULT());
+		}
+		if (isNecessaryOfLib[1] == true) {
+			libStatement.addAll(lib.getDIV());
+		}
+		if (isNecessaryOfLib[2] == true) {
+			libStatement.addAll(lib.getRDINT());
+		}
+		if (isNecessaryOfLib[3] == true) {
+			libStatement.addAll(lib.getRDCH());
+		}
+		if (isNecessaryOfLib[4] == true) {
+			libStatement.addAll(lib.getRDSTR());
+		}
+		if (isNecessaryOfLib[5] == true) {
+			libStatement.addAll(lib.getRDLN());
+		}
+		if (isNecessaryOfLib[6] == true) {
+			libStatement.addAll(lib.getWRTINT());
+		}
+		if (isNecessaryOfLib[7] == true) {
+			libStatement.addAll(lib.getWRTCH());
+		}
+		if (isNecessaryOfLib[8] == true) {
+			libStatement.addAll(lib.getWRTSTR());
+		}
+		if (isNecessaryOfLib[9] == true) {
+			libStatement.addAll(lib.getWRTLN());
+		}
+		
+		return libStatement;
 	}
 }
