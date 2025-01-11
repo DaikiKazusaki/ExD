@@ -13,15 +13,18 @@ public class Compiler {
 	/**
 	 * サンプルmainメソッド．
 	 * 単体テストの対象ではないので自由に改変しても良い．
+	 * 
 	 * @throws SemanticException 
 	 * @throws SyntaxException 
 	 */
 	public static void main(final String[] args) throws SyntaxException, SemanticException {
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/normal17.ts", "tmp/out.cas"));
+		// System.out.println(new Compiler().run("data/ts/normal15.ts", "tmp/other/out.cas"));
+		System.out.println(new Compiler().run("tmp/additional_test/semerr09.ts", "tmp/additional_test/semerr09.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
-		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
+		// CaslSimulator.run("tmp/other/out.cas", "tmp/other/out.ans");
+		// CaslSimulator.run("tmp/test/readChar.cas", "tmp/test/readChar.ans");
 	}
 
 	/**
@@ -83,15 +86,7 @@ public class Compiler {
 	 * @param statementList
 	 * @param outputFileName
 	 */
-	public void writeFile(List<String> statementList, final String outputFileName) {
-		// CASLの最後に必要な要素を追加
-		statementList.add("LIBBUF" + '\t' + "DS" + '\t' + "256");
-		statementList.add('\t' + "END");
-
-		// lib.casを記載
-		List<String> libStatementList = new Lib().getLibStatementList();
-		statementList.addAll(libStatementList);
-		
+	public void writeFile(List<String> statementList, final String outputFileName) {		
 		try{
 			// ファイルが存在しない場合は新規作成
             if (Files.notExists(Paths.get(outputFileName))) {

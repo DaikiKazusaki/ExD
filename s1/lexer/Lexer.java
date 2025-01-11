@@ -24,7 +24,7 @@ public class Lexer {
      * 単体テストの対象ではないので自由に改変しても良い．
      */
     public static void main(final String[] args) {
-        System.out.println(new Lexer().run("data/pas/normal12.pas", "tmp/out1.ts"));
+        System.out.println(new Lexer().run("tmp/additional_test/semerr09.pas", "tmp/additional_test/semerr09.ts"));
     }
 
     /**
