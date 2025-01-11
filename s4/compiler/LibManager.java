@@ -4,7 +4,54 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Lib {	
+public class LibManager {	
+	private List<String> libStatement = new ArrayList<>();
+	
+	public LibManager() {
+		libStatement.add("");
+	}
+	
+	/**
+	 * 必要なlibのみを記載するメソッド
+	 * 
+	 * @param isNecessaryOfLib
+	 * @return
+	 */
+	public List<String> addLibToStatement(boolean[] isNecessaryOfLib){		
+		if (isNecessaryOfLib[0] == true) {
+			libStatement.addAll(getMULT());
+		}
+		if (isNecessaryOfLib[1] == true) {
+			libStatement.addAll(getDIV());
+		}
+		if (isNecessaryOfLib[2] == true) {
+			libStatement.addAll(getRDINT());
+		}
+		if (isNecessaryOfLib[3] == true) {
+			libStatement.addAll(getRDCH());
+		}
+		if (isNecessaryOfLib[4] == true) {
+			libStatement.addAll(getRDSTR());
+		}
+		if (isNecessaryOfLib[5] == true) {
+			libStatement.addAll(getRDLN());
+		}
+		if (isNecessaryOfLib[6] == true) {
+			libStatement.addAll(getWRTINT());
+		}
+		if (isNecessaryOfLib[7] == true) {
+			libStatement.addAll(getWRTCH());
+		}
+		if (isNecessaryOfLib[8] == true) {
+			libStatement.addAll(getWRTSTR());
+		}
+		if (isNecessaryOfLib[9] == true) {
+			libStatement.addAll(getWRTLN());
+		}
+		
+		return libStatement;
+	}
+	
 	public List<String> getMULT() {
 		List<String> multStatement = new ArrayList<>();
 		multStatement = Arrays.asList(
@@ -217,7 +264,6 @@ public class Lib {
 	public List<String> getRDLN() {
 		List<String> rdlnStatement = new ArrayList<>();
 		rdlnStatement = Arrays.asList(
-			";============================================================",
 		    ";============================================================",
 		    "; 入力装置からの文字列を改行まで読み飛ばすサブルーチン",
 		    "RDLN\tSTART",

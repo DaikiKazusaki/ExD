@@ -75,10 +75,18 @@ public class CompilationVisitor extends Visitor {
     	
     	// 変数の領域確保
     	String varSize = symbolTable.getSizeOfVar();
-    	outputStatementList.add("VAR" + '\t' + "DS" + '\t' + varSize);
+    	addOutputList("VAR" + '\t' + "DS" + '\t' + varSize);
     	
     	// 文字列の領域確保
     	outputStatementList.addAll(listForString);
+    	
+		// CASLの最後に必要な要素を追加
+    	addOutputList("LIBBUF" + '\t' + "DS" + '\t' + "256");
+    	addOutputList('\t' + "END");
+    	
+		// lib.casを記載
+		List<String> libStatementList = new LibManager().addLibToStatement(isNecessaryOfLib);
+		outputStatementList.addAll(libStatementList);
     }
     
     @Override
@@ -555,22 +563,31 @@ public class CompilationVisitor extends Visitor {
     		// readlnの場合
     		variableGroup.accept(this);
     		
+    		// 変数の並びの判定
     		List<Variable> variableList = variableGroup.getVariableList();
     		for (Variable variable: variableList) {
     			resolveVariableTypeOfRead(variable);
     		}
+    		
     		// 改行の処理
     		addOutputList('\t' + "CALL" + '\t' + "RDLN");
+    		
+    		// RDLNを追加
+    		isNecessaryOfLib[5] = true;
     	} else if (equationGroup != null) {
     		// writelnの場合
     		equationGroup.accept(this);
     		
+    		// 式の並びの判定
     		List<Equation> equationList = equationGroup.getEquationList();
     		for (Equation equation: equationList) {
     			resolveEquationTypeOfWrite(equation);
     		}
+    		
     		// 改行の処理
     	    addOutputList('\t' + "CALL" + '\t' + "WRTLN");
+    	    
+    	    // WRTLNを追加
     	    isNecessaryOfLib[9] = true;
     	}
     }
@@ -581,24 +598,37 @@ public class CompilationVisitor extends Visitor {
      * @param variable
      */
     private void resolveVariableTypeOfRead(Variable variable) {
-    	String type = null;
+    	String variableName = null, type = null;
+    	boolean isArray = false;
     	
     	if (variable.getNaturalVariable() != null) {
-    		String variableName = variable.getNaturalVariable().getVariableName().getVariableName();
-    		type = symbolTable.getAddressOfSymbol(variableName, scope);
+    		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+    		type = symbolTable.getVariableType(variableName, scope);
     	} else if (variable.getVariableWithIndex() != null) {
-    		String variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
-    		type = symbolTable.getAddressOfSymbol(variableName, scope);
+    		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    		type = symbolTable.getVariableType(variableName, scope);
+    		isArray = true;
     	}
     	
     	// サブルーチンをCALL
     	if (type.equals("integer")) {
-    		readInteger();
-    	} else if (type.equals("char")) {
-    		// readChar();
-    	}
+    		readInteger(variableName);
+    		
+    		// MULT, RDINTを追加
+    		isNecessaryOfLib[0] = true;
+    		isNecessaryOfLib[2] = true;
+    	} else if (type.equals("char") && isArray == false) {
+    		readChar(variableName);
+    		
+    		// RDCHを追加
+    		isNecessaryOfLib[3] = true;
+    	} else if (type.equals("char") && isArray == true) {
+    		readString(variableName);
+    		
+    		// RDSTRを追加
+    		isNecessaryOfLib[4] = true;
+    	}    	
     }
-    
     /**
      * 式の型を判定するメソッド
      * 
@@ -645,15 +675,18 @@ public class CompilationVisitor extends Visitor {
     	if (variableAndType[1].equals("integer")) {
     		// integer型 -> WRTINTをCALL
     		writeInteger(variableAndType[0], variableAndType[2]);
+    		// WRTINT，DIVを追加
     		isNecessaryOfLib[1] = true;
     		isNecessaryOfLib[6] = true;
     	} else if (variableAndType[1].equals("char")) {
     		String value = variableAndType[0];
     		if (value.contains("'") && value.length() > 3) {
     			writeString(value);
+    			// WRTSTRを追加
     			isNecessaryOfLib[8] = true;
     		} else {
     			writeChar(value, variableAndType[2]);
+    			// WRTCHを追加
     			isNecessaryOfLib[7] = true;
     		}
     	}
@@ -1027,7 +1060,7 @@ public class CompilationVisitor extends Visitor {
     		// PUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
         	
-        	// libを追加
+        	// MULTを追加
             isNecessaryOfLib[0] = true;
     	} else if (mul.equals("/") || mul.equals("div")) {
     		// DIVをCALL
@@ -1036,7 +1069,7 @@ public class CompilationVisitor extends Visitor {
     		// 商をPUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
         	
-        	// libを追加
+        	// DIVを追加
             isNecessaryOfLib[1] = true;
     	} else if (mul.equals("mod")) {
     		// DIVをCALL
@@ -1045,7 +1078,7 @@ public class CompilationVisitor extends Visitor {
     		// 余りをPUSHする
         	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
         	
-        	// libを追加
+        	// DIVを追加
             isNecessaryOfLib[1] = true;
     	} else if (mul.equals("and")) {
     		// ANDをとる
@@ -1187,7 +1220,46 @@ public class CompilationVisitor extends Visitor {
     	addOutputList('\t' + "ST" + '\t' + "GR1, VAR, GR2");
     }
     
-    private void readInteger() {
+    /**
+     * integerを入力する
+     * 
+     * @param variableName
+     */
+    private void readInteger(String variableName) {
+    	// 入力値のアドレスをGR2に保存する
+    	String address = symbolTable.getAddressOfSymbol(variableName, scope);
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
     	
+    	// RDINTをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "RDINT");
+    }
+    
+    /**
+     * charを入力する
+     * 
+     * @param variableName
+     */
+    private void readChar(String variableName) {
+    	// 入力値のアドレスをGR2に保存する
+    	String address = symbolTable.getAddressOfSymbol(variableName, scope);
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
+    	
+    	// RDINTをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "RDCH");
+    }
+    
+    /**
+     * stringを入力する
+     * 
+     * @param variableName
+     */
+    private void readString(String variableName) {
+    	// 入力値のアドレスをGR2に保存する
+    	String address = symbolTable.getAddressOfSymbol(variableName, scope);
+    	address = String.valueOf(Integer.valueOf(address) - 1);
+    	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
+    	
+    	// RDINTをCALL
+    	addOutputList('\t' + "CALL" + '\t' + "RDSTR");
     }
 }

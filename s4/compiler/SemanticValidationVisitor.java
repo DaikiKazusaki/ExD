@@ -175,6 +175,37 @@ public class SemanticValidationVisitor extends Visitor {
     	minimumInteger.accept(this);
     	maximumInteger.accept(this);
     	standardType.accept(this);
+    	
+    	checkIndex(minimumInteger, maximumInteger);
+    }
+    
+    /**
+     * 添え字の確認を行うメソッド
+     * 
+     * @param minimumInteger
+     * @param maximumInteger
+     * @throws SemanticException 
+     */
+    private void checkIndex(Int minimumInteger, Int maximumInteger) throws SemanticException {
+    	int minimumIndex = Integer.valueOf(minimumInteger.getUnsignedInteger().getUnsignedInteger());
+    	int maximumIndex = Integer.valueOf(maximumInteger.getUnsignedInteger().getUnsignedInteger());
+    	   	
+    	if (minimumInteger.getSign() != null) {
+    		minimumIndex *= -1;
+    	}
+    	if (maximumInteger.getSign() != null) {
+    		maximumIndex *= -1;
+    	}
+    	
+    	//　添え字の確認
+    	if (minimumIndex != 1) {
+    		String lineNum = minimumInteger.getLineNum();
+    		throw new SemanticException(lineNum);
+    	}
+    	if (minimumIndex > maximumIndex) {
+    		String lineNum = minimumInteger.getLineNum();
+    		throw new SemanticException(lineNum);
+    	}
     }
     
     @Override
