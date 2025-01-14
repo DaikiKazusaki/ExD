@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 public class CompilationVisitor extends Visitor {
+	// インスタンス
 	private SymbolTable symbolTable;
 	private FunctionTable functionTable;
+	private LabelManager labelManager = new LabelManager();
+	// フィールド
 	private int stringNum = 0;
 	private String scope = "global";
 	private List<String> outputStatementList = new ArrayList<>();
 	private List<String> listForString = new ArrayList<>();
-	private LabelManager labelManager = new LabelManager();
 	// [MULT, DIV, RDINT, RDCH, RDSTR, RDLN, WRTINT, WRTCH, WRTSTR, WRTLN]
 	private boolean[] isNecessaryOfLib = {false, false, false, false, false, false, false, false, false, false};
  	
