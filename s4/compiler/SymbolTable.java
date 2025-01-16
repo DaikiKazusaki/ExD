@@ -6,43 +6,10 @@ import java.util.List;
 public class SymbolTable {
 	/**
 	 * 記号表の情報
-	 * [変数名，標準型，配列の判定，フォーマルパラメータの判定，スコープ，サイズ]
+	 * [変数名，標準型，配列の判定，フォーマルパラメータの判定，スコープ，サイズ，使用済みかの判定，行番号]
 	 * 
 	 */
-	public List<List<String>> symbolTable = new ArrayList<>();
-	private int NAMECOLS = 0;
-	private int STANDARDTYPECOLS = 1;
-	private int ISARRAYCOLS = 2; 
-	private int ISFORMALPARAMETER = 3;
-	private int SCOPECOLS = 4;
-	private int SIZECOLS = 5;
-	private int ISUSEDCOLS = 6;
-	private int LINENUMCOLS = 7;
-	
-	/**
-	 * 記号表に登録するメソッド
-	 * 
-	 * @param name
-	 * @param type
-	 * @param isArray
-	 * @param isFormalParameter
-	 * @param scope
-	 * @param size
-	 * @param lineNum
-	 */
-	public void addSymbol(String name, String type, String isArray, String isFormalParameter, String scope, String size, String lineNum) {		
-		List<String> newSymbolInformation = new ArrayList<>();
-		newSymbolInformation.add(name);
-		newSymbolInformation.add(type);
-		newSymbolInformation.add(isArray);
-		newSymbolInformation.add(isFormalParameter);
-		newSymbolInformation.add(scope);
-		newSymbolInformation.add(size);
-		newSymbolInformation.add("false");
-		newSymbolInformation.add(lineNum);
-		
-		symbolTable.add(newSymbolInformation);
-	}
+	public List<Symbol> symbolTable = new ArrayList<>();
 	
 	/**
 	 * 記号表に変数を追加するメソッド
@@ -51,12 +18,16 @@ public class SymbolTable {
 	 * @param name
 	 * @return
 	 */
-	public boolean isAbleToAddSymbolTable(String name, String scope) {
+	public boolean isAbleToAddSymbolTable(String variableName, String functionName) {
 		boolean result = true;
 		
-		for (int i = 0; i < symbolTable.size(); i++) {
-			if (symbolTable.get(i).get(NAMECOLS).equals(name) && symbolTable.get(i).get(SCOPECOLS).equals(scope)) {
+		for (Symbol symbol: symbolTable) {
+			String name = symbol.getVariableName();
+			String scope = symbol.getScope();
+			
+			if (name.equals(variableName) && scope.equals(functionName)) {
 				result = false;
+				break;
 			}
 		}
 		
@@ -64,11 +35,20 @@ public class SymbolTable {
 	}
 	
 	/**
+	 * 記号表に追加するメソッド
+	 * 
+	 * @param symbol
+	 */
+	public void addSymbol(Symbol symbol) {
+		symbolTable.add(symbol);
+	}
+	
+	/**
 	 * 記号表を取得するメソッド
 	 * 
 	 * @return
 	 */
-	public List<List<String>> getSymbolTable(){
+	public List<Symbol> getSymbolTable(){
 		return symbolTable;
 	}
 	
@@ -78,12 +58,31 @@ public class SymbolTable {
 	 * @param variableName
 	 * @return
 	 */
-	public String containsNaturalVariable(String variableName) {
-		for (int i = 0; i < symbolTable.size(); i++) {
-			if (symbolTable.get(i).get(NAMECOLS).equals(variableName) && symbolTable.get(i).get(ISARRAYCOLS).equals("false")) {
-				return symbolTable.get(i).get(STANDARDTYPECOLS);
-			} 
+	public String containsNaturalVariable(String variableName, String functionName) {
+		// スコープ内を探索
+		for (Symbol symbol: symbolTable) {
+			String name = symbol.getVariableName();
+			boolean isArray = symbol.isArray();
+			String scope = symbol.getScope();
+			
+			if (name.equals(variableName) && isArray == false && scope.equals(functionName)) {
+				String type = symbol.getStandardType();
+				return type;
+			}
 		}
+		
+		// グローバル変数を探索
+		for (Symbol symbol: symbolTable) {
+			String name = symbol.getVariableName();
+			boolean isArray = symbol.isArray();
+			String scope = symbol.getScope();
+			
+			if (name.equals(variableName) && isArray == false && scope.equals("global")) {
+				String type = symbol.getStandardType();
+				return type;
+			}
+		}
+		
 		return null;
 	}
 	
@@ -93,12 +92,31 @@ public class SymbolTable {
 	 * @param variableName
 	 * @return
 	 */
-	public String containsVariableWithIndex(String variableName) {
-		for (int i = 0; i < symbolTable.size(); i++) {
-			if (symbolTable.get(i).get(NAMECOLS).equals(variableName) && symbolTable.get(i).get(ISARRAYCOLS).equals("true")) {
-				return symbolTable.get(i).get(STANDARDTYPECOLS);
-			} 
+	public String containsVariableWithIndex(String variableName, String functionName) {
+		// スコープ内を探索
+		for (Symbol symbol: symbolTable) {
+			String name = symbol.getVariableName();
+			boolean isArray = symbol.isArray();
+			String scope = symbol.getScope();
+			
+			if (name.equals(variableName) && isArray == true && scope.equals(functionName)) {
+				String type = symbol.getStandardType();
+				return type;
+			}
 		}
+		
+		// グローバル変数を探索
+		for (Symbol symbol: symbolTable) {
+			String name = symbol.getVariableName();
+			boolean isArray = symbol.isArray();
+			String scope = symbol.getScope();
+			
+			if (name.equals(variableName) && isArray == true && scope.equals("global")) {
+				String type = symbol.getStandardType();
+				return type;
+			}
+		}
+		
 		return null;
 	}
 	
@@ -109,8 +127,8 @@ public class SymbolTable {
 	 */
 	public String getSizeOfVar() {
 		int sum = 0;
-		for (int i = 0; i < symbolTable.size(); i++) {
-			int size = Integer.valueOf(symbolTable.get(i).get(SIZECOLS));
+		for (Symbol symbol: symbolTable) {
+			int size = symbol.getSize();
 			sum += size;
 		}
 		
@@ -122,34 +140,34 @@ public class SymbolTable {
 	 * 
 	 * @return
 	 */
-	public String getAddressOfSymbol(String varName, String scope) {
+	public String getAddressOfSymbol(String name, String scope) {
 		int address = 0;
-		boolean exist = false;
+		boolean isFound = false;
 		
 		// スコープ内で探索
-		for (int i = 0; i < symbolTable.size(); i++) {
-			String variableName = symbolTable.get(i).get(NAMECOLS);
-			String functionName = symbolTable.get(i).get(SCOPECOLS);
-			if (varName.equals(variableName) && scope.equals(functionName)) {
-				exist = true;
+		for (Symbol symbol: symbolTable) {
+			String variableName = symbol.getVariableName();
+			String functionName = symbol.getScope();
+			if (name.equals(variableName) && scope.equals(functionName)) {
+				isFound = true;
 				break;
 			} else {
-				String size = symbolTable.get(i).get(SIZECOLS);
-				address += Integer.valueOf(size);
+				int size = symbol.getSize();
+				address += size;
 			}
 		}
 		
 		// スコープ内に存在しない場合，グローバルで探索
-		if (!exist) {
+		if (isFound == false) {
 			address = 0;
-			for (int i = 0; i < symbolTable.size(); i++) {
-				String variableName = symbolTable.get(i).get(NAMECOLS);
-				String functionName = symbolTable.get(i).get(SCOPECOLS);
-				if (varName.equals(variableName) && "global".equals(functionName)) {
+			for (Symbol symbol: symbolTable) {
+				String variableName = symbol.getVariableName();
+				String functionName = symbol.getScope();
+				if (name.equals(variableName) && "global".equals(functionName)) {
 					break;
 				} else {
-					String size = symbolTable.get(i).get(SIZECOLS);
-					address += Integer.valueOf(size);
+					int size = symbol.getSize();
+					address += size;
 				}
 			}
 		}
@@ -163,15 +181,15 @@ public class SymbolTable {
 	 * @param functionName
 	 * @return
 	 */
-	public String getSizeOfFormalParameter(String functionName) {
+	public String getSizeOfFormalParameter(String scope) {
 		int count = 0;
 		
-		for (int i = 0; i < symbolTable.size(); i++) {
-			String scope = symbolTable.get(i).get(SCOPECOLS);
-			String isFormalParameter = symbolTable.get(i).get(ISFORMALPARAMETER);
-			if (scope.equals(functionName) && isFormalParameter.equals("true")) {
-				String size = symbolTable.get(i).get(SIZECOLS);
-				count += Integer.valueOf(size);
+		for (Symbol symbol: symbolTable) {
+			String functionName = symbol.getScope();
+			boolean isFormalParameter = symbol.isFormalParameter();
+			if (functionName.equals(scope) && isFormalParameter == true) {
+				int size = symbol.getSize();
+				count += size;
 			}
 		}
 		
@@ -185,22 +203,22 @@ public class SymbolTable {
 	 * @param scope
 	 * @return
 	 */
-	public String getVariableType(String variableName, String scope) {
+	public String getVariableType(String variableName, String functionName) {
 		// スコープ内の探索
-		for (int i = 0; i < symbolTable.size(); i++) {
-			String varName = symbolTable.get(i).get(NAMECOLS);
-			String functionName = symbolTable.get(i).get(SCOPECOLS);
-			if (varName.equals(variableName) && functionName.equals(scope)) {
-				return symbolTable.get(i).get(STANDARDTYPECOLS);
+		for (Symbol symbol: symbolTable) {
+			String name = symbol.getVariableName();
+			String scope = symbol.getScope();
+			if (name.equals(variableName) && scope.equals(functionName)) {
+				return symbol.getStandardType();
 			}
 		}
 		
 		// 大域変数の探索
-		for (int i = 0; i < symbolTable.size(); i++) {
-			String varName = symbolTable.get(i).get(NAMECOLS);
-			String functionName = symbolTable.get(i).get(SCOPECOLS);
-			if (varName.equals(variableName) && functionName.equals("global")) {
-				return symbolTable.get(i).get(STANDARDTYPECOLS);
+		for (Symbol symbol: symbolTable) {
+			String name = symbol.getVariableName();
+			String scope = symbol.getScope();
+			if (name.equals(variableName) && scope.equals("global")) {
+				return symbol.getStandardType();
 			}
 		}
 		
@@ -213,32 +231,30 @@ public class SymbolTable {
 	 * @param variableName
 	 * @param scope
 	 */
-	public void usedVariable(String variableName, String scope) {
+	public void usedVariable(String variableName, String functionName) {
 	    boolean isFound = false;
 
 	    // スコープ内の探索
-	    for (int i = 0; i < symbolTable.size(); i++) {
-	        String name = symbolTable.get(i).get(NAMECOLS);
-	        String functionName = symbolTable.get(i).get(SCOPECOLS);
-
-	        if (variableName.equals(name) && scope.equals(functionName)) {
-	            symbolTable.get(i).set(ISUSEDCOLS, "true");
-	            isFound = true;
+	    for (Symbol symbol: symbolTable) {
+	    	String name = symbol.getVariableName();
+	    	String scope = symbol.getScope();
+	    	if (variableName.equals(name) && functionName.equals(scope)) {
+	    		symbol.setISUsed();
+	    		isFound = true;
 	            break;
-	        }
+	    	}
 	    }
 
 	    // スコープ内で見つからない場合，グローバルスコープを探索
 	    if (!isFound) {
-	        for (int i = 0; i < symbolTable.size(); i++) {
-	            String name = symbolTable.get(i).get(NAMECOLS);
-	            String functionName = symbolTable.get(i).get(SCOPECOLS);
-
-	            if (variableName.equals(name) && "global".equals(functionName)) {
-	                symbolTable.get(i).set(ISUSEDCOLS, "true");
-	                break;
-	            }
-	        }
+	    	for (Symbol symbol: symbolTable) {
+		    	String name = symbol.getVariableName();
+		    	String scope = symbol.getScope();
+		    	if (variableName.equals(name) && "global".equals(scope)) {
+		    		symbol.setISUsed();
+		            break;
+		    	}
+		    }
 	    }
 	}
 
@@ -253,17 +269,17 @@ public class SymbolTable {
 
 
 	    // 未使用変数の検出と警告の表示
-	    for (int i = 0; i < symbolTable.size(); i++) {
-	        String isUsed = symbolTable.get(i).get(ISUSEDCOLS);
-	        if (isUsed.equals("false")) {
-	            if (!hasWarnings) {
+	    for (Symbol symbol: symbolTable) {
+	    	boolean isUsed = symbol.isUsed();
+	    	if (isUsed == false) {
+	    		if (!hasWarnings) {
 	                System.out.println("Warning: in " + inputFileName);
 	                hasWarnings = true;
 	            }
-	            String name = symbolTable.get(i).get(NAMECOLS);
-	            String lineNum = symbolTable.get(i).get(LINENUMCOLS);
+	    		String name = symbol.getVariableName();
+	    		String lineNum = symbol.getLineNum();
 	            System.out.println('\t' + name + " is declared in line " + lineNum + ", but never used.");
-	        }
+	    	}
 	    }
 	}
 }

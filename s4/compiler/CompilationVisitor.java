@@ -705,11 +705,11 @@ public class CompilationVisitor extends Visitor {
     	
     	if (variable.getNaturalVariable() != null) {
     		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
-    		standardType = symbolTable.containsNaturalVariable(variableName);
+    		standardType = symbolTable.containsNaturalVariable(variableName, scope);
     		arrayType = "false";
     	} else if (variable.getVariableWithIndex() != null) {
     		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
-    		standardType = symbolTable.containsVariableWithIndex(variableName);
+    		standardType = symbolTable.containsVariableWithIndex(variableName, scope);
     		arrayType = "true";
     		
     		// 式の判定
