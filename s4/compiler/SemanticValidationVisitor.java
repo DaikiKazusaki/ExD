@@ -7,6 +7,11 @@ public class SemanticValidationVisitor extends Visitor {
 	private SymbolTable symbolTable = new SymbolTable();
 	private FunctionTable functionTable = new FunctionTable();
 	private String scope = "global";
+	private String inputFileName;
+	
+	public SemanticValidationVisitor(String inputFileName) {
+		this.inputFileName = inputFileName;
+	}
 	
 	/**
 	 * 記号表を取得するメソッド
@@ -35,6 +40,9 @@ public class SemanticValidationVisitor extends Visitor {
     	programName.accept(this);
     	block.accept(this);
     	complexStatement.accept(this);
+    	
+    	// 未使用変数表示
+    	symbolTable.printWarning(inputFileName);
     }
     
     @Override
@@ -131,7 +139,7 @@ public class SemanticValidationVisitor extends Visitor {
      */
     public void addVariableToSymbolTable(String variableName, String type, String isArray, String isFormalParameter, String size, String lineNum) throws SemanticException {
         if (symbolTable.isAbleToAddSymbolTable(variableName, scope)) {
-            symbolTable.addSymbol(variableName, type, isArray, isFormalParameter, scope, size);
+            symbolTable.addSymbol(variableName, type, isArray, isFormalParameter, scope, size, lineNum);
         } else {
             throw new SemanticException(lineNum);
         }
@@ -374,6 +382,11 @@ public class SemanticValidationVisitor extends Visitor {
     	
     	equation.accept(this);
     	complexStatement.accept(this);
+    	// else文の探索
+    	if (ifThen.getElseStatement() != null) {
+    		ElseStatement elseStatement = ifThen.getElseStatement();
+    		elseStatement.accept(this);
+    	}
     	
     	// if文の式の判定
     	String type = resolveType(equation);
@@ -449,7 +462,7 @@ public class SemanticValidationVisitor extends Visitor {
      * @throws SemanticException
      */
     private String getLeftSideType(LeftSide leftSide, String lineNum) throws SemanticException {
-    	String variableName, type = null;
+    	String variableName = null, type = null;
     	
     	if (leftSide.getVariable().getNaturalVariable() != null) {
     		variableName = leftSide.getVariable().getNaturalVariable().getVariableName().getVariableName();
@@ -461,7 +474,8 @@ public class SemanticValidationVisitor extends Visitor {
     	
     	if (type == null) {
     		throw new SemanticException(lineNum);
-    	}
+    	} 
+    	symbolTable.usedVariable(variableName, scope);
     	
     	return type;
     }
@@ -471,22 +485,6 @@ public class SemanticValidationVisitor extends Visitor {
     	Variable variable = leftSide.getVariable();
     	
     	variable.accept(this);
-    	
-    	// 変数の型を取得する
-    	String variableName, type = null;
-    	if (variable.getNaturalVariable() != null) {
-    		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
-    		type = symbolTable.containsNaturalVariable(variableName);
-    	} else if (variable.getVariableWithIndex() != null) {
-    		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
-    		type = symbolTable.containsVariableWithIndex(variableName);
-    	}
-    	
-    	// 変数の型を確認
-    	if (type == null) {
-    		String lineNum = variable.getLineNum();
-    		throw new SemanticException(lineNum);
-    	}
     }
     
     @Override
@@ -571,6 +569,8 @@ public class SemanticValidationVisitor extends Visitor {
     		relationalOperator.accept(this);
     		simpleEquationList.get(1).accept(this);
     	}
+    	
+    	parseEquation(equation);
     }
     
     @Override
@@ -691,6 +691,7 @@ public class SemanticValidationVisitor extends Visitor {
 
     /**
      * 項の型を取得し、整合性をチェックするメソッド
+     * 
      */
     private List<String> resolveTermTypes(SimpleEquation simpleEquation) throws SemanticException {
         List<String> factorTypes = new ArrayList<>();
@@ -707,6 +708,7 @@ public class SemanticValidationVisitor extends Visitor {
 
     /**
      * 因子の型リストを取得するメソッド
+     * 
      */
     private List<String> resolveFactorTypes(Term term) throws SemanticException {
         List<String> factorTypes = new ArrayList<>();
@@ -719,6 +721,7 @@ public class SemanticValidationVisitor extends Visitor {
 
     /**
      * 因子の型を解決するメソッド
+     * 
      */
     private String resolveType(Factor factor) throws SemanticException {
         if (factor.getVariable() != null) {
@@ -736,6 +739,7 @@ public class SemanticValidationVisitor extends Visitor {
 
     /**
      * 変数の型を解決するメソッド
+     * 
      */
     private String resolveVariableType(Factor factor) throws SemanticException {
         String varName = null, type = null;
@@ -750,11 +754,13 @@ public class SemanticValidationVisitor extends Visitor {
         if (type == null) {
             throw new SemanticException(factor.getLineNum());
         }
+        
         return type;
     }
 
     /**
      * 定数の型を解決するメソッド
+     * 
      */
     private String resolveConstantType(String constant) {
         if ("true".equals(constant) || "false".equals(constant)) {
@@ -768,6 +774,7 @@ public class SemanticValidationVisitor extends Visitor {
 
     /**
      * 型の整合性を確認するメソッド
+     * 
      */
     private void checkTypeConsistency(List<String> types, String lineNum) throws SemanticException {
         String baseType = types.get(0);
@@ -776,5 +783,57 @@ public class SemanticValidationVisitor extends Visitor {
                 throw new SemanticException(lineNum);
             }
         }
+    }
+    
+    /**
+     * 式に登場する変数を使用済みにするメソッド
+     * 
+     * @param equation
+     */
+    private void parseEquation(Equation equation) {
+    	List<SimpleEquation> simpleEquationList = equation.getSimpleEquationList();
+    	for (SimpleEquation simpleEquation: simpleEquationList) {
+    		List<Term> termList = simpleEquation.getTermList();
+    		for (Term term: termList) {
+    			List<Factor> factorList = term.getFactorList();
+    			for (Factor factor: factorList) {
+    				parseFactor(factor);
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * 因子を解析し，使用済みにするメソッド
+     * 
+     * @param factor
+     */
+    private void parseFactor(Factor factor) {
+    	if (factor.getVariable() != null) {
+    		parseVariable(factor.getVariable());
+    	} else if (factor.getConstant() != null) {
+    		return ;
+    	} else if (factor.getEquation() != null) {
+    		parseEquation(factor.getEquation());
+    	} else if (factor.getFactor() != null) {
+    		parseFactor(factor.getFactor());
+    	}
+    }
+    
+    /**
+     * 変数を使用済みにするメソッド
+     * 
+     * @param variable
+     */
+    private void parseVariable(Variable variable) {
+    	String variableName = null;
+    	
+    	if (variable.getNaturalVariable() != null) {
+    		variableName = variable.getNaturalVariable().getVariableName().getVariableName();
+    	} else if (variable.getVariableWithIndex() != null) {
+    		variableName = variable.getVariableWithIndex().getVariableName().getVariableName();
+    	}
+    	
+    	symbolTable.usedVariable(variableName, scope);
     }
 }

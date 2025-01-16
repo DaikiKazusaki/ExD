@@ -631,6 +631,7 @@ public class CompilationVisitor extends Visitor {
     		isNecessaryOfLib[4] = true;
     	}    	
     }
+    
     /**
      * 式の型を判定するメソッド
      * 
@@ -1139,6 +1140,9 @@ public class CompilationVisitor extends Visitor {
     		if (type.equals("boolean")) {
     			return true;
     		}
+    		
+    		// 変数を使用済みにする
+    		
     	} else if (variable.getVariableWithIndex() != null) {
     		Equation equation = variable.getVariableWithIndex().getIndex().getEquation();
     		parseEquation(equation);
