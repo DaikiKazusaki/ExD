@@ -90,9 +90,9 @@ public class SemanticValidationVisitor extends Visitor {
     public void prepareVariableForAddingSymbolTable(VariableNameGroup variableNameGroup, Type type) throws SemanticException {
         String[] typeInfo = extractTypeInfo(type);
         String standardType = typeInfo[0];
-        String isArray = typeInfo[1];
-        String isFormalParameter = "false";
-        String size = typeInfo[2];
+        boolean isArray = Boolean.valueOf(typeInfo[1]);
+        boolean isFormalParameter = false;
+        int size = Integer.valueOf(typeInfo[2]);
         String lineNum = variableNameGroup.getLineNum();
 
         // 記号表に変数を登録
@@ -137,9 +137,10 @@ public class SemanticValidationVisitor extends Visitor {
      * @param lineNum
      * @throws SemanticException
      */
-    public void addVariableToSymbolTable(String variableName, String type, String isArray, String isFormalParameter, String size, String lineNum) throws SemanticException {
+    public void addVariableToSymbolTable(String variableName, String type, boolean isArray, boolean isFormalParameter, int size, String lineNum) throws SemanticException {
         if (symbolTable.isAbleToAddSymbolTable(variableName, scope)) {
-            symbolTable.addSymbol(variableName, type, isArray, isFormalParameter, scope, size, lineNum);
+        	Symbol symbol = new Symbol(variableName, type, isArray, isFormalParameter, scope, size, lineNum);
+            symbolTable.addSymbol(symbol);
         } else {
             throw new SemanticException(lineNum);
         }
@@ -321,9 +322,9 @@ public class SemanticValidationVisitor extends Visitor {
      */
     public void prepareFormalParameterForAddingSymbolTable(FormalParameterNameGroup formalParameterNameGroup, StandardType standardType) throws SemanticException {
         String type = standardType.getStandardType();
-        String isArray = "false"; // 仮引数は配列ではないので，常にfalse
-        String isFormalParameter = "true";
-        String size = "1"; // 仮引数は配列ではないので，常に1
+        boolean isArray = false; // 仮引数は配列ではないので，常にfalse
+        boolean isFormalParameter = true;
+        int size = 1; // 仮引数は配列ではないので，常に1
         String lineNum = formalParameterNameGroup.getLineNum();
         
         for (FormalParameterName formalParameterName : formalParameterNameGroup.getFormalParameterNameList()) {
@@ -466,10 +467,10 @@ public class SemanticValidationVisitor extends Visitor {
     	
     	if (leftSide.getVariable().getNaturalVariable() != null) {
     		variableName = leftSide.getVariable().getNaturalVariable().getVariableName().getVariableName();
-    		type = symbolTable.containsNaturalVariable(variableName);
+    		type = symbolTable.containsNaturalVariable(variableName, scope);
     	} else if (leftSide.getVariable().getVariableWithIndex() != null) {
     		variableName = leftSide.getVariable().getVariableWithIndex().getVariableName().getVariableName();
-    		type = symbolTable.containsVariableWithIndex(variableName);
+    		type = symbolTable.containsVariableWithIndex(variableName, scope);
     	}
     	
     	if (type == null) {
@@ -745,10 +746,10 @@ public class SemanticValidationVisitor extends Visitor {
         String varName = null, type = null;
         if (factor.getVariable().getNaturalVariable() != null) {
         	varName = factor.getVariable().getNaturalVariable().getVariableName().getVariableName();
-        	type = symbolTable.containsNaturalVariable(varName);
+        	type = symbolTable.containsNaturalVariable(varName, scope);
         } else if (factor.getVariable().getVariableWithIndex() != null) {
         	varName = factor.getVariable().getVariableWithIndex().getVariableName().getVariableName();
-        	type = symbolTable.containsVariableWithIndex(varName);
+        	type = symbolTable.containsVariableWithIndex(varName, scope);
         }
         
         if (type == null) {
