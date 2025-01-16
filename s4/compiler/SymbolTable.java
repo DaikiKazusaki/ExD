@@ -16,6 +16,8 @@ public class SymbolTable {
 	private int ISFORMALPARAMETER = 3;
 	private int SCOPECOLS = 4;
 	private int SIZECOLS = 5;
+	private int ISUSEDCOLS = 6;
+	private int LINENUMCOLS = 7;
 	
 	/**
 	 * 記号表に登録するメソッド
@@ -26,8 +28,9 @@ public class SymbolTable {
 	 * @param isFormalParameter
 	 * @param scope
 	 * @param size
+	 * @param lineNum
 	 */
-	public void addSymbol(String name, String type, String isArray, String isFormalParameter, String scope, String size) {		
+	public void addSymbol(String name, String type, String isArray, String isFormalParameter, String scope, String size, String lineNum) {		
 		List<String> newSymbolInformation = new ArrayList<>();
 		newSymbolInformation.add(name);
 		newSymbolInformation.add(type);
@@ -35,6 +38,8 @@ public class SymbolTable {
 		newSymbolInformation.add(isFormalParameter);
 		newSymbolInformation.add(scope);
 		newSymbolInformation.add(size);
+		newSymbolInformation.add("false");
+		newSymbolInformation.add(lineNum);
 		
 		symbolTable.add(newSymbolInformation);
 	}
@@ -200,5 +205,65 @@ public class SymbolTable {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * 変数を使用済みに変更するメソッド
+	 * 
+	 * @param variableName
+	 * @param scope
+	 */
+	public void usedVariable(String variableName, String scope) {
+	    boolean isFound = false;
+
+	    // スコープ内の探索
+	    for (int i = 0; i < symbolTable.size(); i++) {
+	        String name = symbolTable.get(i).get(NAMECOLS);
+	        String functionName = symbolTable.get(i).get(SCOPECOLS);
+
+	        if (variableName.equals(name) && scope.equals(functionName)) {
+	            symbolTable.get(i).set(ISUSEDCOLS, "true");
+	            isFound = true;
+	            break;
+	        }
+	    }
+
+	    // スコープ内で見つからない場合，グローバルスコープを探索
+	    if (!isFound) {
+	        for (int i = 0; i < symbolTable.size(); i++) {
+	            String name = symbolTable.get(i).get(NAMECOLS);
+	            String functionName = symbolTable.get(i).get(SCOPECOLS);
+
+	            if (variableName.equals(name) && "global".equals(functionName)) {
+	                symbolTable.get(i).set(ISUSEDCOLS, "true");
+	                break;
+	            }
+	        }
+	    }
+	}
+
+	
+	/**
+	 * 未使用変数を表示し，symbolTableから削除するメソッド
+	 * 
+	 * @param inputFileName
+	 */
+	public void printWarning(final String inputFileName) {
+	    boolean hasWarnings = false;
+
+
+	    // 未使用変数の検出と警告の表示
+	    for (int i = 0; i < symbolTable.size(); i++) {
+	        String isUsed = symbolTable.get(i).get(ISUSEDCOLS);
+	        if (isUsed.equals("false")) {
+	            if (!hasWarnings) {
+	                System.out.println("Warning: in " + inputFileName);
+	                hasWarnings = true;
+	            }
+	            String name = symbolTable.get(i).get(NAMECOLS);
+	            String lineNum = symbolTable.get(i).get(LINENUMCOLS);
+	            System.out.println('\t' + name + " is declared in line " + lineNum + ", but never used.");
+	        }
+	    }
 	}
 }
