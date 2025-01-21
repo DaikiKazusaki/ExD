@@ -258,28 +258,33 @@ public class SymbolTable {
 	    }
 	}
 
-	
 	/**
 	 * 未使用変数を表示し，symbolTableから削除するメソッド
-	 * 
+	 *
 	 * @param inputFileName
 	 */
 	public void printWarning(final String inputFileName) {
 	    boolean hasWarnings = false;
-
-
+	    List<Symbol> unusedSymbols = new ArrayList<>();
+	    
 	    // 未使用変数の検出と警告の表示
-	    for (Symbol symbol: symbolTable) {
-	    	boolean isUsed = symbol.isUsed();
-	    	if (isUsed == false) {
-	    		if (!hasWarnings) {
+	    for (Symbol symbol : symbolTable) {
+	        boolean isUsed = symbol.isUsed();
+	        if (!isUsed) {
+	            if (!hasWarnings) {
 	                System.out.println("Warning: in " + inputFileName);
 	                hasWarnings = true;
 	            }
-	    		String name = symbol.getVariableName();
-	    		String lineNum = symbol.getLineNum();
+	            String name = symbol.getVariableName();
+	            String lineNum = symbol.getLineNum();
 	            System.out.println('\t' + name + " is declared in line " + lineNum + ", but never used.");
-	    	}
+	            
+	            // 未使用の変数をリストに追加
+	            unusedSymbols.add(symbol);
+	        }
 	    }
+
+	    // 未使用変数を記号表から削除
+	    symbolTable.removeAll(unusedSymbols);
 	}
 }

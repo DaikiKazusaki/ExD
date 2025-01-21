@@ -73,6 +73,7 @@ public class CompilationVisitor extends Visitor {
     	// サブルーチンのreturn先を確保
 	    addOutputList('\t' + "RET");
     	
+	    // 副プログラムを探索
     	block.accept(this);
     	
     	// 変数の領域確保
@@ -89,6 +90,9 @@ public class CompilationVisitor extends Visitor {
 		// lib.casを記載
 		List<String> libStatementList = new LibManager().addLibToStatement(isNecessaryOfLib);
 		outputStatementList.addAll(libStatementList);
+		
+		// 最適化
+		// outputStatementList = new Optimization().optimize(outputStatementList);
     }
     
     @Override
