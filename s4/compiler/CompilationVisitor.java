@@ -73,6 +73,7 @@ public class CompilationVisitor extends Visitor {
     	// サブルーチンのreturn先を確保
 	    addOutputList('\t' + "RET");
     	
+	    // 副プログラムを探索
     	block.accept(this);
     	
     	// 変数の領域確保
@@ -315,15 +316,11 @@ public class CompilationVisitor extends Visitor {
     	
     	// 条件式の探索
     	equation.accept(this);
-    	boolean isBoolean = parseEquation(equation);
+    	parseEquation(equation);
     	
     	// 条件分岐の判定
     	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	if (isBoolean) {
-        	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
-    	} else {
-    		addOutputList('\t' + "CPA" + '\t' + "GR1, =#0000");
-    	}
+    	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
     	addOutputList('\t' + "JZE" + '\t' + ifLabel.getValue());
     	
     	// 複合文の探索
@@ -366,15 +363,11 @@ public class CompilationVisitor extends Visitor {
     	
     	// 条件式の探索
     	equation.accept(this);
-    	boolean isBoolean = parseEquation(equation);
+    	parseEquation(equation);
     	
     	// 終了条件の探索
     	addOutputList('\t' + "POP" + '\t' + "GR1");
-    	if (isBoolean) {
-        	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
-    	} else {
-    		addOutputList('\t' + "CPA" + '\t' + "GR1, =#0000");
-    	}
+    	addOutputList('\t' + "CPL" + '\t' + "GR1, =#0000");
     	addOutputList('\t' + "JZE" + '\t' + whileLabel.getValue());
     	
     	// 複合文の探索
@@ -1140,8 +1133,6 @@ public class CompilationVisitor extends Visitor {
     		if (type.equals("boolean")) {
     			return true;
     		}
-    		
-    		// 変数を使用済みにする
     		
     	} else if (variable.getVariableWithIndex() != null) {
     		Equation equation = variable.getVariableWithIndex().getIndex().getEquation();
