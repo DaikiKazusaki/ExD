@@ -63,7 +63,7 @@ Checkerの機能はすべてCompilerに包含されており，CompilerではChe
 #### lib.casの不使用
 `lib.cas`を使用しない代わりに，`lib.cas`に登録されているサブルーチンの中で必要最小限のものがcasファイルに記載されるようになっている．
 
-(例)`normal01.ts`の場合は，`WRTSTR`と`WRTLN`
+(例)`normal01.ts`の場合は，`WRTSTR`と`WRTLN`のみがcasファイルに記載され，`MULT`や`DIV`はcasファイルに加えられないようになっている．
 
 #### 未使用変数の表示・削除
 プログラムに含まれる未使用変数をConsoleに出力し，その変数を記号表から削除する．入力ファイルを`normal12.ts`とすると，Consoleでは以下のように出力される．
