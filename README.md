@@ -74,4 +74,12 @@ Warning: in data/ts/normal12.ts
 ~~~
   VAR	DS	34
 ~~~
+
+## 補足
+### AST(抽象構文木)
+抽象構文木は，
+
+### visitorパターン
+
+
 [^1]: サイズnの配列をn個の変数と考える
