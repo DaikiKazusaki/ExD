@@ -1,3 +1,13 @@
-# 情報科学演習Dプログラム
+# 情報科学演習D
 
-## compiler.javaの仕様
+## Lexer.java
+
+## Parser.java
+
+## Compiler.java
+### ファイルの役割
+|ファイル名||
+
+
+### 拡張された機能
+#### 覗き穴最適化
