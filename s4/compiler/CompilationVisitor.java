@@ -76,6 +76,9 @@ public class CompilationVisitor extends Visitor {
 	    // 副プログラムを探索
     	block.accept(this);
     	
+    	// 覗き穴最適化
+    	// outputStatementList = new Optimize().peepholeOptimization(outputStatementList);
+    	
     	// 変数の領域確保
     	String varSize = symbolTable.getSizeOfVar();
     	addOutputList("VAR" + '\t' + "DS" + '\t' + varSize);
