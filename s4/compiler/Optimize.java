@@ -6,6 +6,7 @@ import java.util.List;
 public class Optimize {    
     /**
      * 覗き穴最適化を行うメソッド
+     * 'PUSH -> POP'を'LD'に変換
      * 
      * @param input
      * @return

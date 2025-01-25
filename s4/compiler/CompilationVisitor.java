@@ -77,7 +77,7 @@ public class CompilationVisitor extends Visitor {
     	block.accept(this);
     	
     	// 覗き穴最適化
-    	// outputStatementList = new Optimize().peepholeOptimization(outputStatementList);
+    	outputStatementList = new Optimize().peepholeOptimization(outputStatementList);
     	
     	// 変数の領域確保
     	String varSize = symbolTable.getSizeOfVar();
@@ -776,11 +776,8 @@ public class CompilationVisitor extends Visitor {
     	// GR1にロード
     	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
     	
-    	// PUSHする
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-    	
-    	// POPする
-    	addOutputList('\t' + "POP" + '\t' + "GR2");
+    	// GR2の値をGR1にロードする
+    	addOutputList('\t' + "LD" + '\t' + "GR2, GR1");
     	
     	// WRTINTをCALL
     	addOutputList('\t' + "CALL" + '\t' + "WRTINT");
@@ -802,21 +799,9 @@ public class CompilationVisitor extends Visitor {
     		addOutputList('\t' + "LAD" + '\t' + "GR1, " + address);
     	}    	
     	
-    	// GR1にPUSH
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-    	
     	// PUSHするアドレスを取得する
     	String address = "CHAR" + String.valueOf(stringNum);
     	addOutputList('\t' + "LAD" + '\t' + "GR2, " + address);
-    	
-    	// PUSHする
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR2");
-    	
-    	// GR2にPOPする
-    	addOutputList('\t' + "POP" + '\t' + "GR2");
-    	
-    	// GR1にPOPする
-    	addOutputList('\t' + "POP" + '\t' + "GR1");
     	
     	// WRTESTRをCALL
     	addOutputList('\t' + "CALL" + '\t' + "WRTSTR");
@@ -852,12 +837,9 @@ public class CompilationVisitor extends Visitor {
     		addOutputList('\t' + "ADDA" + '\t' + "GR2, =" + address);
         	addOutputList('\t' + "LD" + '\t' + "GR1, VAR, GR2");
     	}
-    	
-    	// PUSHする
-    	addOutputList('\t' + "PUSH" + '\t' + "0, GR1");
-    	
-    	// POPする
-    	addOutputList('\t' + "POP" + '\t' + "GR2");
+   
+    	// GR2にGR1をロード
+    	addOutputList('\t' + "LD" + '\t' + "GR2, GR1");
     	
     	// WRTCHをCALL
     	addOutputList('\t' + "CALL" + '\t' + "WRTCH");
