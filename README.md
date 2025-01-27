@@ -1,14 +1,15 @@
 # 情報科学演習D
 Pascal風言語[^1]をCASL2にコンパイルするコンパイラをJavaで作成したものです．一般的にコンパイラでは以下の手順でコンパイルをします．
-1. **字句解析**：入力プログラムからトークン列を切り出し，構文解析や意味解析のための準備を行う．字句解析を行ったときに生成されるファイルは`*.ts`となっている．
+1. **字句解析**：入力プログラムからトークン列を切り出し，構文解析や意味解析のための準備を行う．
 2. **構文解析**：プログラムが構文的に正しいかを判定する．
 4. **意味解析**：プログラムに意味的[^2]に正しいかを判定する．
 5. **コード生成**：目的言語のコードを生成する．
 6. **最適化**：生成したコードから冗長な部分を削除し，実行数を最小限にしたコードに変換する．
 
 情報科学演習Dの詳細な内容は以下を参照してください．
-- [指導書](https://dev.ics.es.osaka-u.ac.jp/enshud/shidousho.pdf)
-- [pasファイル，tsファイル，及びcasファイル](https://dev.ics.es.osaka-u.ac.jp/file-viewer/)
+- 指導書: [https://dev.ics.es.osaka-u.ac.jp/enshud/shidousho.pdf](https://dev.ics.es.osaka-u.ac.jp/enshud/shidousho.pdf)
+- 使用するファイル: [https://dev.ics.es.osaka-u.ac.jp/file-viewer/](https://dev.ics.es.osaka-u.ac.jp/file-viewer/)
+- ホームページ: [https://dev.ics.es.osaka-u.ac.jp/enshud/](https://dev.ics.es.osaka-u.ac.jp/enshud/)
 
 # 各フォルダの内容
 
