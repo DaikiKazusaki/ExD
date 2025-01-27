@@ -17,7 +17,7 @@ public class Compiler {
 	 * @throws SemanticException 
 	 * @throws SyntaxException 
 	 */
-	public static void main(final String[] args) throws SyntaxException, SemanticException {
+	public static void main(final String[] args) {
 		// Compilerを実行してcasを生成する
 		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
 		// System.out.println(new Compiler().run("tmp/read_test/readChar.ts", "tmp/read_test/readChar.cas"));
