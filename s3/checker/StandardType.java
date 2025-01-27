@@ -1,16 +1,16 @@
 package enshud.s3.checker;
 
-public class VariableName implements Node {
-    private String variableName;
+public class StandardType implements Node {
+    private String standardType;
     private String lineNum;
 
-    public VariableName(String variableName, String lineNum) {
-        this.variableName = variableName;
+    public StandardType(String standardType, String lineNum) {
+        this.standardType = standardType;
         this.lineNum = lineNum;
     }
 
-    public String getVariableName() {
-        return variableName;
+    public String getStandardType() {
+        return standardType;
     }
     
     public String getLineNum() {

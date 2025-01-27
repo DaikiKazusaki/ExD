@@ -1,896 +1,1077 @@
 package enshud.s3.checker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Parser {
-    private int tokenIndex = 0;
-    private int LEXICALCOLS = 0;
-    private int TOKENCOLS = 1;
-    private int LINENUMBERCOLS = 3;
-    private List<List<String>> tokens = new ArrayList<>();
-    private SyntaxException e;
+	private List<List<String>> tokenList = new ArrayList<>();
+	private int tokenIndex = 0;
+	private int LEXICALITYCOLS = 0;
+	private int TOKENCOLS = 1;
+	private int LINENUMBERCOLS = 3;
+	
+	public Parser(List<List<String>> tokenList) {
+		this.tokenList = tokenList;
+	}
+	
+	/**
+	 * tokenIndex行目のトークンが期待されたものであるかをチェックするメソッド
+	 * 
+	 * @param input　期待されるトークン
+	 * @throws SyntaxException
+	 */
+	public void checkToken(String input) throws SyntaxException {
+		String token = tokenList.get(tokenIndex).get(TOKENCOLS);
+		
+		if (!token.equals(input)) {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+		
+		tokenIndex++;
+	}
+	
+	/**
+	 * 字句を取得するメソッド
+	 * 
+	 * @param index
+	 * @return　字句
+	 */
+	public String getLexicality(int index) {
+		return tokenList.get(index).get(LEXICALITYCOLS);
+	}
+	
+	/**
+	 * トークンを取得するメソッド
+	 * 
+	 * @return token
+	 */
+	public String getToken(int input) {
+		String token = tokenList.get(input).get(TOKENCOLS);
+		return token;
+	}
+	
+	/**
+	 * 行数を取得するメソッド
+	 * 
+	 * @return 
+	 */
+	public String getLineNum() {
+		return tokenList.get(tokenIndex).get(LINENUMBERCOLS);
+	}
+	
+	/**
+	 * プログラムを判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Program program() throws SyntaxException {
+		// "program"のチェック
+		checkToken("SPROGRAM");
+		
+		// プログラム名の確認
+		ProgramName programName = programName();
+		
+		// ";"の確認
+		checkToken("SSEMICOLON");
+		
+		// ブロックの確認
+		Block block = block();
+		
+		// 複合文の確認
+		ComplexStatement complexStatement = complexStatement();
+		
+		// "."の確認
+		checkToken("SDOT");
+		
+		return new Program(programName, block, complexStatement);		
+	}
+	
+	/**
+	 * プログラム名を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public ProgramName programName() throws SyntaxException {
+		String lineNum = getLineNum();
+		// 識別子の判定
+		checkToken("SIDENTIFIER");
+		
+		return new ProgramName(getLexicality(tokenIndex - 1), lineNum);
+	}
+	
+	/**
+	 * ブロックを判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Block block() throws SyntaxException {
+		// 変数宣言の判定
+		VariableDeclaration variableDeclaration = variableDeclaration();
+		
+		// 副プログラム宣言群の判定
+		SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclarationGroup();
+		
+		return new Block(variableDeclaration, subprogramDeclarationGroup);
+	}
+	
+	/**
+	 * 変数宣言を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public VariableDeclaration variableDeclaration() throws SyntaxException {
+		VariableDeclarationGroup variableDeclarationGroup = null;
+		
+		// "var"の判定
+		if (getToken(tokenIndex).equals("SVAR")) {
+			tokenIndex++;
+			
+			variableDeclarationGroup = variableDeclarationGroup();
+		} 
+		
+		return new VariableDeclaration(variableDeclarationGroup);
+	}
+	
+	/**
+	 * 変数宣言の並びを判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxException {
+		List<VariableNameGroup> variableNameGroupList = new ArrayList<>();
+		List<Type> typeList = new ArrayList<>();
+		
+		// 変数名の並びの判定
+		variableNameGroupList.add(variableNameGroup());
+		
+		// ":"の判定
+		checkToken("SCOLON");
+		
+		// 型の判定
+		typeList.add(type());
+		
+		// ";"の判定
+		checkToken("SSEMICOLON");
+		
+		while (getToken(tokenIndex).equals("SIDENTIFIER")) {
+			// 変数名の並びの判定
+			variableNameGroupList.add(variableNameGroup());
+			
+			// ":"の判定
+			checkToken("SCOLON");
+			
+			// 型の判定
+			typeList.add(type());
+			
+			// ";"の判定
+			checkToken("SSEMICOLON");
+		}
+		
+		return new VariableDeclarationGroup(variableNameGroupList, typeList);
+	}
+	
+	/**
+	 * 変数名の並びの判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public VariableNameGroup variableNameGroup() throws SyntaxException {
+		String lineNum = getLineNum();
+		List<VariableName> variableNameList = new ArrayList<>();
+		
+		// 変数名の判定
+		variableNameList.add(variableName());		
+		
+		// 繰り返しの判定
+		while (getToken(tokenIndex).equals("SCOMMA")) {
+			tokenIndex++;
+			
+			variableNameList.add(variableName()); 
+		}
+		
+		return new VariableNameGroup(variableNameList, lineNum);
+	}
+	
+	/**
+	 * 変数名の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public VariableName variableName() throws SyntaxException {
+		String lineNum = getLineNum();
+		// 識別子の判定
+		checkToken("SIDENTIFIER");
+		
+		return new VariableName(getLexicality(tokenIndex - 1), lineNum);
+	}
+	
+	/**
+	 * 型の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Type type() throws SyntaxException {
+		StandardType standardType = null;
+		ArrayType arrayType = null;
+		
+		// トークンの取得
+		String token = getToken(tokenIndex);
+		
+		// 標準型，配列型の判定
+		if (token.equals("SINTEGER") || token.equals("SCHAR") || token.equals("SBOOLEAN")) {
+			standardType = standardType();
+		} else if (token.equals("SARRAY")) {
+			arrayType = arrayType();
+		} else {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+		
+		return new Type(standardType, arrayType);
+	}
+	
+	/**
+	 * 標準型を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public StandardType standardType() throws SyntaxException {
+		String lineNum = getLineNum();
+		tokenIndex++;		
+		return new StandardType(getLexicality(tokenIndex - 1), lineNum);
+	}
+	
+	/**
+	 * 配列型を判定する判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public ArrayType arrayType() throws SyntaxException {
+		// "array"の判定
+		checkToken("SARRAY");
+		
+		// "["の判定
+		checkToken("SLBRACKET");
+		
+		// 添え字の最小値の判定
+		Int minimumInteger = integer();
+		
+		// ".."の判定
+		checkToken("SRANGE");
+		
+		// 添え字の最大値の判定
+		Int maximumInteger = integer();
+		
+		// "]"の判定
+		checkToken("SRBRACKET");
+		
+		// "of"の判定
+		checkToken("SOF");
+		
+		// 標準型の判定
+		StandardType standardType = standardType();
+		
+		return new ArrayType(minimumInteger, maximumInteger, standardType);
+	}
+	
+	/**
+	 * 整数の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Int integer() throws SyntaxException {
+		String lineNum = getLineNum();
+		Sign sign = null;
+		List<String> signList = Arrays.asList("SPLUS", "SMINUS");
+		
+		// 符号の判定
+		if (signList.contains(getToken(tokenIndex))) {
+			sign = sign();
+		}
+		
+		// 符号なし整数の判定
+		UnsignedInteger unsignedInteger = unsignedInteger();
+		
+		return new Int(sign, unsignedInteger, lineNum);
+	}
+	
+	/**
+	 * 符号を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Sign sign() throws SyntaxException {
+		tokenIndex++;
+		return new Sign(getLexicality(tokenIndex - 1));
+	}
+	
+	/**
+	 * 副プログラム宣言群を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public SubprogramDeclarationGroup subprogramDeclarationGroup() throws SyntaxException {
+		List<SubprogramDeclaration> subprogramDeclarationList = new ArrayList<>();
+		
+		while (getToken(tokenIndex).equals("SPROCEDURE")) {
+			// 副プログラム宣言の判定
+			subprogramDeclarationList.add(subprogramDeclaration());
+			
+			// ";"の判定
+			checkToken("SSEMICOLON");
+		}
+		
+		return new SubprogramDeclarationGroup(subprogramDeclarationList);
+	}
+	
+	/**
+	 * 副プログラム宣言の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public SubprogramDeclaration subprogramDeclaration() throws SyntaxException {
+		// 副プログラム頭部の判定
+		SubprogramHead subprogramHead = subprogramHead();
+		
+		// 変数宣言の判定
+		VariableDeclaration variableDeclaration = variableDeclaration();
+		
+		// 複合文の判定
+		ComplexStatement complexStatement = complexStatement();
+		
+		return new SubprogramDeclaration(subprogramHead, variableDeclaration, complexStatement);
+	}
+	
+	/**
+	 * 副プログラム頭部の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public SubprogramHead subprogramHead() throws SyntaxException {
+		String lineNum = getLineNum();
+		
+		// "procedure"の判定
+		checkToken("SPROCEDURE");
+		
+		// 手続き名の判定
+		ProcedureName procedureName = procedureName();
+		
+		// 仮パラメータの判定
+		FormalParameter formalParameter = formalParameter();
+		
+		// ";"の判定
+		checkToken("SSEMICOLON");
+		
+		return new SubprogramHead(procedureName, formalParameter, lineNum);
+	}
+	
+	/**
+	 * 手続き名の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public ProcedureName procedureName() throws SyntaxException {
+		// 識別子の確認
+		checkToken("SIDENTIFIER");
+		
+		return new ProcedureName(getLexicality(tokenIndex - 1));
+	}
+	
+	/**
+	 * 仮パラメータの判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public FormalParameter formalParameter() throws SyntaxException {
+		FormalParameterGroup formalParameterGroup = null;
+		
+		// "("の判定
+		if (getToken(tokenIndex).equals("SLPAREN")) {
+			// "("の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 仮パラメータの並びの判定
+			formalParameterGroup = formalParameterGroup();
+			
+			// ")"の判定
+			checkToken("SRPAREN");
+		}
+		
+		return new FormalParameter(formalParameterGroup);
+	}
+	
+	/**
+	 * 仮パラメータを判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public FormalParameterGroup formalParameterGroup() throws SyntaxException {
+		List<FormalParameterNameGroup> formalParameterNameGroupList = new ArrayList<>();
+		List<StandardType> standardTypeList = new ArrayList<>();
+		
+		// 仮パラメータ名の並びの判定
+		formalParameterNameGroupList.add(formalParameterNameGroup());
+		
+		// ":"の判定
+		checkToken("SCOLON");
+		
+		// 標準型
+		standardTypeList.add(standardType());
+		
+		while (getToken(tokenIndex).equals("SSEMICOLON")) {
+			// 仮パラメータ名の並びの判定
+			formalParameterNameGroupList.add(formalParameterNameGroup());
+			
+			// ":"の判定
+			checkToken("SCOLON");
+			
+			// 標準型
+			standardTypeList.add(standardType());
+		}
+		
+		return new FormalParameterGroup(formalParameterNameGroupList, standardTypeList);
+	}
+	
+	/**
+	 * 仮パラメータ名の並びの判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public FormalParameterNameGroup formalParameterNameGroup() throws SyntaxException {
+		List<FormalParameterName> formalParameterNameList = new ArrayList<>();
+		String lineNum = getLineNum();
+		
+		//仮パラメータ名の判定
+		formalParameterNameList.add(formalParameterName());
+		
+		while (getToken(tokenIndex).equals("SCOMMA")) {
+			tokenIndex++;
+			formalParameterNameList.add(formalParameterName());
+		}
+		
+		return new FormalParameterNameGroup(formalParameterNameList, lineNum);
+	}
+	
+	/**
+	 * 仮パラメータ名の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public FormalParameterName formalParameterName() throws SyntaxException {
+		// 識別子の判定
+		if (!getToken(tokenIndex).equals("SIDENTIFIER")) {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+		tokenIndex++;
+		
+		return new FormalParameterName(getLexicality(tokenIndex - 1));
+	}
+	
+	/**
+	 * 複合文の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public ComplexStatement complexStatement() throws SyntaxException {
+		// "begin"の判定
+		checkToken("SBEGIN");
+		
+		// 文の並びの判定
+		StatementGroup statementGroup = statementGroup();
+		
+		// "end"の判定
+		checkToken("SEND");
+		
+		return new ComplexStatement(statementGroup);
+	}
+	
+	/**
+	 * 文の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public StatementGroup statementGroup() throws SyntaxException {
+	    List<String> firstOfStatementGroup = Arrays.asList("SIDENTIFIER", "SREADLN", "SWRITELN", "SBEGIN", "SIF", "SWHILE");
+	    List<Statement> statementList = new ArrayList<>();
+	    
+	    // 文の判定
+	    statementList.add(statement());
+	    
+	    // ";"の判定
+	    checkToken("SSEMICOLON");
+	    
+	    while (firstOfStatementGroup.contains(getToken(tokenIndex))) {
+	        // 文の判定
+	        statementList.add(statement());
+	        
+	        // ";"の判定
+	        checkToken("SSEMICOLON");
+	    }
+	    
+	    return new StatementGroup(statementList);
+	}
 
-    public Parser(List<List<String>> tokens) {
-        this.tokens = tokens;
-        e = new SyntaxException(tokens);
-    }
-    
-    /**
-     * Programメソッドの返り値を取得するメソッド
-     * 
-     * @throws SyntaxException 
-     * @throws SemanticException 
-     */
-    public Program getProgram() throws SyntaxException, SemanticException {
-    	return program();
-    }
-
-    /**
-     * プログラム
-     * @throws SemanticException 
-     * 
-     */
-    public Program program() throws SyntaxException, SemanticException {
-    	// "program"の判定
-        checkToken("SPROGRAM");
-
-        // プログラム名の判定
-        ProgramName programName = programName();
-
-        // ";"の判定
-        checkToken("SSEMICOLON");
-        
-        // ブロックの判定
-        Block block = block();
-        
-        // 複合文の判定
-        ComplexStatement complexStatement = complexStatement();
-        
-        // "."の判定
-        checkToken("SDOT");
-        
-        return new Program(programName, block, complexStatement); 
-    }
-    
-    /**
-     * トークンが正しいことを判定するメソッド
-     * 
-     */
-    public void checkToken(String token) throws SyntaxException {
-    	if (tokens.get(tokenIndex).get(TOKENCOLS).equals(token)) {
-    		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    }
-    
-    /**
-     * トークンを取得するメソッド
-     * 
-     */
-    public String getToken(int lineNum) {
-    	return tokens.get(lineNum).get(TOKENCOLS);
-    }
-    
-    /**
-     * 字句を取得するメソッド
-     * 
-     */
-    public String getLexicality(int lineNum) {
-    	return tokens.get(lineNum).get(LEXICALCOLS);
-    }
-    
-    /**
-     * プログラム名の判定
-     * 
-     */
-    public ProgramName programName() throws SyntaxException {
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SIDENTIFIER")) {
-    		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    	
-    	return new ProgramName(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * ブロックの判定
-     * @throws SemanticException 
-     * 
-     */
-    public Block block() throws SyntaxException, SemanticException {
-    	VariableDeclaration variableDeclaration = variableDeclaration();    	
-    	SubprogramDeclarationGroup subprogramDeclarationGroup = subprogramDeclarationGroup();
-    	
-    	return new Block(variableDeclaration, subprogramDeclarationGroup);
-    }
-    
-    /**
-     * 変数宣言
-     * 
-     */
-    public VariableDeclaration variableDeclaration() throws SyntaxException {
-    	String token = getToken(tokenIndex);
-    	VariableDeclarationGroup variableDeclarationGroup = null;
-    	
-    	if (token.equals("SVAR")) {
-    		tokenIndex++;
-    		variableDeclarationGroup = variableDeclarationGroup();
-    	}
-    	
-    	return new VariableDeclaration(variableDeclarationGroup);
-    }
-    
-    /**
-     * 変数宣言の並び
-     * 
-     */
-    public VariableDeclarationGroup variableDeclarationGroup() throws SyntaxException {
-    	List<VariableNameGroup> variableNameGroup = new ArrayList<>();
-    	List<Type> type = new ArrayList<>();
-    	
-    	variableNameGroup.add(variableNameGroup());
-    	
-    	// ":"の判定
-    	checkToken("SCOLON");
-    	
-    	type.add(type());
-    	
-    	// ";"の判定
-    	checkToken("SSEMICOLON");
-    	
-    	while (getToken(tokenIndex).equals("SIDENTIFIER")) {
-    		variableNameGroup.add(variableNameGroup());
-    		
-    		// ":"の判定
-        	checkToken("SCOLON");
-        	
-        	type.add(type());
-        	
-        	// ";"の判定
-        	checkToken("SSEMICOLON");
-    	}
-    	
-    	return new VariableDeclarationGroup(variableNameGroup, type);
-    }
-    
-    /**
-     * 変数名の並び
-     * 
-     */
-    public VariableNameGroup variableNameGroup() throws SyntaxException {
-    	List<VariableName> variableName = new ArrayList<>();
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	variableName.add(variableName());
-    	
-    	while (getToken(tokenIndex).equals("SCOMMA")) {
-    		tokenIndex++;
-    		variableName.add(variableName());
-    	}
-    	
-    	return new VariableNameGroup(variableName, lineNum);
-    }
-    
-    /**
-     * 変数名の判定
-     * 
-     */
-    public VariableName variableName() throws SyntaxException {
-    	if (getToken(tokenIndex).equals("SIDENTIFIER")) {
-    		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    	
-    	return new VariableName(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * 型の判定
-     * 
-     */
-    public Type type() throws SyntaxException {
-    	GeneralType generalType = null;
-    	ArrayType arrayType = null;
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SINTEGER") || token.equals("SCHAR") || token.equals("SBOOLEAN")) {
-    		generalType = generalType();
-    	} else if (token.equals("SARRAY")) {
-    		tokenIndex++;
-    		arrayType = arrayType();
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    	
-    	return new Type(generalType, arrayType);
-    }
-    
-    /**
-     * 標準型の判定
-     * 
-     */
-    public GeneralType generalType() throws SyntaxException {
-    	tokenIndex++;
-    	return new GeneralType(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * 配列型の判定
-     * 
-     */
-    public ArrayType arrayType() throws SyntaxException {
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	// "["の判定
-    	checkToken("SLBRACKET");
-    	
-    	// 添え字の最小値
-    	Int minimumInteger = integer();
-    	
-    	// ".."の判定
-    	checkToken("SRANGE");
-    	
-    	// 添え字の最大値
-    	Int maximumInteger = integer();
-    	
-    	// "]"の判定
-    	checkToken("SRBRACKET");
-    	
-    	// "of"の判定
-    	checkToken("SOF");
-    	
-    	// 標準型の判定
-    	GeneralType generalType = generalType();
-    	
-    	return new ArrayType(minimumInteger, maximumInteger, generalType, lineNum);
-    }
-    
-    /**
-     * 整数の判定
-     * 
-     */
-    public Int integer() throws SyntaxException {
-    	Sign sign = null;
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SPLUS") || token.equals("SMINUS")) {
-    		sign = sign();
-    	} 
-    	
-    	UnsignedInteger unsignedInteger = unsignedInteger();
-    	
-    	return new Int(sign, unsignedInteger);
-    }
-    
-    /**
-     * 符号の判定
-     * 
-     */
-    public Sign sign() throws SyntaxException {
-    	tokenIndex++;
-    	return new Sign(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * 副プログラム宣言群の判定
-     * @throws SemanticException 
-     * 
-     */
-    public SubprogramDeclarationGroup subprogramDeclarationGroup() throws SyntaxException, SemanticException {
-    	List<SubprogramDeclaration> subprogramDeclaration = new ArrayList<>();
-    	
-    	while (getToken(tokenIndex).equals("SPROCEDURE")) {    		
-    		subprogramDeclaration.add(subprogramDeclaration());
-    		
-    		// ";"の判定
-    		checkToken("SSEMICOLON");
-    	}
-    	
-    	return new SubprogramDeclarationGroup(subprogramDeclaration);
-    }
-    
-    /**
-     * 副プログラム宣言
-     * @throws SemanticException 
-     * 
-     */
-    public SubprogramDeclaration subprogramDeclaration() throws SyntaxException, SemanticException {
-    	// 副プログラム頭部の判定
-    	SubprogramHead subprogramHead = subprogramHead();
-    	
-    	// 変数宣言の判定
-    	VariableDeclaration variableDeclaration = variableDeclaration();
-    	
-    	// 複合文の判定
-    	ComplexStatement complexStatement = complexStatement();
-    	
-    	return new SubprogramDeclaration(subprogramHead, variableDeclaration, complexStatement);
-    }
-    
-    /**
-     * 副プログラム頭部
-     * 
-     */
-    public SubprogramHead subprogramHead() throws SyntaxException {
-    	// "procedure"の判定
-    	checkToken("SPROCEDURE");
-    	
-    	// 手続き名の判定
-    	ProcedureName procedureName = procedureName();
-    	
-    	// 仮パラメータ名の判定
-    	FormalParameter formalParameter = formalParameter();
-    	
-    	// ";"の判定
-    	checkToken("SSEMICOLON");
-    	
-    	return new SubprogramHead(procedureName, formalParameter);
-    }
-    
-    /**
-     * 手続き名
-     * 
-     */
-    public ProcedureName procedureName() throws SyntaxException {
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SIDENTIFIER")) {
-    		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    	
-    	return new ProcedureName(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * 仮パラメータ
-     * 
-     */
-    public FormalParameter formalParameter() throws SyntaxException {
-    	String token = getToken(tokenIndex);
-    	FormalParameterGroup formalParameterGroup = null;
-    	
-    	if (token.equals("SLPAREN")) {
-    		tokenIndex++;
-    		formalParameterGroup = formalParameterGroup();
-    		checkToken("SRPAREN");
-    	}
-    	
-    	return new FormalParameter(formalParameterGroup);
-    }
-    
-    /**
-     * 仮パラメータの並び
-     * 
-     */
-    public FormalParameterGroup formalParameterGroup() throws SyntaxException {
-    	List<FormalParameterNameGroup> formalParameterNameGroup = new ArrayList<>();
-    	List<GeneralType> generalType = new ArrayList<>();
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	formalParameterNameGroup.add(formalParameterNameGroup());
-    	
-    	// ":"の判定
-    	checkToken("SCOLON");
-    	
-    	generalType.add(generalType());
-    	
-    	while (getToken(tokenIndex).equals("SCOMMA")) {
-    		tokenIndex++;
-    		formalParameterNameGroup.add(formalParameterNameGroup());
-    		
-    		// ":"の判定
-    		checkToken("SCOLON");	
-    	}
-    	
-    	return new FormalParameterGroup(formalParameterNameGroup, generalType, lineNum);
-    }
-    
-    /**
-     * 仮パラメータ名の並び
-     * 
-     */
-    public FormalParameterNameGroup formalParameterNameGroup() throws SyntaxException {
-    	List<FormalParameterName> formalParameterName = new ArrayList<>();
-    	
-    	formalParameterName.add(formalParameterName());
-    	
-    	while (getToken(tokenIndex).equals("SCOMMA")) {
-    		tokenIndex++;
-    		formalParameterName.add(formalParameterName());
-    	}
-    	
-    	return new FormalParameterNameGroup(formalParameterName);
-    }
-    
-    /**
-     * 仮パラメータ名
-     * 
-     */
-    public FormalParameterName formalParameterName() throws SyntaxException {
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SIDENTIFIER")) {
-    		tokenIndex++;
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    	
-    	return new FormalParameterName(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * 複合文の判定
-     * @throws SemanticException 
-     * 
-     */
-    public ComplexStatement complexStatement() throws SyntaxException, SemanticException {
-    	// "begin"の判定
-    	checkToken("SBEGIN");
-    	
-    	// 文の並び
-    	StatementGroup statementGroup = statementGroup();
-    	
-    	// "end"の判定
-    	checkToken("SEND");
-    	
-    	return new ComplexStatement(statementGroup);	
-    }
-    
-    /**
-     * 文の並びの判定
-     * @throws SemanticException 
-     * 
-     */
-    public StatementGroup statementGroup() throws SyntaxException, SemanticException {
-    	List<Statement> statement = new ArrayList<>();
-    	
-    	// 文の判定
-    	statement.add(statement());
-    	
-    	// ";"の判定
-    	checkToken("SSEMICOLON");
-    	
-    	// 繰り返しの判定
-    	while (getToken(tokenIndex).equals("SIDENTIFIER") || getToken(tokenIndex).equals("SREADLN") || getToken(tokenIndex).equals("SWRITELN") || getToken(tokenIndex).equals("SBEGIN") || getToken(tokenIndex).equals("SIF") || getToken(tokenIndex).equals("SWHILE")) {
-    		statement.add(statement());
-    		
-    		// ";"の判定
-        	checkToken("SSEMICOLON");
-    	}
-    	
-    	return new StatementGroup(statement);
-    }
-    
-    /**
-     * 文の判定
-     * @throws SemanticException 
-     * 
-     */
-    public Statement statement() throws SyntaxException, SemanticException {
-    	BasicStatement basicStatement = null;
-    	IfThen ifThen = null;
-    	WhileDo whileDo = null;
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SIDENTIFIER") || token.equals("SREADLN") || token.equals("SWRITELN") || token.equals("SBEGIN")) {
-    		basicStatement = basicStatement();
-    	} else if (token.equals("SIF")) {
-    		tokenIndex++;
-    		ifThen = ifThen();
-    	} else if (token.equals("SWHILE")) {
-    		tokenIndex++;
-    		whileDo = whileDo();
-    	}
-    	
-    	return new Statement(basicStatement, ifThen, whileDo);
-    }
-    
-    /**
-     * if-thenの判定
-     * @throws SemanticException 
-     * 
-     */
-    public IfThen ifThen() throws SyntaxException, SemanticException {
-    	Equation equation = equation();
-    	
-    	// "then"の判定
-    	checkToken("STHEN");
-    	
-    	ComplexStatement complexStatement = complexStatement();
-    	
-    	Else Else = null;
-    	if (getToken(tokenIndex).equals("SELSE")) {
-    		Else = Else();
-    	}
-    	
-    	return new IfThen(equation, complexStatement, Else);
-    }
-    
-    /**
-     * elseの判定
-     * @throws SemanticException 
-     * 
-     */
-    public Else Else() throws SyntaxException, SemanticException {
-    	tokenIndex++;
-    	ComplexStatement complexStatement = complexStatement();
-    	
-    	return new Else(complexStatement);
-    }
-    
-    /**
-     * while-doの判定
-     * @throws SemanticException 
-     * 
-     */
-    public WhileDo whileDo() throws SyntaxException, SemanticException {
-    	Equation equation = equation();
-    	
-    	// "do"の判定
-    	checkToken("SDO");
-    	
-    	ComplexStatement complexStatement = complexStatement();
-    	
-    	return new WhileDo(equation, complexStatement);
-    }
-    
-    /**
-     * 基本文の判定
-     * @throws SemanticException 
-     * 
-     */
-    public BasicStatement basicStatement() throws SyntaxException, SemanticException {
-    	String token = getToken(tokenIndex);
-    	AssignStatement assignStatement = null;
-    	ProcedureCallStatement procedureCallStatement = null;
-    	InputOutputStatement inputOutputStatement = null;
-    	ComplexStatement complexStatement = null;
-    	
-    	if (token.equals("SIDENTIFIER")) {
-    		if (getToken(tokenIndex + 1).equals("SASSIGN") || getToken(tokenIndex + 1).equals("SLBRACKET")) {
-    			assignStatement = assignStatement();
-    		} else {
-    			procedureCallStatement = procedureCallStatement();
-    		}
-    	} else if (token.equals("SREADLN") || token.equals("SWRITELN")) {
-    		inputOutputStatement = inputOutputStatement();
-    	} else if (token.equals("SBEGIN")) {
-    		complexStatement = complexStatement();
-    	}
-    	
-    	return new BasicStatement(assignStatement, procedureCallStatement, inputOutputStatement, complexStatement);
-    }
-    
-    /**
-     * 代入文の判定
-     * 
-     */
-    public AssignStatement assignStatement() throws SyntaxException {
-    	LeftSide leftSide = leftSide();
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	// ":="の判定
-    	checkToken("SASSIGN");
-    	
-    	Equation equation = equation();
-    	
-    	return new AssignStatement(leftSide, equation, lineNum);
-    }
-    
-    /**
-     * 左辺の判定
-     * 
-     */
-    public LeftSide leftSide() throws SyntaxException {
-    	Variable variable = variable();
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	return new LeftSide(variable, lineNum);
-    }
-    
-    /**
-     * 変数の判定
-     * 
-     */
-    public Variable variable() throws SyntaxException {
-    	NaturalVariable naturalVariable = null;
-    	VariableWithIndex variableWithIndex = null;
-    	String token = getToken(tokenIndex);
-    	String nextToken = getToken(tokenIndex + 1);
-    	
-    	if (token.equals("SIDENTIFIER") && nextToken.equals("SLBRACKET")) {
-    		variableWithIndex = variableWithIndex();
-    	} else if (token.equals("SIDENTIFIER")) {
-    		naturalVariable = naturalVariable();
-    	}
-    	
-    	return new Variable(naturalVariable, variableWithIndex);
-    }
-    
-    /**
-     * 純変数の判定
-     * 
-     */
-    public NaturalVariable naturalVariable() throws SyntaxException {
-    	VariableName variableName = variableName();
-    	return new NaturalVariable(variableName);
-    }
-    
-    
-    /**
-     * 添え字付き変数の判定
-     * 
-     */
-    public VariableWithIndex variableWithIndex() throws SyntaxException {
-    	VariableName variableName = variableName();
-    	
-    	// "["の判定
-    	checkToken("SLBRACKET");
-    	
-    	Index index = index();
-    	
-    	// "]"の判定
-    	checkToken("SRBRACKET");
-    	
-    	return new VariableWithIndex(variableName, index);
-    }
-    
-    
-    /**
-     * 添え字の判定
-     * 
-     */
-    public Index index() throws SyntaxException {
-    	Equation equation = equation();
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	return new Index(equation, lineNum);
-    }
-    
-    /**
-     * 手続き呼び出し文の判定
-     * 
-     */
-    public ProcedureCallStatement procedureCallStatement() throws SyntaxException {
-    	ProcedureName procedureName = procedureName();
-    	String token = getToken(tokenIndex);
-    	EquationGroup equationGroup = null;
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	if (token.equals("SLPAREN")) {
-    		tokenIndex++;
-    		equationGroup = equationGroup();
-    		
-    		// ")"の判定
-    		checkToken("SRPAREN");
-    	}
-    	
-    	return new ProcedureCallStatement(procedureName, equationGroup, lineNum);
-    }
-    
-    /**
-     * 式の並びの判定
-     * 
-     */
-    public EquationGroup equationGroup() throws SyntaxException {
-    	List<Equation> equation = new ArrayList<>();
-    	
-    	equation.add(equation());
-    	
-    	while (getToken(tokenIndex).equals("SCOMMA")) {
-    		tokenIndex++;
-    		equation.add(equation());
-    	}
-    	
-    	return new EquationGroup(equation);
-    }
-    
-    /**
-     * 式の判定
-     * 
-     */
-    public Equation equation() throws SyntaxException {
-    	// 単純式の判定
-    	SimpleEquation simpleEquation =simpleEquation();
-    	List<RelationalOperator> relationalOperator = new ArrayList<>();
-    	List<SimpleEquation> simpleEquationList = new ArrayList<>();
-    	
-    	String token = getToken(tokenIndex);
-    	
-    	// 関連演算子の判定
-    	if (token.equals("SEQUAL") || token.equals("SNOTEQUAL") || token.equals("SLESS") || token.equals("SLESSEQUAL") || token.equals("SGREATEQUAL") || token.equals("SGREAT")) {
-    		relationalOperator.add(relationalOperator());
-    		simpleEquationList.add(simpleEquation());
-    	}
-    	
-    	return new Equation(simpleEquation, relationalOperator, simpleEquationList);
-    }
-    
-    /**
-     * 単純式の判定
-     * 
-     */
-    public SimpleEquation simpleEquation() throws SyntaxException {
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	Sign sign = null;
-    	if (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS")) {
-    		sign = sign();
-    	}
-    	
-    	Term term = term();
-    	List<AdditionalOperator> additionalOperator = new ArrayList<>();
-    	List<Term> termList = new ArrayList<>();
-    	
-    	while (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS") || getToken(tokenIndex).equals("SOR")) {
-    		additionalOperator.add(additionalOperator());
-    		termList.add(term());
-    	} 
-    	
-    	return new SimpleEquation(sign, term, additionalOperator, termList, lineNum);
-    }
-    
-    /**
-     * 項の判定
-     * 
-     */
-    public Term term() throws SyntaxException {
-    	Factor factor = factor();
-    	List<MultipleOperator> multipleOperator = new ArrayList<>();
-    	List<Factor> factorList = new ArrayList<>();
-    	
-    	while (getToken(tokenIndex).equals("SSTAR") || getToken(tokenIndex).equals("SDIVD") || getToken(tokenIndex).equals("SMOD") || getToken(tokenIndex).equals("SAND")) {
-    		multipleOperator.add(multipleOperator());
-    		factorList.add(factor());
-    	}
-    	
-    	return new Term(factor, multipleOperator, factorList);
-    }
-    
-    /**
-     * 因子の判定
-     * 
-     */
-    public Factor factor() throws SyntaxException {
-    	Variable variable = null;
-    	Constant constant = null;
-    	Equation equation = null;
-    	Factor factor = null;    	
-    	String token = getToken(tokenIndex);
-    	String lineNum = tokens.get(tokenIndex).get(LINENUMBERCOLS);
-    	
-    	if (token.equals("SIDENTIFIER")) {
-    		variable = variable();
-    	} else if (token.equals("SCONSTANT") || token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) { 
-    		constant = constant();
-    	} else if (token.equals("SLPAREN")) {
-    		tokenIndex++;
-    		equation = equation();
-    		checkToken("SRPAREN");
-    	} else if (token.equals("SNOT")) {
-    		tokenIndex++;
-    		factor = factor();
-    	} else {
-    		e.throwError(tokenIndex);
-    	}
-    	
-    	return new Factor(variable, constant, equation, factor, lineNum);
-    }
-    
-    /**
-     * 関係演算子の判定
-     * 
-     */
-    public RelationalOperator relationalOperator() throws SyntaxException {
-    	tokenIndex++;
-    	return new RelationalOperator(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * 加法演算子の判定
-     * 
-     */
-    public AdditionalOperator additionalOperator() throws SyntaxException {
-    	tokenIndex++;
-    	return new AdditionalOperator(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * 乗法演算子の判定
-     * 
-     */
-    public MultipleOperator multipleOperator() throws SyntaxException {
-    	tokenIndex++;
-    	return new MultipleOperator(getLexicality(tokenIndex - 1));
-    }
-    
-    /**
-     * 入出力文の判定
-     * 
-     */
-    public InputOutputStatement inputOutputStatement() throws SyntaxException {
-    	VariableGroup variableGroup = null;
-    	EquationGroup equationGroup = null;
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SREADLN")) {
-    		tokenIndex++;
-    		// "("の判定
-    		if (getToken(tokenIndex).equals("SLPAREN")) {
-    			tokenIndex++;
-    			variableGroup = variableGroup();
-    			// ")"の判定
-    			checkToken("SRPAREN");
-    		}
-    	} else if (token.equals("SWRITELN")) {
-    		tokenIndex++;
-    		// "("の判定
-    		if (getToken(tokenIndex).equals("SLPAREN")) {
-    			tokenIndex++;
-    			equationGroup = equationGroup();
-    			// ")"の判定
-    			checkToken("SRPAREN");
-    		}
-    	} 
-    	
-    	return new InputOutputStatement(variableGroup, equationGroup);
-    }
-    
-    /**
-     * 変数の並びの判定
-     * 
-     */
-    public VariableGroup variableGroup() throws SyntaxException {
-    	List<Variable> variable = new ArrayList<>();
-    	
-    	variable.add(variable());
-    	
-    	while (getToken(tokenIndex).equals("SCOMMA")) {
-    		tokenIndex++;
-    		variable.add(variable());
-    	}
-    	
-    	return new VariableGroup(variable);
-    }
-    
-    /**
-     * 定数の判定
-     * 
-     */
-    public Constant constant() throws SyntaxException {
-    	UnsignedInteger unsignedInteger = null;
-    	String token = getToken(tokenIndex);
-    	String lexicality = null;
-    	
-    	if (token.equals("SCONSTANT")) {
-    		unsignedInteger = unsignedInteger();
-    	} else if (token.equals("SSTRING") || token.equals("SFALSE") || token.equals("STRUE")) {
-    		tokenIndex++;
-    		lexicality = getLexicality(tokenIndex - 1);
-    	}
-    	
-    	return new Constant(lexicality, unsignedInteger);
-    }
-    
-    /**
-     * 符号なし整数の判定
-     * 
-     */
-    public UnsignedInteger unsignedInteger() throws SyntaxException {
-    	String token = getToken(tokenIndex);
-    	
-    	if (token.equals("SCONSTANT")) {
-    		tokenIndex++;
-    	} 
-    	
-    	return new UnsignedInteger(getLexicality(tokenIndex - 1));
-    }
+	
+	/**
+	 * 文を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Statement statement() throws SyntaxException {
+		List<String> firstOfStatement = Arrays.asList("SIDENTIFIER", "SREADLN", "SWRITELN", "SBEGIN");
+		BasicStatement basicStatement = null;
+		IfThen ifThen = null;
+		WhileDo whileDo = null;
+		
+		if (firstOfStatement.contains(getToken(tokenIndex))) {
+			basicStatement = basicStatement();
+		} else if (getToken(tokenIndex).equals("SIF")) {
+			ifThen = ifThen();
+		} else if (getToken(tokenIndex).equals("SWHILE")) {
+			whileDo = whileDo();
+		}
+		
+		return new Statement(basicStatement, ifThen, whileDo);
+	}
+	
+	/**
+	 * if-then文の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public IfThen ifThen() throws SyntaxException {
+		String lineNum = getLineNum();
+		// "if"の判定は済んでいるので，インクリメントのみを行う
+		tokenIndex++;
+		
+		// 式の判定
+		Equation equation = equation();
+		
+		// "then"の判定
+		checkToken("STHEN");
+		
+		// 複合文の判定
+		ComplexStatement complexStatement = complexStatement();
+		
+		ElseStatement elseStatement = null;
+		// "else"の判定
+		if (getToken(tokenIndex).equals("SELSE")) {
+			elseStatement = elseStatement();
+		}
+		
+		return new IfThen(equation, complexStatement, elseStatement, lineNum);
+	}
+	
+	/**
+	 * else文の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public ElseStatement elseStatement() throws SyntaxException {
+		// "else"の判定は行われているので，インクリメントのみを行う
+		tokenIndex++;
+		
+		// 複合文の判定
+		ComplexStatement complexStatement = complexStatement();
+		
+		return new ElseStatement(complexStatement);
+	}
+	
+	/**
+	 * while-do文の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public WhileDo whileDo() throws SyntaxException {
+		String lineNum = getLineNum();
+		
+		// "while"の判定は行われているので，インクリメントのみを行う
+		tokenIndex++;
+		
+		// 式の判定
+		Equation equation = equation();
+		
+		// "do"の判定
+		checkToken("SDO");
+		
+		// 複合文の判定
+		ComplexStatement complexStatement = complexStatement();
+		
+		return new WhileDo(equation, complexStatement, lineNum);
+	}
+	
+	/**
+	 * 基本文を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public BasicStatement basicStatement() throws SyntaxException {
+		AssignStatement assignStatement = null;
+		ProcedureCallStatement procedureCallStatement = null;
+		InputOutputStatement inputOutputStatement = null;
+		ComplexStatement complexStatement = null;
+		
+		if (getToken(tokenIndex).equals("SIDENTIFIER")) {
+			if (getToken(tokenIndex + 1).equals("SASSIGN") || getToken(tokenIndex + 1).equals("SLBRACKET")) {
+				assignStatement = assignStatement();
+			} else {
+				procedureCallStatement = procedureCallStatement();
+			}
+		} else if (getToken(tokenIndex).equals("SREADLN") || getToken(tokenIndex).equals("SWRITELN")) {
+			inputOutputStatement = inputOutputStatement();
+		} else if (getToken(tokenIndex).equals("SBEGIN")) {
+			complexStatement = complexStatement();
+		} else {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+		
+		return new BasicStatement(assignStatement, procedureCallStatement, inputOutputStatement, complexStatement);
+	}
+	
+	/**
+	 * 代入文の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public AssignStatement assignStatement() throws SyntaxException {
+		String lineNum = getLineNum();
+		
+		// 左辺の判定
+		LeftSide leftSide = leftSide();
+		
+		// ":="の判定
+		checkToken("SASSIGN");
+		
+		// 式の判定
+		Equation equation = equation();
+		
+		return new AssignStatement(leftSide, equation, lineNum);
+	}
+	
+	/**
+	 * 左辺を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public LeftSide leftSide() throws SyntaxException {
+		// 変数の判定
+		Variable variable = variable();
+		
+		return new LeftSide(variable);
+	}
+	
+	/**
+	 * 変数の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Variable variable() throws SyntaxException {
+		String lineNum = getLineNum();
+		NaturalVariable naturalVariable = null;
+		VariableWithIndex variableWithIndex = null;
+		
+		if (!getToken(tokenIndex + 1).equals("SLBRACKET")) {
+			naturalVariable = naturalVariable();
+		} else {
+			variableWithIndex = variableWithIndex();
+		} 
+		
+		return new Variable(naturalVariable, variableWithIndex, lineNum);
+	}
+	
+	/**
+	 * 純変数の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public NaturalVariable naturalVariable() throws SyntaxException {
+		// 変数名の判定
+		VariableName variableName = variableName();
+		
+		return new NaturalVariable(variableName);
+	}
+	
+	/**
+	 * 添え字付き変数の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public VariableWithIndex variableWithIndex() throws SyntaxException {
+		// 変数名の判定
+		VariableName variableName = variableName();
+		
+		// "["の判定
+		checkToken("SLBRACKET");
+		
+		// 添え字の判定
+		Index index = index();
+		
+		// "]"の判定
+		checkToken("SRBRACKET");
+		
+		return new VariableWithIndex(variableName, index);
+	}
+	
+	/**
+	 * 添え字を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Index index() throws SyntaxException {
+		String lineNum = getLineNum();
+		// 式の判定
+		Equation equation = equation();
+		
+		return new Index(equation, lineNum);
+	}
+	
+	/**
+	 * 手続き呼び出し文の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public ProcedureCallStatement procedureCallStatement() throws SyntaxException {
+		String lineNum = getLineNum();
+		
+		// 手続き名の判定
+		ProcedureName procedureName = procedureName();
+		
+		EquationGroup equationGroup = null;
+		// "("の判定
+		if (getToken(tokenIndex).equals("SLPAREN")) {
+			tokenIndex++;
+			
+			// 式の並びの判定
+			equationGroup = equationGroup();
+			
+			// ")"の判定
+			checkToken("SRPAREN");
+		}
+		
+		return new ProcedureCallStatement(procedureName, equationGroup, lineNum);
+	}
+	
+	/**
+	 * 式の並びの判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SytnaxException
+	 */
+	public EquationGroup equationGroup() throws SyntaxException {
+		List<Equation> equationList = new ArrayList<>();
+		
+		equationList.add(equation());
+		
+		while (getToken(tokenIndex).equals("SCOMMA")) {
+			// ","の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 式の判定
+			equationList.add(equation());
+		}
+		
+		return new EquationGroup(equationList);
+	}
+	
+	/**
+	 * 式を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Equation equation() throws SyntaxException {
+		String lineNum = getLineNum();
+		List<String> setOfRelationalOperator = Arrays.asList("SEQUAL", "SNOTEQUAL", "SLESS", "SLESSEQUAL", "SGREAT", "SGREATEQUAL");
+		List<SimpleEquation> simpleEquationList = new ArrayList<>();
+		RelationalOperator relationalOperator = null;
+		
+		// 単純式の判定
+		simpleEquationList.add(simpleEquation());
+		
+		if (setOfRelationalOperator.contains(getToken(tokenIndex))) {
+			// 関係演算子の判定
+			relationalOperator = relationalOperator();
+			
+			// 単純式の判定
+			simpleEquationList.add(simpleEquation());
+		}
+		
+		return new Equation(simpleEquationList, relationalOperator, lineNum);
+	}
+	
+	/**
+	 * 単純式の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public SimpleEquation simpleEquation() throws SyntaxException {
+		String lineNum = getLineNum();
+		Sign sign = null;
+		List<Term> termList = new ArrayList<>();
+		List<AdditionalOperator> additionalOperatorList = new ArrayList<>();
+		List<String> setOfAdditionalOperator = Arrays.asList("SPLUS", "SMINUS", "SOR");
+		
+		// 符号の判定
+		if (getToken(tokenIndex).equals("SPLUS") || getToken(tokenIndex).equals("SMINUS")) {
+			sign = sign();
+		}
+		
+		// 項の判定
+		termList.add(term());
+		
+		while (setOfAdditionalOperator.contains(getToken(tokenIndex))) {
+			//　加法演算子の判定
+			additionalOperatorList.add(additionalOperator());
+			
+			// 項の判定
+			termList.add(term());
+		}
+		
+		return new SimpleEquation(sign, termList, additionalOperatorList, lineNum);
+	}
+	
+	/**
+	 * 項を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Term term() throws SyntaxException {
+		String lineNum = getLineNum();
+		List<Factor> factorList = new ArrayList<>();
+		List<MultipleOperator> multipleOperatorList = new ArrayList<>();
+		List<String> setOfMultipleOperator = Arrays.asList("SSTAR", "SDIVD", "SMOD", "SAND");
+		
+		// 因子の判定
+		factorList.add(factor());
+		
+		while (setOfMultipleOperator.contains(getToken(tokenIndex))) {
+			// 乗法演算子の判定
+			multipleOperatorList.add(multipleOperator());
+			
+			// 因子の判定
+			factorList.add(factor());
+		}
+		
+		return new Term(factorList, multipleOperatorList, lineNum);
+	}
+	
+	/**
+	 * 因子の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Factor factor() throws SyntaxException {
+		String lineNum = getLineNum();
+		Variable variable = null;
+		Constant constant = null;
+		Equation equation = null;
+		Factor factor = null;
+		List<String> setOfConstant = Arrays.asList("SCONSTANT", "SSTRING", "SFALSE", "STRUE");
+		
+		if (getToken(tokenIndex).equals("SIDENTIFIER")) {
+			variable = variable();
+		} else if (setOfConstant.contains(getToken(tokenIndex))) {
+			constant = constant();
+		} else if (getToken(tokenIndex).equals("SLPAREN")) {
+			// "("の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 式の判定
+			equation = equation();
+			
+			// ")"の判定
+			checkToken("SRPAREN");
+		} else if (getToken(tokenIndex).equals("SNOT")) {
+			// "not"の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 因子の判定
+			factor = factor();
+		} else {
+			throw new SyntaxException(lineNum);
+		}
+		
+		return new Factor(variable, constant, equation, factor, lineNum);
+	}
+	
+	/**
+	 * 関係演算子を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public RelationalOperator relationalOperator() throws SyntaxException {
+		String relationalOperator = getLexicality(tokenIndex);
+		tokenIndex++;
+		
+		return new RelationalOperator(relationalOperator);
+	}
+	
+	/**
+	 * 加法演算子の判定
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public AdditionalOperator additionalOperator() throws SyntaxException {
+		String additionalOperator = getLexicality(tokenIndex);
+		tokenIndex++;
+		
+		return new AdditionalOperator(additionalOperator);
+	}
+	
+	/**
+	 * 乗法演算子を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public MultipleOperator multipleOperator() throws SyntaxException {
+		String multipleOperator = getLexicality(tokenIndex);
+		tokenIndex++;
+		
+		return new MultipleOperator(multipleOperator);
+	}
+	
+	/**
+	 * 入出力文の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public InputOutputStatement inputOutputStatement() throws SyntaxException {
+		VariableGroup variableGroup = null;
+		EquationGroup equationGroup = null;
+		
+		if (getToken(tokenIndex).equals("SREADLN")) {
+			// "readln"の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			if (getToken(tokenIndex).equals("SLPAREN")) {
+				// "("の判定はすでに行われているので，インクリメントのみを行う
+				tokenIndex++;
+				
+				// 変数の並びの判定
+				variableGroup = variableGroup();
+				
+				// ")"の判定
+				checkToken("SRPAREN");
+			}
+		} else if (getToken(tokenIndex).equals("SWRITELN")) {
+			// "writeln"の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			if (getToken(tokenIndex).equals("SLPAREN")) {
+				// "("の判定はすでに行われているので，インクリメントのみを行う
+				tokenIndex++;
+				
+				// 変数の並びの判定
+				equationGroup = equationGroup();
+				
+				// ")"の判定
+				checkToken("SRPAREN");
+			}
+		} else {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+		
+		return new InputOutputStatement(variableGroup, equationGroup);
+	}
+	
+	/**
+	 * 変数の並びの判定
+	 * 
+	 * @return
+	 * @throws SyntaxEception
+	 */
+	public VariableGroup variableGroup() throws SyntaxException {
+		List<Variable> variableList = new ArrayList<>();
+		
+		// 変数の判定
+		variableList.add(variable());
+		
+		while (getToken(tokenIndex).equals("SCOMMA")) {
+			// ","の判定はすでに行われているので，インクリメントのみを行う
+			tokenIndex++;
+			
+			// 変数の判定
+			variableList.add(variable());
+		}
+		
+		return new VariableGroup(variableList);
+	}
+	
+	/**
+	 * 定数を判定するメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public Constant constant() throws SyntaxException {
+		List<String> setOfConstant = Arrays.asList("SCONSTANT", "SSTRING", "SFALSE", "STRUE");
+		
+		if (setOfConstant.contains(getToken(tokenIndex))) {
+			tokenIndex++;
+			
+			return new Constant(getLexicality(tokenIndex - 1));
+		} else {
+			String lineNum = getLineNum();
+			throw new SyntaxException(lineNum);
+		}
+	}
+	
+	/**
+	 * 符号なし整数の判定を行うメソッド
+	 * 
+	 * @return
+	 * @throws SyntaxException
+	 */
+	public UnsignedInteger unsignedInteger() throws SyntaxException {
+		// 数字の判定
+		checkToken("SCONSTANT");
+		
+		return new UnsignedInteger(getLexicality(tokenIndex - 1));
+	}
 }

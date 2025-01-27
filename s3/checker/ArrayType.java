@@ -1,38 +1,31 @@
 package enshud.s3.checker;
 
-public class ArrayType implements Element {
-	private Int minimumIndex;
-	private Int maximumIndex;
-	private GeneralType generalType;
-	private String lineNum;
+public class ArrayType implements Node {
+	private Int minimumInteger;
+	private Int maximumInteger;
+	private StandardType standardType;
 	
-	public ArrayType(Int minimumIndex, Int maximumIndex, GeneralType generalType, String lineNum) {
-		this.minimumIndex = minimumIndex;
-		this.maximumIndex = maximumIndex;
-		this.generalType = generalType;
+	public ArrayType(Int minimumInteger, Int maximumInteger, StandardType standardType) {
+		this.minimumInteger = minimumInteger;
+		this.maximumInteger = maximumInteger;
+		this.standardType = standardType;
 	}
-	
-	public Int getMinimumIndex() {
-		return minimumIndex;
-	}
-	
-	public Int getMaximumIndex() {
-		return maximumIndex;
-	}
-	
-	public GeneralType getGeneralType() {
-		return generalType;
-	}
-	
-	public String getLineNum() {
-		return lineNum;
-	}
-	
+
+	public Int getMinimumInteger() {
+        return minimumInteger;
+    }
+
+    public Int getMaximumInteger() {
+        return maximumInteger;
+    }
+
+    public StandardType getStandardType() {
+        return standardType;
+    }
+    
 	@Override
 	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
-		minimumIndex.accept(visitor);
-		maximumIndex.accept(visitor);
-		generalType.accept(visitor);
 	}
+
 }

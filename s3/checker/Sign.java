@@ -1,18 +1,18 @@
 package enshud.s3.checker;
 
-public class Sign implements Element {
-	private String sign;
+public class Sign implements Node {
+    private String sign;
 
-	public Sign(String sign) {
-		this.sign = sign;
-	}
-	
-	@Override
-	public void accept(Visitor visitor) {
-		visitor.visit(this);
-	}
-	
-	public String getSign() {
-		return sign;
-	}
+    public Sign(String sign) {
+        this.sign = sign;
+    }
+
+    public String getSign() {
+        return sign;
+    }
+
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }

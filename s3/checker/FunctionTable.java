@@ -4,21 +4,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionTable {
-	private List<String> functionTable = new ArrayList<>();
+	List<String> functionTable = new ArrayList<>();
 	
 	/**
-	 * 関数表に手続き名を登録する処理
+	 * 関数表に副プログラム名を追加するメソッド
 	 * 
+	 * @param functionName
 	 */
-	public void addProcedureName(String procedureCallName) {
-		functionTable.add(procedureCallName);
+	public void addFunctionTable(String functionName) {
+		functionTable.add(functionName);
 	}
 	
 	/**
-	 * 関数表を取得するメソッド
+	 * 記号表を取得するメソッド
 	 * 
+	 * @return
 	 */
-	public List<String> getFunctionTable(){
+	public List<String> getFunctionTable() {
 		return functionTable;
+	}
+	
+	/**
+	 * 関数表に副プログラム名を追加できるかを判定するメソッド
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public boolean isAbleToAddFunctionTable(String name) {
+		if (functionTable.contains(name)) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 }

@@ -1,20 +1,20 @@
 package enshud.s3.checker;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class StatementGroup implements Element {
-	private List<Statement> statement = new ArrayList<>();
-	
-	public StatementGroup(List<Statement> statement) {
-		this.statement = statement;
-	}
+public class StatementGroup implements Node {
+    private List<Statement> statementList;
 
-	@Override
-	public void accept(Visitor visitor) throws SemanticException {
-		visitor.visit(this);
-		for (Statement item: statement) {
-			item.accept(visitor);
-		}
-	}
+    public StatementGroup(List<Statement> statementList) {
+        this.statementList = statementList;
+    }
+
+    public List<Statement> getStatementList() {
+        return statementList;
+    }
+
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }

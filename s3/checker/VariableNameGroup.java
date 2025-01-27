@@ -1,30 +1,26 @@
 package enshud.s3.checker;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class VariableNameGroup implements Element {
-	private List<VariableName> variableName = new ArrayList<>();
-	private String lineNum;
-	
-	public VariableNameGroup(List<VariableName> variableName, String lineNum) {
-		this.variableName = variableName;
-		this.lineNum = lineNum;
-	}
+public class VariableNameGroup implements Node {
+    private List<VariableName> variableNameList;
+    private String lineNum;
 
-	public List<VariableName> getVariableNameList() {
-		return variableName;
-	}
-	
-	public String getVariableNameGroupLineNum() {
-		return lineNum;
-	}
-	
-	@Override
-	public void accept(Visitor visitor) {
-		visitor.visit(this);
-		for (VariableName item: variableName) {
-			item.accept(visitor);
-		}
-	}
+    public VariableNameGroup(List<VariableName> variableNameList, String lineNum) {
+        this.variableNameList = variableNameList;
+        this.lineNum = lineNum;
+    }
+
+    public List<VariableName> getVariableNameList() {
+        return variableNameList;
+    }
+    
+    public String getLineNum() {
+    	return lineNum;
+    }
+
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }

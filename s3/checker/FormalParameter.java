@@ -1,17 +1,18 @@
 package enshud.s3.checker;
 
-public class FormalParameter implements Element {
-	private FormalParameterGroup formalParameterGroup;
+public class FormalParameter implements Node {
+    private FormalParameterGroup formalParameterGroup;
 
-	public FormalParameter(FormalParameterGroup formalParameterGroup) {
-		this.formalParameterGroup = formalParameterGroup;
-	}
-	
-	@Override
-	public void accept(Visitor visitor) throws SemanticException {
-		visitor.visit(this);
-		if (formalParameterGroup != null) {
-			formalParameterGroup.accept(visitor);
-		}
-	}
+    public FormalParameter(FormalParameterGroup formalParameterGroup) {
+        this.formalParameterGroup = formalParameterGroup;
+    }
+
+    public FormalParameterGroup getFormalParameterGroup() {
+        return formalParameterGroup;
+    }
+
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }

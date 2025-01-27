@@ -1,18 +1,24 @@
 package enshud.s3.checker;
 
-public class ProgramName implements Element {
+public class ProgramName implements Node {
 	private String name;
+	private String lineNum;
 	
-	public ProgramName(String name) {
+	public ProgramName(String name, String lineNum) {
 		this.name = name;
+		this.lineNum = lineNum;
+	}
+
+	public String getProgramName() {
+		return name;
+	}
+	
+	public String getLineNum() {
+		return lineNum;
 	}
 
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws SemanticException {
 		visitor.visit(this);
-	}
-	
-	public String getProgramName() {
-		return name;
 	}
 }

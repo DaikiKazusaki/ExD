@@ -11,6 +11,7 @@ public class Checker {
 	/**
 	 * サンプルmainメソッド．
 	 * 単体テストの対象ではないので自由に改変しても良い．
+	 * 
 	 */
 	public static void main(final String[] args) {
 		// normalの確認
@@ -59,6 +60,8 @@ public class Checker {
 	 * 入力ファイルが見つからない場合は"File not found"を返すこと．
 	 * 
 	 * @param inputFileName 入力tsファイル名
+	 * @throws SyntaxException 
+	 * @throws SemanticException 
 	 */
 	public String run(final String inputFileName) {
 		try {
@@ -73,17 +76,13 @@ public class Checker {
             
             // 構文解析
             Parser parser = new Parser(tokens);
+            Program program = parser.program();
             
-            // 木の探索開始
-            if (inputFileName.contains("normal")) {
-            	return "OK";
-            } else {
-            	Program program = parser.getProgram();
-                program.accept(new ListVisitor(inputFileName));
-                
-                // 構文解析，意味解析が終了したら"OK"を返す
-                return "OK"; 
-            }            
+            // 構文解析
+            SemanticValidationVisitor semanticValidationVisitor = new SemanticValidationVisitor();
+            program.accept(semanticValidationVisitor);
+            
+            return "OK"; 
         } catch (final IOException e) {
             return "File not found";
         } catch (final SyntaxException e) {

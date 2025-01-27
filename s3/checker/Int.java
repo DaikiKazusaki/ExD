@@ -1,20 +1,30 @@
 package enshud.s3.checker;
 
-public class Int implements Element {
-	private Sign sign;
-	private UnsignedInteger unsignedInteger;
-	
-	public Int(Sign sign, UnsignedInteger unsignedInteger) {
-		this.sign = sign;
-		this.unsignedInteger = unsignedInteger;
-	}
-	
-	@Override
-	public void accept(Visitor visitor) {
-		visitor.visit(this);
-		if (sign != null) {
-			sign.accept(visitor);
-		}
-		unsignedInteger.accept(visitor);
-	}
+public class Int implements Node {
+    private Sign sign;
+    private UnsignedInteger unsignedInteger;
+    private String lineNum;
+
+    public Int(Sign sign, UnsignedInteger unsignedInteger, String lineNum) {
+        this.sign = sign;
+        this.unsignedInteger = unsignedInteger;
+        this.lineNum = lineNum;
+    }
+
+    public Sign getSign() {
+        return sign;
+    }
+
+    public UnsignedInteger getUnsignedInteger() {
+        return unsignedInteger;
+    }
+
+    public String getLineNum() {
+    	return lineNum;
+    }
+    
+    @Override
+    public void accept(Visitor visitor) throws SemanticException {
+        visitor.visit(this);
+    }
 }
