@@ -14,18 +14,12 @@ public class Parser {
      */
     public static void main(final String[] args) {
         // normalの確認
-    	for (int i = 1; i <= 9; i++) {
-    		System.out.println(" " + i + ": " + new Parser().run("data/ts/normal0" + i + ".ts"));
-    	}
-    	for (int i = 10; i <= 20; i++) {
-    		System.out.println(i + ": " + new Parser().run("data/ts/normal" + i + ".ts"));
-    	}
-        // System.out.println(new Parser().run("data/ts/normal04.ts"));
-        // System.out.println(new Parser().run("data/ts/normal02.ts"));
+        System.out.println(new Parser().run("data/ts/normal01.ts"));
+        System.out.println(new Parser().run("data/ts/normal02.ts"));
 
         // synerrの確認
-        // System.out.println(new Parser().run("data/ts/synerr01.ts"));
-        // System.out.println(new Parser().run("data/ts/synerr02.ts"));
+        System.out.println(new Parser().run("data/ts/synerr01.ts"));
+        System.out.println(new Parser().run("data/ts/synerr02.ts"));
     }
 
     /**
