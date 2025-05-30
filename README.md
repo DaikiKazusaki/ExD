@@ -60,7 +60,7 @@ ASTを用いずに構文解析を行うプログラム．作成したファイ�
 ### ファイルの役割
 | ファイル名 | 役割 |
 | ---- | ---- |
-| Compiler.java | メインのプログラム |
+| Checker.java | メインのプログラム |
 | Parser.java | 構文解析をしながらASTを作成する |
 | SemanticValidationVisitor.java | ASTをたどりながら構文解析を行う |
 | Node.java | accepterのインターフェース |
