@@ -6,10 +6,6 @@ Pascal風言語[^1]をCASL2にコンパイルするコンパイラをJavaで作�
 5. **コード生成**：目的言語のコードを生成する．
 6. **最適化**：生成したコードから冗長な部分を削除し，実行数を最小限にしたコードに変換する．
 
-情報科学演習Dの詳細な内容は以下を参照してください．
-- 指導書: [https://dev.ics.es.osaka-u.ac.jp/enshud/shidousho.pdf](https://dev.ics.es.osaka-u.ac.jp/enshud/shidousho.pdf)
-- 使用するファイル: [https://dev.ics.es.osaka-u.ac.jp/file-viewer/](https://dev.ics.es.osaka-u.ac.jp/file-viewer/)
-- ホームページ: [https://dev.ics.es.osaka-u.ac.jp/enshud/](https://dev.ics.es.osaka-u.ac.jp/enshud/)
 
 # 各フォルダの内容
 
